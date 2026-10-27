@@ -111,3 +111,12 @@
 5. Duyurmadan önce Vercel Firewall'da hız sınırı.
 
 **Sıradaki:** e-posta bağlantısı (Resend), ardından Faz 3 Admin-MVP (gelen bağışların listesi).
+
+## 2026-10-27 (ana sayfa ve talep planı)
+
+- Ana sayfaya „Wer wir sind“ bölümü eklendi; hero'da HTML animasyon (`assets/intro/`), MP4 ana sayfadan kaldırıldı. Hepsi yerel, commit/push yok.
+- Yazılım adımı metni taslak: Windows lisansı hizmete dahil değil; fiyat kararı bekleniyor.
+- „Cihaz talep et“ için plan taslağı: `docs/plan-cihaz-talep.md` (kurum öneri, veri minimizasyonu, Datenschutz önkoşulu, Vorgangsnummer önek `WW-A-` önerisi). Karar bekleniyor, kod yok.
+- Plan güncellendi: hem kurum hem privat başvuru. Privat başvuruda tek asgari belge yüklenir (özel depo, 14 gün sonra silinir, sadece özet kaydı kalır). Upload için DSFA ve silme testi canlıya çıkmadan şart.
+- Kararlar: privat belge listesi Fatih'in tablosuna göre, reddedilen başvuru 14 gün sonra silinir, bir kişi bir kez başvurur. Diğer saklama süreleri sonra. Plan: `docs/plan-cihaz-talep.md` §9–10.
+- Admin girişi planı (§11): Supabase Auth + zorunlu TOTP-MFA, roller admin/mitarbeiter, erişim tablosu eklendi.

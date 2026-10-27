@@ -474,6 +474,7 @@
     html{scroll-behavior:auto;}
   }
 </style>
+<link rel="stylesheet" href="assets/intro/intro-anim.css">
 </head>
 <body>
 
@@ -561,6 +562,110 @@
         </svg>
         <figcaption data-i18n="heroFigcaption">Der Weg eines Geräts: sammeln → reparieren → Software installieren → ausliefern</figcaption>
       </figure>
+      <!-- Hero-Animation (ersetzt die Zeichnung ab 760 px ohne Reduced Motion) -->
+      <div class="ia-wrap">
+        <div class="ia-frame" id="iaFrame">
+          <div class="ia-stage" id="iaStage" aria-hidden="true">
+
+            <!-- Szene 1: Weg, 0–5 s -->
+            <div class="ia-scene" style="--start:0s;--len:5s">
+              <div class="ia-node ia-pop" style="--d:.3s;left:360px;top:440px"><svg viewBox="0 0 24 24" width="78" height="78" fill="none" stroke="#064E67" stroke-width="1.4" stroke-linejoin="round"><path d="M3 8l9-5 9 5-9 5-9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg></div>
+              <div class="ia-arrow ia-draw" style="--d:.9s;left:520px;top:440px;width:200px"></div>
+              <div class="ia-node ia-g ia-pop" style="--d:1.2s;left:760px;top:440px"><svg viewBox="0 0 24 24" width="78" height="78" fill="none" stroke="#1E7451" stroke-width="1.4" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.1-3.1a4 4 0 01-5.4 5.4L6 21l-3-3 9.6-9.6a4 4 0 015.4-5.4l-3.1 3.1z"/></svg></div>
+              <div class="ia-arrow ia-draw" style="--d:1.8s;left:920px;top:440px;width:200px"></div>
+              <div class="ia-node ia-l ia-pop" style="--d:2.1s;left:1160px;top:440px"><svg viewBox="0 0 24 24" width="78" height="78" fill="none" stroke="#52973C" stroke-width="1.4" stroke-linejoin="round"><rect x="4" y="4" width="16" height="12" rx="1.5"/><path d="M2 20h20"/><path d="M9 8h6M9 11h4"/></svg></div>
+              <div class="ia-arrow ia-draw" style="--d:2.7s;left:1320px;top:440px;width:200px"></div>
+              <div class="ia-node ia-s ia-pop" style="--d:3s;left:1560px;top:440px"><svg viewBox="0 0 24 24" width="78" height="78" fill="none" stroke="#B07F00" stroke-width="1.4" stroke-linejoin="round"><path d="M3 11l18-7-7 18-2-8-8-2z"/></svg></div>
+              <div class="ia-label ia-in" style="--d:.5s;left:360px;top:540px" data-i18n="svgLabel1">Sammeln</div>
+              <div class="ia-label ia-in" style="--d:1.4s;left:760px;top:540px" data-i18n="svgLabel2">Reparieren</div>
+              <div class="ia-label ia-in" style="--d:2.3s;left:1160px;top:540px" data-i18n="svgLabel3">Software</div>
+              <div class="ia-label ia-in" style="--d:3.2s;left:1560px;top:540px" data-i18n="svgLabel4">Ausliefern</div>
+            </div>
+
+            <!-- Szene 2: vier Wege, 5–10 s -->
+            <div class="ia-scene" style="--start:5s;--len:5s">
+              <p class="ia-h2 ia-in" style="--d:5.1s;top:150px" data-i18n="pathsH2">Vier Wege, Teil des Netzwerks zu werden</p>
+              <div class="ia-card ia-in" style="--d:5.6s;left:200px"><div class="ia-tag" data-i18n="path1Label">Für Privatpersonen</div><div class="ia-name" data-i18n="path1Title">Gerät spenden</div></div>
+              <div class="ia-card ia-in" style="--d:6.1s;left:620px"><div class="ia-tag" data-i18n="path2Label">Für Schulen &amp; Familien</div><div class="ia-name" data-i18n="path2Title">Gerät beantragen</div></div>
+              <div class="ia-card ia-in" style="--d:6.6s;left:1040px"><div class="ia-tag" data-i18n="path3Label">Für Unternehmen</div><div class="ia-name" data-i18n="path3Title">Geräte im Bestand spenden</div></div>
+              <div class="ia-card ia-in" style="--d:7.1s;left:1460px"><div class="ia-tag" data-i18n="path4Label">Für Aktive</div><div class="ia-name" data-i18n="path4Title">Freiwillig transportieren</div></div>
+            </div>
+
+            <!-- Szene 3: fünf Schritte, 10–15 s -->
+            <div class="ia-scene" style="--start:10s;--len:5s">
+              <div class="ia-eyebrow ia-in" style="--d:10.1s;top:150px" data-i18n="howEyebrow">Prozess</div>
+              <p class="ia-h2 ia-in" style="--d:10.3s;top:200px" data-i18n="howH2">Wie funktioniert es?</p>
+              <div class="ia-rail ia-draw" style="--d:11s;left:330px;width:1260px"></div>
+              <div class="ia-step" style="left:330px"><div class="ia-num ia-pop" style="--d:10.9s">1</div><div class="ia-stepname ia-in" style="--d:11.1s" data-i18n="step1Title">Sammeln</div></div>
+              <div class="ia-step" style="left:600px"><div class="ia-num ia-pop" style="--d:11.3s">2</div><div class="ia-stepname ia-in" style="--d:11.5s" data-i18n="step2Title">Sicher löschen</div></div>
+              <div class="ia-step" style="left:870px"><div class="ia-num ia-pop" style="--d:11.7s">3</div><div class="ia-stepname ia-in" style="--d:11.9s" data-i18n="step3Title">Reinigen &amp; Reparieren</div></div>
+              <div class="ia-step" style="left:1140px"><div class="ia-num ia-pop" style="--d:12.1s">4</div><div class="ia-stepname ia-in" style="--d:12.3s" data-i18n="step4Title">Software installieren</div></div>
+              <div class="ia-step" style="left:1410px"><div class="ia-num ia-pop" style="--d:12.5s">5</div><div class="ia-stepname ia-in" style="--d:12.7s" data-i18n="step5Title">Ausliefern</div></div>
+              <p class="ia-body ia-in" style="--d:13.2s;top:820px" data-i18n="howP">Vom Spenden bis zur Übergabe durchläuft jedes Gerät dieselben fünf Schritte.</p>
+            </div>
+
+            <!-- Szene 4: Vertrauen, 15–19 s -->
+            <div class="ia-scene" style="--start:15s;--len:4s">
+              <svg class="ia-shield ia-pop" style="--d:15.2s" viewBox="0 0 24 24" fill="none" stroke="#1E7451" stroke-width="0.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg>
+              <p class="ia-h2 ia-in" style="--d:15.6s;left:900px;width:900px;top:250px;text-align:left;font-size:64px" data-i18n="trustH2">Belegbare Geschichten statt Marketing</p>
+              <div class="ia-story ia-in" style="--d:16.4s" data-i18n="mediaTag">Foto folgt</div>
+            </div>
+
+            <!-- Szene 5: Ansatz & CTA, 19–24 s -->
+            <div class="ia-scene ia-last" style="--start:19s;--len:5s">
+              <img class="ia-logo ia-pop" style="--d:19.2s" src="assets/logo-mark.svg" alt="" width="220" height="220">
+              <p class="ia-h2 ia-in" style="--d:19.6s;top:430px" data-i18n="approachH2">Wir starten klein und bleiben transparent</p>
+              <div class="ia-ctawrap ia-in" style="--d:20.8s"><span class="ia-cta-text" data-i18n="heroCtaPrimary">Laptop oder Tablet spenden</span></div>
+              <div class="ia-url ia-in" style="--d:21.8s">spenden.weiterwert.de/spenden</div>
+            </div>
+
+          </div>
+        </div>
+        <div class="ia-controls">
+          <button type="button" id="iaToggle" aria-pressed="false"><span class="ia-on-pause" data-i18n="introPause">Pause</span><span class="ia-on-play" data-i18n="introPlay" hidden>Abspielen</span></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WER WIR SIND -->
+  <section id="wer-wir-sind">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow" data-i18n="whoEyebrow">Wer wir sind</span>
+        <h2 data-i18n="whoH2">Eine Initiative von Freiwilligen, mit einem klaren Ziel</h2>
+        <p data-i18n="whoP">Wir sind noch jung. Wir verbinden Menschen, die ein Gerät abgeben möchten, mit Menschen, die es brauchen — und zeigen auf dieser Seite, was dabei passiert.</p>
+      </div>
+
+      <div class="approach-grid">
+        <div class="approach-card">
+          <div class="icon" aria-hidden="true">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>
+            </svg>
+          </div>
+          <h3 data-i18n="who1Title">Wer wir sind</h3>
+          <p data-i18n="who1Desc">WeiterWert ist eine neu gegründete Initiative von Freiwilligen. Die Vereinsgründung ist in Vorbereitung, die Eintragung ist für 2027 geplant.</p>
+        </div>
+        <div class="approach-card">
+          <div class="icon" aria-hidden="true">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>
+            </svg>
+          </div>
+          <h3 data-i18n="who2Title">Unser Ziel</h3>
+          <p data-i18n="who2Desc">Spender:innen und Menschen mit Bedarf transparent zusammenbringen. Wir wollen nachvollziehbar machen, wohin jedes Gerät geht — von der Abgabe bis zur Übergabe.</p>
+        </div>
+        <div class="approach-card">
+          <div class="icon" aria-hidden="true">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3a9 9 0 110 18 9 9 0 010-18z"/><path d="M12 7v5l3 3"/>
+            </svg>
+          </div>
+          <h3 data-i18n="who3Title">Nachvollziehbar</h3>
+          <p data-i18n="who3Desc">Jede Spende über das Online-Formular erhält eine Vorgangsnummer (WW-JJJJ-NNNNNN). Eine Online-Statusabfrage ist geplant.</p>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -673,7 +778,7 @@
             </svg>
           </div>
           <h3 data-i18n="step4Title">Software installieren</h3>
-          <p data-i18n="step4Desc">Wir installieren ein aktuelles Betriebssystem sowie die nötige Lernsoftware und machen das Gerät einsatzbereit.</p>
+          <p data-i18n="step4Desc">Wir richten jedes Gerät mit kostenloser Software ein, etwa mit einem Linux-System und Lernprogrammen. Windows-Lizenzen sind nicht Teil unserer Leistung.</p>
         </div>
         <div class="step">
           <div class="step-num">5</div>
@@ -911,6 +1016,17 @@
       heroFigcaption: "Bir cihazın yolculuğu: topla → onar → yazılım yükle → ulaştır",
       svgLabel1: "Topla", svgLabel2: "Onar", svgLabel3: "Yazılım Yükle", svgLabel4: "Ulaştır",
 
+      whoEyebrow: "Biz kimiz",
+      whoH2: "Gönüllülerden oluşan bir girişim, net bir hedefle",
+      whoP: "Henüz genç bir girişimiz. Cihaz bağışlamak isteyenleri ihtiyacı olanlarla buluşturmayı hedefliyoruz; sürecin nasıl işlediğini bu sayfada paylaşacağız.",
+      introPause: "Duraklat", introPlay: "Oynat",
+      who1Title: "Biz kimiz",
+      who1Desc: "WeiterWert, gönüllülerden oluşan yeni kurulmuş bir girişim. Dernek kuruluşu hazırlık aşamasında; tescilin 2027'de yapılması planlanıyor.",
+      who2Title: "Hedefimiz",
+      who2Desc: "Bağışçıları ve ihtiyacı olanları şeffaf biçimde buluşturmak. Her cihazın bağıştan teslimata kadar nereye gittiğini takip edilebilir kılmak istiyoruz.",
+      who3Title: "Takip edilebilir",
+      who3Desc: "Online formla yapılan her bağışa bir işlem numarası (WW-YYYY-NNNNNN) veriliyor. Çevrimiçi durum sorgulama planlanıyor.",
+
       pathsEyebrow: "Katılma Yolları",
       pathsH2: "Ağın bir parçası olmanın dört yolu",
       pathsP: "Cihaz, talep, kurum ya da zaman — her yol sayılır.",
@@ -941,7 +1057,7 @@
       step3Title: "Temizle & Onar",
       step3Desc: "Teknik ekibimiz her cihazı kontrol ediyor, arızaları gideriyor ve yeniden kullanılabilir hale getiriyor.",
       step4Title: "Yazılım Yükle",
-      step4Desc: "Güncel işletim sistemini ve gerekli eğitim yazılımlarını kurup cihazı kullanıma hazırlıyoruz.",
+      step4Desc: "Her cihazı ücretsiz yazılımlarla kuruyoruz; örneğin Linux tabanlı bir sistem ve eğitim programlarıyla. Windows lisansları hizmetimize dahil değil.",
       step5Title: "Teslim Et",
       step5Desc: "Gönüllü ağımız aracılığıyla cihazları ihtiyaç sahibi öğrenci ve eğitimcilere teslim ediyoruz.",
       corpTitle: "Şirketler ve kurumlar için",
@@ -994,6 +1110,17 @@
       heroFigcaption: "Der Weg eines Geräts: sammeln → reparieren → Software installieren → ausliefern",
       svgLabel1: "Sammeln", svgLabel2: "Reparieren", svgLabel3: "Software", svgLabel4: "Ausliefern",
 
+      whoEyebrow: "Wer wir sind",
+      whoH2: "Eine Initiative von Freiwilligen, mit einem klaren Ziel",
+      whoP: "Wir sind noch jung. Wir verbinden Menschen, die ein Gerät abgeben möchten, mit Menschen, die es brauchen — und werden auf dieser Seite zeigen, was dabei passiert.",
+      introPause: "Pause", introPlay: "Abspielen",
+      who1Title: "Wer wir sind",
+      who1Desc: "WeiterWert ist eine neu gegründete Initiative von Freiwilligen. Die Vereinsgründung ist in Vorbereitung, die Eintragung ist für 2027 geplant.",
+      who2Title: "Unser Ziel",
+      who2Desc: "Spender:innen und Menschen mit Bedarf transparent zusammenbringen. Wir wollen nachvollziehbar machen, wohin jedes Gerät geht — von der Abgabe bis zur Übergabe.",
+      who3Title: "Nachvollziehbar",
+      who3Desc: "Jede Spende über das Online-Formular erhält eine Vorgangsnummer (WW-JJJJ-NNNNNN). Eine Online-Statusabfrage ist geplant.",
+
       pathsEyebrow: "Mitmachen",
       pathsH2: "Vier Wege, Teil des Netzwerks zu werden",
       pathsP: "Ob Gerät, Anfrage, Unternehmen oder Zeit — jeder Weg zählt.",
@@ -1024,7 +1151,7 @@
       step3Title: "Reinigen & Reparieren",
       step3Desc: "Unser technisches Team prüft jedes Gerät, behebt Defekte und macht es wieder einsatzbereit.",
       step4Title: "Software installieren",
-      step4Desc: "Wir installieren ein aktuelles Betriebssystem sowie die nötige Lernsoftware und machen das Gerät einsatzbereit.",
+      step4Desc: "Wir richten jedes Gerät mit kostenloser Software ein, etwa mit einem Linux-System und Lernprogrammen. Windows-Lizenzen sind nicht Teil unserer Leistung.",
       step5Title: "Ausliefern",
       step5Desc: "Über unser Freiwilligennetzwerk übergeben wir die Geräte an Schüler:innen und Lehrkräfte, die sie benötigen.",
       corpTitle: "Für Unternehmen und Organisationen",
@@ -1113,5 +1240,6 @@
 })();
 </script>
 
+<script defer src="assets/intro/intro-anim.js"></script>
 </body>
 </html>
