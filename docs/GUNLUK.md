@@ -122,3 +122,24 @@
 - Admin girişi planı (§11): Supabase Auth + zorunlu TOTP-MFA, roller admin/mitarbeiter, erişim tablosu eklendi.
 - Datenschutz-taslağı (Gerät beantragen) yazıldı: docs/taslak-datenschutz-beantragen.md. Açık: upload hukuki dayanağı, saklama süreleri, sunucu bölgesi, e-posta sağlayıcısı, avukat kontrolü. Canlıya alınmadı.
 - Gerät beantragen: Seite /beantragen (Test-Modus, Flag aus) mit Kurum- und Privat-Ablauf; Tests 61/61; Upload yok.
+- Tek site planı: docs/plan-tek-site.md (4 aşama; Fatih'in 3 kararı bekleniyor: EN dili, yasal sayfalar Almanca, ana sayfada banner).
+- 2026-10-28: Tek site kararları kaydedildi (3 dil, yasal Almanca, ana sayfada banner). Kod değişmedi; 'hepsini yapma' kararı.
+
+## 2026-10-27 / 28 (kapanış)
+
+**Yayında (canlı):**
+- weiterwert.de: yeni hero animasyonu, „Wer wir sind“, platform butonları (`master` 57c914d).
+- spenden.weiterwert.de: sarı banner („Im Aufbau – wir prüfen jede Anfrage von Hand.“), iki üst menü butonu, logo weiterwert.de'ye gider, „Gerät beantragen“ geçici sayfası ve e-posta düğmesi.
+
+**Yerelde hazır, canlı değil:**
+- Başvuru formu, üç dil (Deutsch, Türkçe, English), port 3000. Commit 4ff0e19, branch `feature/beantragen-mehrsprachig`. Canlıda kayıt yok, bu yüzden canlıda sadece geçici sayfa kalır.
+- Tek site planı: `docs/plan-tek-site.md`. Kararlar: üç dil, yasal sayfalar Almanca, ana sayfada banner.
+
+**Testler (son durum):** statik 20/20, Vitest 63/63, Playwright 36/36 (üretim build'i), tsc temiz.
+
+**Güvenlik kontrolü (kapanış):** Gizli anahtar, `dangerouslySetInnerHTML`, `eval` bulunmadı. Form endpoint'inde hız sınırı yok (açık madde). Hata günlüğü (`console.error`) kişisel veri içermiyor; test deposu kullanılıyor.
+
+**Açık işler (Fatih):**
+1. Tek site Aşama 1'i başlatılsın mı (sadece yerel)?
+2. Formu canlıya almak için: veritabanı tablosu, veri koruma metni, istek sınırı.
+3. Branch'i `master`'a alıp yayınlamak için ayrı onay.
