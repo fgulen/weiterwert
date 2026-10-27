@@ -8,6 +8,7 @@ export const SITEMAP: SitemapEntry[] = [
   { path: '/spenden', title: 'Laptop oder Tablet spenden', feature: 'spenden', germanOnly: true },
   { path: '/annahmekriterien', title: 'Annahmekriterien', germanOnly: true },
   { path: '/geraetepartnerschaft', title: 'Gerätepartnerschaft', feature: 'geraetepartnerschaft' },
+  { path: '/beantragen', title: 'Gerät beantragen', feature: 'geraetBeantragen', germanOnly: true },
   { path: '/impressum', title: 'Impressum', germanOnly: true },
   { path: '/datenschutz', title: 'Datenschutzerklärung', germanOnly: true },
   { path: '/admin', title: 'Verwaltung', feature: 'admin', germanOnly: true },

@@ -120,3 +120,5 @@
 - Plan güncellendi: hem kurum hem privat başvuru. Privat başvuruda tek asgari belge yüklenir (özel depo, 14 gün sonra silinir, sadece özet kaydı kalır). Upload için DSFA ve silme testi canlıya çıkmadan şart.
 - Kararlar: privat belge listesi Fatih'in tablosuna göre, reddedilen başvuru 14 gün sonra silinir, bir kişi bir kez başvurur. Diğer saklama süreleri sonra. Plan: `docs/plan-cihaz-talep.md` §9–10.
 - Admin girişi planı (§11): Supabase Auth + zorunlu TOTP-MFA, roller admin/mitarbeiter, erişim tablosu eklendi.
+- Datenschutz-taslağı (Gerät beantragen) yazıldı: docs/taslak-datenschutz-beantragen.md. Açık: upload hukuki dayanağı, saklama süreleri, sunucu bölgesi, e-posta sağlayıcısı, avukat kontrolü. Canlıya alınmadı.
+- Gerät beantragen: Seite /beantragen (Test-Modus, Flag aus) mit Kurum- und Privat-Ablauf; Tests 61/61; Upload yok.

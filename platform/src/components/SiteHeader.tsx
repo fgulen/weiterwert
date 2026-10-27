@@ -1,20 +1,23 @@
 import Link from "next/link";
 import styles from "./SiteHeader.module.css";
 
+/** The logo always leads to the main homepage, which is the single entry point. */
+export const LOGO_HREF = "https://weiterwert.de/";
+
+// Only the two main actions. Further pages live in the footer.
 const NAV = [
   { href: "/spenden", label: "Gerät spenden" },
-  { href: "/annahmekriterien", label: "Annahmekriterien" },
-  { href: "/geraetepartnerschaft", label: "Gerätepartnerschaft" },
+  { href: "/beantragen", label: "Gerät beantragen" },
 ];
 
 export function SiteHeader() {
   return (
     <header className={styles.header}>
       <div className={`container ${styles.inner}`}>
-        <Link href="/" className={styles.brand}>
+        <a href={LOGO_HREF} className={styles.brand}>
           <img src="/logo-mark.svg" alt="" width={36} height={36} />
           <span>Weiter<span className={styles.accent}>Wert</span></span>
-        </Link>
+        </a>
         <nav aria-label="Hauptmenü" className={styles.nav}>
           {NAV.map((n) => (
             <Link key={n.href} href={n.href}>{n.label}</Link>

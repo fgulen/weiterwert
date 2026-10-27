@@ -8,7 +8,7 @@ describe('SITEMAP (slim Faz 1)', () => {
   });
   it('contains the slim page set', () => {
     expect(SITEMAP.map((p) => p.path).sort()).toEqual(
-      ['/', '/admin', '/annahmekriterien', '/datenschutz', '/geraetepartnerschaft', '/impressum', '/spenden'].sort(),
+      ['/', '/admin', '/annahmekriterien', '/beantragen', '/datenschutz', '/geraetepartnerschaft', '/impressum', '/spenden'].sort(),
     );
   });
   it('gates feature pages', () => {
@@ -16,5 +16,6 @@ describe('SITEMAP (slim Faz 1)', () => {
     expect(by['/spenden'].feature).toBe('spenden');
     expect(by['/geraetepartnerschaft'].feature).toBe('geraetepartnerschaft');
     expect(by['/admin'].feature).toBe('admin');
+    expect(by['/beantragen'].feature).toBe('geraetBeantragen');
   });
 });
