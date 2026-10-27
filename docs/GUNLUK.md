@@ -143,3 +143,5 @@
 1. Tek site Aşama 1'i başlatılsın mı (sadece yerel)?
 2. Formu canlıya almak için: veritabanı tablosu, veri koruma metni, istek sınırı.
 3. Branch'i `master`'a alıp yayınlamak için ayrı onay.
+
+**Not (2026-10-28):** Bugünkü iş tamamlandı. Sonraki tüm işler `feature/beantragen-mehrsprachig` dalında yapılacak; `master` yalnızca Fatih onaylayınca güncellenir.
