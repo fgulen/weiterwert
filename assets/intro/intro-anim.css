@@ -3,10 +3,10 @@
    Phones and reduced-motion visitors keep the static hero SVG (.hero-art).
    All classes use the ia- prefix so they cannot clash with the rest of index.html. */
 
-.ia-wrap{display:none;margin:32px auto 0;max-width:960px;}
+.ia-wrap{display:none;position:relative;margin:24px 0 0;}
 .ia-frame{position:relative;overflow:hidden;width:100%;aspect-ratio:16/9;border-radius:var(--radius);
-  background:var(--bg);box-shadow:var(--shadow);}
-.ia-controls{display:flex;justify-content:flex-end;margin-top:12px;}
+  background:transparent;}
+.ia-controls{display:flex;position:absolute;right:8px;top:8px;z-index:2;}
 .ia-controls button{font:inherit;font-size:.94rem;font-weight:600;min-height:44px;padding:10px 18px;border-radius:999px;
   border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);cursor:pointer;}
 .ia-controls button:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
@@ -52,7 +52,7 @@
 /* Scene 2: four doors */
 .ia-card{position:absolute;top:360px;width:380px;height:380px;box-sizing:border-box;padding:40px 34px;background:var(--surface);
   border-radius:28px;border-top:10px solid var(--brand-navy);box-shadow:0 18px 40px rgba(22,36,44,.10);}
-.ia-tag{font-weight:600;font-size:26px;color:var(--brand-green);margin-bottom:18px;}
+.ia-tag{font-weight:600;font-size:30px;color:var(--brand-green);margin-bottom:18px;}
 .ia-name{font-weight:800;font-size:38px;line-height:1.15;}
 
 /* Scene 3: five steps */

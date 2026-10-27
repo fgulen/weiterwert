@@ -12,3 +12,8 @@
 .fehler{color:#8a1c1c;font-weight:600;margin:0;}
 .hinweis{color:var(--muted);font-size:0.94rem;margin:0;}
 .danke{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:20px;max-width:560px;margin:24px 0;}
+.interim{max-width:620px;margin:24px 0;display:grid;gap:12px;}
+.interim h2{margin:0;}
+.interim ul{margin:0;padding-left:20px;display:grid;gap:4px;}
+.mailKnopf{justify-self:start;font-weight:700;min-height:48px;padding:12px 22px;border-radius:999px;background:var(--accent);color:var(--on-accent);text-decoration:none;display:inline-flex;align-items:center;}
+.mailKnopf:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}

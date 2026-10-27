@@ -7,6 +7,13 @@ Two sites in one repo:
 
 Session log: `docs/GUNLUK.md` (Turkish).
 
+## Dil
+
+- Bütün açıklamalar, durum raporları, sorular ve planlar Fatih'e **Türkçe** yazılır.
+- Almanca sadece sitede gösterilen metinlerde kullanılır: butonlar, menü etiketleri, Datenschutz- ve Impressum-metinleri, Hinweis- ve Fehlermeldungen (örn. „Gerät beantragen“, „Testumgebung – keine echten Spenden“).
+- Teknik terimler de Türkçe yazılır (ör. üst menü, alt bilgi, test ortamı, başvuru, canlı). Almanca terim sadece tırnak içinde bir arayüz etiketi ise kalır.
+- Yanıt göndermeden önce bir kez oku: Türkçe olmayan cümle var mı?
+
 ## Kapat
 
 - Plan / log: `docs/GUNLUK.md`, one dated section per session. Open items for Fatih go in a separate list.

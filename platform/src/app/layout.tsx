@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { TestBanner } from "@/components/TestBanner";
+import { LangNotice } from "@/components/LangNotice";
 import "./globals.css";
 
 export const metadata: Metadata = {
