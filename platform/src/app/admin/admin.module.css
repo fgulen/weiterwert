@@ -1,0 +1,5 @@
+.tabelle{width:100%;border-collapse:collapse;margin:12px 0 20px;font-size:0.95rem;background:var(--surface);}
+.tabelle th,.tabelle td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top;}
+.tabelle th{font-weight:700;color:var(--ink);background:var(--surface-alt);}
+.tabelle td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;}
+.meta{color:var(--muted);font-size:0.95rem;}

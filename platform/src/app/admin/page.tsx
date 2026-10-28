@@ -3,12 +3,16 @@ import { redirect } from 'next/navigation';
 import { FeatureGate } from '@/components/FeatureGate';
 import { aktuellerNutzer } from '@/lib/admin/session';
 import { ladeSpendenListe } from '@/lib/admin/daten';
+import { geraeteText, statusText } from '@/lib/admin/anzeige';
 import { gatePage } from '@/lib/page-gate';
 import { pageTitle } from '@/lib/sitemap';
 import { abmelden } from './actions';
+import styles from './admin.module.css';
 
 const TITLE = pageTitle('/admin');
 export const metadata: Metadata = { title: TITLE, robots: { index: false } };
+
+const ROLLE: Record<string, string> = { admin: 'Admin', mitarbeiter: 'Mitarbeiter' };
 
 export default async function AdminPage() {
   gatePage('admin');
@@ -20,14 +24,14 @@ export default async function AdminPage() {
     <>
       <h1>{TITLE}</h1>
       <FeatureGate feature="admin">
-        <p>
-          Angemeldet als {nutzer.email} ({nutzer.rolle}).
+        <p className={styles.meta}>
+          Angemeldet als {nutzer.email} ({ROLLE[nutzer.rolle] ?? nutzer.rolle}).
         </p>
         <h2>Gespendete Geräte</h2>
         {zeilen.length === 0 ? (
           <p>Noch keine Einträge.</p>
         ) : (
-          <table>
+          <table className={styles.tabelle}>
             <thead>
               <tr>
                 <th scope="col">Vorgang</th>
@@ -40,9 +44,9 @@ export default async function AdminPage() {
               {zeilen.map((z) => (
                 <tr key={z.vorgangsnummer}>
                   <td>{z.vorgangsnummer}</td>
-                  <td>{z.status}</td>
+                  <td>{statusText(z.status)}</td>
                   <td>{z.angelegt}</td>
-                  <td>{z.geraete.join(', ') || '–'}</td>
+                  <td>{z.geraete.map(geraeteText).join(', ') || '–'}</td>
                 </tr>
               ))}
             </tbody>
