@@ -3,7 +3,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { MAX_ANTRAG_GERAETE, NACHWEISE, type Antragsart, type Nachweis } from '@/lib/antrag/antrag';
 import { sendeAntrag, type AntragAntwort } from './actions';
-import { SPRACHEN, SPRACHNAMEN, TEXTE, type Sprache } from './i18n';
+import { TEXTE, type Sprache } from './i18n';
 import styles from './beantragen.module.css';
 
 function neueSchluessel(): string {
@@ -15,11 +15,11 @@ function neueSchluessel(): string {
   });
 }
 
-export function BeantragenForm() {
+/** The language comes from the address (/tr/beantragen, /en/beantragen); the header has the language select. */
+export function BeantragenForm({ sprache }: { sprache: Sprache }) {
   // Created in the browser only: crypto.randomUUID cannot run during prerendering.
   const [key, setKey] = useState<string | null>(null);
   useEffect(() => setKey(neueSchluessel()), []);
-  const [sprache, setSprache] = useState<Sprache>('de');
   const [art, setArt] = useState<Antragsart>('kurum');
   const [sending, setSending] = useState(false);
   const [antwort, setAntwort] = useState<AntragAntwort | null>(null);
@@ -58,22 +58,10 @@ export function BeantragenForm() {
     </>
   );
 
-  const sprachWahl = (
-    <label className={styles.sprache}>
-      {t.sprache}
-      <select value={sprache} onChange={(e) => setSprache(e.target.value as Sprache)}>
-        {SPRACHEN.map((s) => (
-          <option key={s} value={s}>{SPRACHNAMEN[s]}</option>
-        ))}
-      </select>
-    </label>
-  );
-
   if (antwort?.ok) {
     return (
       <>
         {kopf}
-        {sprachWahl}
         <div className={styles.danke} role="status">
           <h2>{t.danke}</h2>
           <p>{t.antragsnummer} <strong>{antwort.antragsnummer}</strong>. {t.aufbewahren}</p>
@@ -86,7 +74,6 @@ export function BeantragenForm() {
   return (
     <>
       {kopf}
-      {sprachWahl}
       <form className={styles.form} onSubmit={onSubmit} noValidate lang={sprache}>
         <fieldset className={styles.fieldset}>
           <legend>{t.wer}</legend>

@@ -40,3 +40,10 @@ test('header link in Turkish opens the Turkish donation page', async ({ page }) 
   await expect(page.locator('html')).toHaveAttribute('lang', 'tr');
   await expect(page.getByRole('note')).toHaveText('Bu sayfa şimdilik yalnızca Almanca.');
 });
+
+test('request form has no second language select; the language comes from the address', async ({ page }) => {
+  await page.goto('/tr/beantragen');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'tr');
+  await expect(page.getByRole('combobox', { name: 'Dil', exact: true })).toHaveCount(1);
+  await expect(page.locator('form')).toHaveAttribute('lang', 'tr');
+});

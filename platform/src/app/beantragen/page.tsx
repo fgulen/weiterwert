@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { getAppEnv } from '@/lib/env';
+import { aktuelleSprache } from '@/lib/i18n/server';
 import { gatePage } from '@/lib/page-gate';
 import { pageTitle } from '@/lib/sitemap';
 import { BeantragenForm } from './BeantragenForm';
@@ -10,12 +11,12 @@ export const metadata: Metadata = { title: TITLE };
 
 const MAIL = 'mailto:weiterwert@gmail.com?subject=Ger%C3%A4t%20beantragen';
 
-export default function BeantragenPage() {
+export default async function BeantragenPage() {
+  const { lang } = await aktuelleSprache();
   gatePage('geraetBeantragen');
   // Until the flag is switched to "aktiv" (plan §7), the form is only shown in the test environment.
-  // The form renders its own heading and language choice, so it can switch languages.
   const formOffen = getAppEnv() === 'test';
-  if (formOffen) return <BeantragenForm />;
+  if (formOffen) return <BeantragenForm sprache={lang} />;
   return (
     <>
       <h1>{TITLE}</h1>

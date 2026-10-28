@@ -17,5 +17,3 @@
 .interim ul{margin:0;padding-left:20px;display:grid;gap:4px;}
 .mailKnopf{justify-self:start;font-weight:700;min-height:48px;padding:12px 22px;border-radius:999px;background:var(--accent);color:var(--on-accent);text-decoration:none;display:inline-flex;align-items:center;}
 .mailKnopf:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
-.sprache{display:flex;align-items:center;gap:10px;font-weight:600;margin:16px 0 0;}
-.sprache select{font:inherit;min-height:44px;padding:8px 12px;border:1px solid var(--line-strong);border-radius:10px;background:var(--surface);}
