@@ -5,7 +5,7 @@ import { test, expect } from '@playwright/test';
 test('English home page shows English text and lang attribute', async ({ page }) => {
   await page.goto('/en');
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Pass on technology. Open doors to opportunities.');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Pass on technology. Open up opportunities.');
   await expect(page.getByRole('note')).toHaveText('This page is currently available in German only.');
 });
 
@@ -30,12 +30,12 @@ test('language select opens the same page in another language', async ({ page })
 
 test('header links keep the language prefix', async ({ page }) => {
   await page.goto('/en');
-  await expect(page.getByRole('link', { name: 'Donate a device' })).toHaveAttribute('href', '/en/spenden');
+  await expect(page.locator('header').getByRole('link', { name: 'Donate a device' })).toHaveAttribute('href', '/en/spenden');
 });
 
 test('header link in Turkish opens the Turkish donation page', async ({ page }) => {
   await page.goto('/tr');
-  await page.getByRole('link', { name: 'Cihaz bağışla' }).click();
+  await page.locator('header').getByRole('link', { name: 'Cihaz bağışla' }).click();
   await expect(page).toHaveURL(/\/tr\/spenden$/);
   await expect(page.locator('html')).toHaveAttribute('lang', 'tr');
   await expect(page.getByRole('note')).toHaveText('Bu sayfa şimdilik yalnızca Almanca.');
