@@ -21,6 +21,8 @@
 .nav a.primary{background:var(--accent);color:var(--on-accent);font-weight:700;}
 .nav a.secondary{border:1px solid var(--line-strong);}
 .nav a.primary:hover,.nav a.secondary:hover{text-decoration:none;}
+/* Staff sign-in: full width on phones, a quiet outline button on desktop. */
+.nav a.login{grid-column:1 / -1;border:1px dashed var(--line-strong);color:var(--muted);font-weight:500;font-size:0.9rem;min-height:40px;}
 
 @media (min-width:760px){
   .inner{
@@ -30,4 +32,5 @@
   }
   .nav{display:flex;justify-content:flex-end;flex-wrap:nowrap;gap:12px;}
   .nav a{white-space:nowrap;padding:10px 18px;min-height:44px;}
+  .nav a.login{grid-column:auto;}
 }

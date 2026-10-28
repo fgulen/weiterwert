@@ -27,6 +27,7 @@ export async function SiteHeader() {
           {nav.map((n) => (
             <Link key={n.href} href={pfadFuer(lang, n.href)} className={n.primary ? styles.primary : styles.secondary}>{n.label}</Link>
           ))}
+          <Link href="/admin/login" className={styles.login}>{t.teamAnmeldung}</Link>
         </nav>
       </div>
     </header>
