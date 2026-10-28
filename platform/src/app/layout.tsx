@@ -5,6 +5,8 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { TestBanner } from "@/components/TestBanner";
 import { NurDeutschHinweis } from "@/components/NurDeutschHinweis";
 import "./globals.css";
+// Loaded on every page so the homepage buttons never repaint during navigation. Rules are scoped under .home.
+import "./home.css";
 
 export const metadata: Metadata = {
   title: { default: "WeiterWert – Technik weitergeben. Chancen eröffnen.", template: "%s – WeiterWert" },

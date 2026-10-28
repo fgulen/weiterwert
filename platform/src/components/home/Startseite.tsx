@@ -1,4 +1,3 @@
-import '../../app/home.css';
 import { aktuelleSprache } from '@/lib/i18n/server';
 import { homeHtml } from './homeHtml';
 import { IntroInit } from './IntroInit';
