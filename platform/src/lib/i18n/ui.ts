@@ -15,6 +15,7 @@ export type UiTexte = {
   barrierefrei: string;
   bannerTest: string;
   bannerLive: string;
+  teamAnmeldung: string;
   nurDeutsch: string;
   homeH1: string;
   homeLead: string;
@@ -35,7 +36,8 @@ export const UI: Record<Lang, UiTexte> = {
     datenschutz: 'Datenschutzerklärung',
     barrierefrei: 'Barrierefreiheit',
     bannerTest: 'Testumgebung – keine echten Spenden',
-    bannerLive: 'Im Aufbau – wir prüfen jede Anfrage von Hand.',
+    bannerLive: 'Beta – wir prüfen jede Anfrage von Hand.',
+    teamAnmeldung: 'Team-Anmeldung',
     nurDeutsch: '',
     homeH1: 'Technik weitergeben. Chancen eröffnen.',
     homeLead:
@@ -55,7 +57,8 @@ export const UI: Record<Lang, UiTexte> = {
     datenschutz: 'Gizlilik bildirimi',
     barrierefrei: 'Erişilebilirlik',
     bannerTest: 'Test ortamı – gerçek bağış yapılmaz',
-    bannerLive: 'Kuruluş aşamasında – her başvuruyu elle kontrol ediyoruz.',
+    bannerLive: 'Beta – her başvuruyu elle kontrol ediyoruz.',
+    teamAnmeldung: 'Ekip girişi',
     nurDeutsch: 'Bu sayfa şimdilik yalnızca Almanca.',
     homeH1: 'Teknolojiyi aktar. Fırsatların kapısını aç.',
     homeLead:
@@ -75,7 +78,8 @@ export const UI: Record<Lang, UiTexte> = {
     datenschutz: 'Privacy policy',
     barrierefrei: 'Accessibility',
     bannerTest: 'Test environment – no real donations',
-    bannerLive: 'Under construction – we check every request by hand.',
+    bannerLive: 'Beta – we check every request by hand.',
+    teamAnmeldung: 'Team sign-in',
     nurDeutsch: 'This page is currently available in German only.',
     homeH1: 'Pass on technology. Open doors to opportunities.',
     homeLead:

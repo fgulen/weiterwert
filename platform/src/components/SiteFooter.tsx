@@ -30,6 +30,7 @@ export async function SiteFooter() {
           {LEGAL.map((l) => (
             <a key={l.href} href={l.href}>{l.label}</a>
           ))}
+          <a href="/admin/login">{t.teamAnmeldung}</a>
         </nav>
       </div>
     </footer>
