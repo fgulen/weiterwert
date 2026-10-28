@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { FeatureGate } from '@/components/FeatureGate';
+import { PasswortFeld } from '@/components/PasswortFeld';
 import { gatePage } from '@/lib/page-gate';
 import { pageTitle } from '@/lib/sitemap';
 import { anmelden } from '../actions';
@@ -16,14 +17,11 @@ export default async function AdminLogin({ searchParams }: { searchParams: Promi
       <FeatureGate feature="admin">
         {fehler && <p role="alert">E-Mail oder Passwort ist nicht richtig.</p>}
         <form action={anmelden} style={{ display: 'grid', gap: 12, maxWidth: 420 }}>
-          <label>
+          <label style={{ display: 'grid', gap: 6 }}>
             E-Mail
-            <input name="email" type="email" autoComplete="username" required style={{ display: 'block', width: '100%', minHeight: 44 }} />
+            <input name="email" type="email" autoComplete="username" required style={{ minHeight: 44, padding: '8px 12px', font: 'inherit' }} />
           </label>
-          <label>
-            Passwort
-            <input name="passwort" type="password" autoComplete="current-password" required style={{ display: 'block', width: '100%', minHeight: 44 }} />
-          </label>
+          <PasswortFeld name="passwort" label="Passwort" autoComplete="current-password" />
           <button type="submit" className="btn btn-primary">Anmelden</button>
         </form>
       </FeatureGate>

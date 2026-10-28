@@ -18,3 +18,13 @@ test('failed sign-in shows the error message', async ({ page }) => {
   await page.goto('/admin/login?fehler=1');
   await expect(page.getByText('E-Mail oder Passwort ist nicht richtig.')).toBeVisible();
 });
+
+test('password can be shown and hidden', async ({ page }) => {
+  await page.goto('/admin/login');
+  const feld = page.locator('input[name="passwort"]');
+  await expect(feld).toHaveAttribute('type', 'password');
+  await page.getByRole('button', { name: 'Anzeigen' }).click();
+  await expect(feld).toHaveAttribute('type', 'text');
+  await page.getByRole('button', { name: 'Verbergen' }).click();
+  await expect(feld).toHaveAttribute('type', 'password');
+});
