@@ -3,3 +3,16 @@
 .tabelle th{font-weight:700;color:var(--ink);background:var(--surface-alt);}
 .tabelle td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;}
 .meta{color:var(--muted);font-size:0.95rem;}
+.karte{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:16px;margin:16px 0;max-width:480px;}
+.karte h2{margin-top:0;}
+.formular{display:grid;gap:12px;max-width:420px;}
+.formular :global(.btn){min-height:44px;}
+.feld{display:grid;gap:6px;}
+.eingabe{min-height:44px;padding:8px 12px;font:inherit;width:100%;box-sizing:border-box;}
+.fehler{color:#b00020;margin:0;}
+.erfolg{color:#116530;margin:0;}
+.qr{display:block;max-width:100%;height:auto;background:#fff;border:1px solid var(--line);border-radius:8px;margin:8px 0;}
+.schluessel{display:block;overflow-wrap:anywhere;word-break:break-all;padding:8px 12px;background:var(--surface-alt);border-radius:8px;margin-bottom:12px;}
+.schritte{padding-left:20px;}
+.linkzeile{margin:16px 0;}
+.linkzeile a{display:inline-flex;align-items:center;min-height:44px;}

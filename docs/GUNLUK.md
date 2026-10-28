@@ -204,3 +204,14 @@
 4. Titreme düzeltmesini canlıda gözle kontrol et (buton geçişleri).
 
 **Sonraki adım:** Admin kararı ve parola yenilemesi; ardından MFA zorunlu hale getirme planı.
+
+## 2026-10-28 (profil parola kararı)
+
+**Fatih kararları (kaydedildi, uygulanmadı; sonra devam edilecek):**
+- Parola en az 12 karakter, ayrıca büyük harf, küçük harf ve rakam içermeli (şu an kodda yalnız 12 karakter kontrolü var: `platform/src/lib/admin/profil.ts`).
+- Parola değişince diğer oturumlar kapatılacak (şu an değişmedi; açık not).
+
+**Sonraki adım:** Kararı `profil.ts` ve testlere uygula, sonra Supabase tarafında diğer oturumları kapatma çağrısını ekle; mobil kontrol (320/390/412 px) ve test.
+
+**Kapanış (2026-10-28):** Statik 20/20, tsc temiz, Vitest 113/113 (18 dosya), Playwright 69/69. Güvenlik bakışı: `konto.ts` ve `profil/actions.ts` elle okundu; her işlem token ve rolü Supabase'de yeniden doğruluyor, service key tarayıcıya gitmiyor. Bulgu yok; bilinen açıklar: parola değişince oturumlar kapanmıyor, uygulama düzeyinde hız sınırı yok. `/code-review` skill'i bu kapanışta çalıştırılmadı (haftalık kullanım sınırı). Parola kuralı (12+, büyük/küçük/rakam) henüz kodda yok; commit mesajında açık.
+Commit yerelde; push ve deploy yok. `tsconfig.json`, `.claude/`, `.next-local*` ve iki mp4 bilerek commit'e girmedi.

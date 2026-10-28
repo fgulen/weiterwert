@@ -5,10 +5,10 @@ export type SitemapEntry = { path: string; title: string; feature?: FeatureKey; 
 // Slim Faz 1 set; the full sitemap (spec §8) is added page by page.
 export const SITEMAP: SitemapEntry[] = [
   { path: '/', title: 'Startseite' },
-  { path: '/spenden', title: 'Laptop oder Tablet spenden', feature: 'spenden', germanOnly: true },
-  { path: '/annahmekriterien', title: 'Annahmekriterien', germanOnly: true },
+  { path: '/spenden', title: 'Laptop oder Tablet spenden', feature: 'spenden' },
+  { path: '/annahmekriterien', title: 'Annahmekriterien' },
   { path: '/geraetepartnerschaft', title: 'Gerätepartnerschaft', feature: 'geraetepartnerschaft' },
-  { path: '/beantragen', title: 'Gerät beantragen', feature: 'geraetBeantragen', germanOnly: true },
+  { path: '/beantragen', title: 'Gerät beantragen', feature: 'geraetBeantragen' },
   { path: '/impressum', title: 'Impressum', germanOnly: true },
   { path: '/datenschutz', title: 'Datenschutzerklärung', germanOnly: true },
   { path: '/admin', title: 'Verwaltung', feature: 'admin', germanOnly: true },

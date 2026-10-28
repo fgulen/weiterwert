@@ -26,16 +26,31 @@ export const ERKLAERUNGEN = {
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const PLZ = /^\d{5}$/;
 
-export function pruefeKontakt(k: Kontakt): KontaktFehler {
+/** Messages of the contact check; the page passes the same keys in the visitor's language. */
+export type KontaktMeldungen = { name: string; nameLang: string; email: string; plz: string; telefonLang: string; organisationLang: string };
+export const KONTAKT_MELDUNGEN_DE: KontaktMeldungen = {
+  name: 'Bitte geben Sie Ihren Namen an.',
+  nameLang: 'Der Name ist zu lang.',
+  email: 'Bitte geben Sie eine gültige E-Mail-Adresse an.',
+  plz: 'Bitte geben Sie eine fünfstellige Postleitzahl an.',
+  telefonLang: 'Die Telefonnummer ist zu lang.',
+  organisationLang: 'Der Name der Organisation ist zu lang.',
+};
+
+export function pruefeKontakt(k: Kontakt, m: KontaktMeldungen = KONTAKT_MELDUNGEN_DE): KontaktFehler {
   const f: KontaktFehler = {};
-  if (!k.name.trim()) f.name = 'Bitte geben Sie Ihren Namen an.';
-  else if (k.name.length > MAX_TEXT) f.name = 'Der Name ist zu lang.';
-  if (!EMAIL.test(k.email.trim()) || k.email.length > MAX_TEXT) f.email = 'Bitte geben Sie eine gültige E-Mail-Adresse an.';
-  if (!PLZ.test(k.plz.trim())) f.plz = 'Bitte geben Sie eine fünfstellige Postleitzahl an.';
-  if (k.telefon.length > 40) f.telefon = 'Die Telefonnummer ist zu lang.';
-  if (k.organisation.length > MAX_TEXT) f.organisation = 'Der Name der Organisation ist zu lang.';
+  if (!k.name.trim()) f.name = m.name;
+  else if (k.name.length > MAX_TEXT) f.name = m.nameLang;
+  if (!EMAIL.test(k.email.trim()) || k.email.length > MAX_TEXT) f.email = m.email;
+  if (!PLZ.test(k.plz.trim())) f.plz = m.plz;
+  if (k.telefon.length > 40) f.telefon = m.telefonLang;
+  if (k.organisation.length > MAX_TEXT) f.organisation = m.organisationLang;
   return f;
 }
+
+/** Why a request was refused; the page shows its own text per language, `fehler` stays the German fallback. */
+export type FehlerCode = 'ungueltig' | 'keinGeraet' | 'zuViele' | 'erklaerung' | 'nichtGeeignet' | 'technik';
+export type LeseFehler = { ok: false; fehler: string; code: FehlerCode };
 
 const WERTE: { [K in Exclude<keyof GeraetEingabe, 'marke' | 'modell'>]: readonly GeraetEingabe[K][] } = {
   typ: ['laptop', 'chromebook', 'macbook', 'android', 'ipad', 'unbekannt'],
@@ -65,13 +80,13 @@ function geraet(v: unknown): GeraetEingabe | null {
 }
 
 /** Server-side check of untrusted input. Returns a clean copy or a message for the donor. */
-export function leseAnfrage(v: unknown): { ok: true; anfrage: Anfrage } | { ok: false; fehler: string } {
-  const ungueltig = { ok: false as const, fehler: 'Die Angaben sind unvollständig. Bitte prüfen Sie das Formular.' };
+export function leseAnfrage(v: unknown): { ok: true; anfrage: Anfrage } | LeseFehler {
+  const ungueltig = { ok: false as const, fehler: 'Die Angaben sind unvollständig. Bitte prüfen Sie das Formular.', code: 'ungueltig' as const };
   if (!v || typeof v !== 'object') return ungueltig;
   const o = v as Record<string, unknown>;
   if (typeof o.idempotencyKey !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(o.idempotencyKey)) return ungueltig;
-  if (!Array.isArray(o.geraete) || o.geraete.length === 0) return { ok: false, fehler: 'Bitte erfassen Sie mindestens ein Gerät.' };
-  if (o.geraete.length > MAX_GERAETE) return { ok: false, fehler: `Bitte senden Sie höchstens ${MAX_GERAETE} Geräte pro Anfrage.` };
+  if (!Array.isArray(o.geraete) || o.geraete.length === 0) return { ok: false, fehler: 'Bitte erfassen Sie mindestens ein Gerät.', code: 'keinGeraet' };
+  if (o.geraete.length > MAX_GERAETE) return { ok: false, fehler: `Bitte senden Sie höchstens ${MAX_GERAETE} Geräte pro Anfrage.`, code: 'zuViele' };
   const geraete = o.geraete.map(geraet);
   if (geraete.some((g) => g === null)) return ungueltig;
 
@@ -85,7 +100,7 @@ export function leseAnfrage(v: unknown): { ok: true; anfrage: Anfrage } | { ok: 
   if (Object.keys(pruefeKontakt(kontakt)).length > 0) return ungueltig;
 
   const e = (o.erklaerungen ?? {}) as Record<string, unknown>;
-  if (e.eigentum !== true || e.daten !== true) return { ok: false, fehler: 'Bitte bestätigen Sie beide Erklärungen.' };
+  if (e.eigentum !== true || e.daten !== true) return { ok: false, fehler: 'Bitte bestätigen Sie beide Erklärungen.', code: 'erklaerung' };
 
   return {
     ok: true,

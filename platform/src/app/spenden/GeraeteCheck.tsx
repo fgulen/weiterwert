@@ -2,8 +2,10 @@
 
 import { useEffect, useId, useRef, useState, useTransition, type ReactNode } from 'react';
 import { ERKLAERUNGEN, LEERER_KONTAKT, MAX_GERAETE, pruefeKontakt, type Kontakt, type KontaktFehler } from '@/lib/absenden/anfrage';
+import { CHECK, type CheckTexte } from '@/lib/i18n/check';
+import type { Lang } from '@/lib/i18n/sprache';
 import { pruefe } from '@/lib/vorpruefung/pruefe';
-import { ERGEBNIS_TEXT, type GeraetEingabe, type Geraetetyp, type Pruefergebnis } from '@/lib/vorpruefung/types';
+import type { Ergebnis, GeraetEingabe, Geraetetyp, Pruefergebnis } from '@/lib/vorpruefung/types';
 import { sendeAnfrage } from './actions';
 import styles from './check.module.css';
 
@@ -17,69 +19,67 @@ const LEER: GeraetEingabe = {
   akku: 'unbekannt', sperren: 'unbekannt', eigentum: 'unbekannt', ram: 'unbekannt',
 };
 
-const WEISS_NICHT = 'Weiß ich nicht';
+const ergebnisText = (t: CheckTexte, e: Ergebnis) =>
+  ({ geeignet: t.ergebnisGeeignet, angaben: t.ergebnisAngaben, manuell: t.ergebnisManuell, nichtGeeignet: t.ergebnisNichtGeeignet })[e];
 
 // The toggle decides which device types and questions are shown.
-const ART: Record<Art, { label: string; typen: Option<Geraetetyp>[]; marke: string; modell: string }> = {
+const artDaten = (t: CheckTexte): Record<Art, { label: string; typen: Option<Geraetetyp>[]; marke: string; modell: string }> => ({
   laptop: {
-    label: 'Laptop',
+    label: t.laptop,
     typen: [
-      { value: 'laptop', label: 'Laptop (Windows/Linux)' }, { value: 'macbook', label: 'MacBook' },
-      { value: 'chromebook', label: 'Chromebook' }, { value: 'unbekannt', label: WEISS_NICHT },
+      { value: 'laptop', label: t.typLaptop }, { value: 'macbook', label: t.typMacbook },
+      { value: 'chromebook', label: t.typChromebook }, { value: 'unbekannt', label: t.weissNicht },
     ],
-    marke: 'z. B. Lenovo, HP, Apple', modell: 'z. B. ThinkPad T480',
+    marke: t.markeLaptop, modell: t.modellLaptop,
   },
   tablet: {
-    label: 'Tablet',
+    label: t.tablet,
     typen: [
-      { value: 'ipad', label: 'iPad' }, { value: 'android', label: 'Android-Tablet' }, { value: 'unbekannt', label: WEISS_NICHT },
+      { value: 'ipad', label: t.typIpad }, { value: 'android', label: t.typAndroid }, { value: 'unbekannt', label: t.weissNicht },
     ],
-    marke: 'z. B. Apple, Samsung', modell: 'z. B. iPad 9. Generation',
+    marke: t.markeTablet, modell: t.modellTablet,
   },
+});
+
+type Frage = { key: FrageKey; schritt: number; legend: string; nurLaptop?: boolean; options: Option<string>[] };
+const fragen = (t: CheckTexte): Frage[] => {
+  const unbekannt = { value: 'unbekannt', label: t.weissNicht };
+  return [
+    { key: 'alter', schritt: 1, legend: t.qAlter, options: [
+      { value: '0-3', label: t.alter03 }, { value: '4-6', label: t.alter46 },
+      { value: '7-9', label: t.alter79 }, { value: '10+', label: t.alter10 }, unbekannt,
+    ] },
+    { key: 'startet', schritt: 1, legend: t.qStartet, options: [{ value: 'ja', label: t.ja }, { value: 'nein', label: t.nein }, unbekannt] },
+    { key: 'display', schritt: 1, legend: t.qDisplay, options: [{ value: 'ok', label: t.inOrdnung }, { value: 'schaden', label: t.displaySchaden }, unbekannt] },
+    { key: 'akku', schritt: 1, legend: t.qAkku, options: [
+      { value: 'ok', label: t.inOrdnung }, { value: 'schwach', label: t.akkuSchwach }, { value: 'gebläht', label: t.akkuGeblaeht }, unbekannt,
+    ] },
+    { key: 'ram', schritt: 1, nurLaptop: true, legend: t.qRam, options: [{ value: '8+', label: t.ram8 }, { value: '4', label: t.ram4 }, unbekannt] },
+    { key: 'sperren', schritt: 2, legend: t.qSperren, options: [
+      { value: 'keine', label: t.sperrenKeine }, { value: 'konto', label: t.sperrenKonto }, { value: 'firma', label: t.sperrenFirma }, unbekannt,
+    ] },
+    { key: 'eigentum', schritt: 2, legend: t.qEigentum, options: [
+      { value: 'ja', label: t.eigentumJa }, { value: 'leasing', label: t.eigentumLeasing }, unbekannt,
+    ] },
+  ];
 };
 
-const FRAGEN: { key: FrageKey; schritt: number; legend: string; nurLaptop?: boolean; options: Option<string>[] }[] = [
-  { key: 'alter', schritt: 1, legend: 'Ungefähres Alter', options: [
-    { value: '0-3', label: 'bis 3 Jahre' }, { value: '4-6', label: '4 bis 6 Jahre' },
-    { value: '7-9', label: '7 bis 9 Jahre' }, { value: '10+', label: '10 Jahre oder älter' },
-    { value: 'unbekannt', label: WEISS_NICHT },
-  ] },
-  { key: 'startet', schritt: 1, legend: 'Startet das Gerät?', options: [
-    { value: 'ja', label: 'Ja' }, { value: 'nein', label: 'Nein' }, { value: 'unbekannt', label: WEISS_NICHT },
-  ] },
-  { key: 'display', schritt: 1, legend: 'Display', options: [
-    { value: 'ok', label: 'In Ordnung' }, { value: 'schaden', label: 'Riss oder Fehler' }, { value: 'unbekannt', label: WEISS_NICHT },
-  ] },
-  { key: 'akku', schritt: 1, legend: 'Akku', options: [
-    { value: 'ok', label: 'In Ordnung' }, { value: 'schwach', label: 'Hält kaum Ladung' },
-    { value: 'gebläht', label: 'Gebläht oder beschädigt' }, { value: 'unbekannt', label: WEISS_NICHT },
-  ] },
-  { key: 'ram', schritt: 1, nurLaptop: true, legend: 'Arbeitsspeicher (optional)', options: [
-    { value: '8+', label: '8 GB oder mehr' }, { value: '4', label: '4 GB' }, { value: 'unbekannt', label: WEISS_NICHT },
-  ] },
-  { key: 'sperren', schritt: 2, legend: 'Konten und Sperren', options: [
-    { value: 'keine', label: 'Alles entfernt' }, { value: 'konto', label: 'Konto oder Passwort noch aktiv' },
-    { value: 'firma', label: 'Firmengerät mit Verwaltung (IT)' }, { value: 'unbekannt', label: WEISS_NICHT },
-  ] },
-  { key: 'eigentum', schritt: 2, legend: 'Gehört das Gerät Ihnen?', options: [
-    { value: 'ja', label: 'Ja, es gehört mir' }, { value: 'leasing', label: 'Nein, es ist geleast' },
-    { value: 'unbekannt', label: WEISS_NICHT },
-  ] },
-];
-
-const SCHRITTE_PRUEFUNG = ['Gerät', 'Zustand', 'Konten und Eigentum', 'Ergebnis'];
-const SCHRITTE_ANFRAGE = [...SCHRITTE_PRUEFUNG, 'Kontakt', 'Absenden'];
+const schrittePruefung = (t: CheckTexte) => [t.schrittGeraet, t.schrittZustand, t.schrittKonten, t.schrittErgebnis];
+const schritteAnfrage = (t: CheckTexte) => [...schrittePruefung(t), t.schrittKontakt, t.schrittAbsenden];
 const ERGEBNIS = 3;
 const KONTAKT = 4;
 const ABSENDEN = 5;
 
-const KONTAKT_FELDER: { key: keyof Kontakt; label: string; type: string; autoComplete: string; pflicht: boolean; inputMode?: 'numeric' }[] = [
-  { key: 'name', label: 'Name', type: 'text', autoComplete: 'name', pflicht: true },
-  { key: 'email', label: 'E-Mail', type: 'email', autoComplete: 'email', pflicht: true },
-  { key: 'plz', label: 'Postleitzahl', type: 'text', autoComplete: 'postal-code', pflicht: true, inputMode: 'numeric' },
-  { key: 'telefon', label: 'Telefon (optional)', type: 'tel', autoComplete: 'tel', pflicht: false },
-  { key: 'organisation', label: 'Schule, Firma oder Organisation (optional)', type: 'text', autoComplete: 'organization', pflicht: false },
+const kontaktFelder = (t: CheckTexte): { key: keyof Kontakt; label: string; type: string; autoComplete: string; pflicht: boolean; inputMode?: 'numeric' }[] => [
+  { key: 'name', label: t.feldName, type: 'text', autoComplete: 'name', pflicht: true },
+  { key: 'email', label: t.feldEmail, type: 'email', autoComplete: 'email', pflicht: true },
+  { key: 'plz', label: t.feldPlz, type: 'text', autoComplete: 'postal-code', pflicht: true, inputMode: 'numeric' },
+  { key: 'telefon', label: t.feldTelefon, type: 'tel', autoComplete: 'tel', pflicht: false },
+  { key: 'organisation', label: t.feldOrganisation, type: 'text', autoComplete: 'organization', pflicht: false },
 ];
+
+const mit = (text: string, werte: Record<string, string | number>) =>
+  text.replace(/\{(\w+)\}/g, (_, k: string) => String(werte[k] ?? `{${k}}`));
 
 // crypto.randomUUID is missing on older iPads (Safari before 15.4), which donors often use.
 function neueId(): string {
@@ -91,14 +91,14 @@ function neueId(): string {
   return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
 }
 
-const geraetName = (g: GeraetEingabe, i: number) => [g.marke, g.modell].filter(Boolean).join(' ') || `Gerät ${i + 1}`;
+const geraetName = (t: CheckTexte, g: GeraetEingabe, i: number) => [g.marke, g.modell].filter(Boolean).join(' ') || mit(t.geraetN, { n: i + 1 });
 
-function Ergebnisbox({ r }: { r: Pruefergebnis }) {
+function Ergebnisbox({ r, t }: { r: Pruefergebnis; t: CheckTexte }) {
   return (
-    <div role="status" aria-live="polite" aria-label="Vorprüfung" className={`${styles.result} ${styles[r.ergebnis]}`}>
-      <strong>{ERGEBNIS_TEXT[r.ergebnis]}</strong>
-      {r.gruende.length > 0 && <ul>{r.gruende.map((g) => <li key={g}>{g}</li>)}</ul>}
-      <small>Einschätzung nach Annahmekriterien {r.regelVersion}. Endgültig entscheiden wir nach der Prüfung des Geräts.</small>
+    <div role="status" aria-live="polite" aria-label={t.vorpruefung} className={`${styles.result} ${styles[r.ergebnis]}`}>
+      <strong>{ergebnisText(t, r.ergebnis)}</strong>
+      {r.codes.length > 0 && <ul>{r.codes.map((c) => <li key={c}>{t.gruende[c]}</li>)}</ul>}
+      <small>{mit(t.einschaetzung, { v: r.regelVersion })}</small>
     </div>
   );
 }
@@ -111,11 +111,11 @@ function Icon({ art }: { art: Art }) {
   );
 }
 
-function Fortschritt({ schritte, schritt }: { schritte: string[]; schritt: number }) {
+function Fortschritt({ schritte, schritt, t }: { schritte: string[]; schritt: number; t: CheckTexte }) {
   return (
     <div className={styles.progress}>
-      <p className={styles.progressText}>Schritt {schritt + 1} von {schritte.length}: <strong>{schritte[schritt]}</strong></p>
-      <ol aria-label="Fortschritt" className={styles.progressList} style={{ gridTemplateColumns: `repeat(${schritte.length},1fr)` }}>
+      <p className={styles.progressText}>{mit(t.schrittVon, { n: schritt + 1, m: schritte.length })} <strong>{schritte[schritt]}</strong></p>
+      <ol aria-label={t.fortschritt} className={styles.progressList} style={{ gridTemplateColumns: `repeat(${schritte.length},1fr)` }}>
         {schritte.map((s, i) => (
           <li key={s} aria-current={i === schritt ? 'step' : undefined}
             className={i < schritt ? styles.done : i === schritt ? styles.current : undefined}>
@@ -131,8 +131,13 @@ function Fortschritt({ schritte, schritt }: { schritte: string[]; schritt: numbe
  * Pre-check wizard. With `absenden` the donor can send the request (contact + submit steps);
  * without it the flow ends at the result and `abschluss` explains how to continue.
  */
-export function GeraeteCheck({ abschluss, absenden = false }: { abschluss?: ReactNode; absenden?: boolean }) {
-  const schritte = absenden ? SCHRITTE_ANFRAGE : SCHRITTE_PRUEFUNG;
+export function GeraeteCheck({ abschluss, absenden = false, lang = 'de' }: { abschluss?: ReactNode; absenden?: boolean; lang?: Lang }) {
+  const t = CHECK[lang];
+  const ART = artDaten(t);
+  const FRAGEN = fragen(t);
+  const KONTAKT_FELDER = kontaktFelder(t);
+  const SCHRITTE_PRUEFUNG = schrittePruefung(t);
+  const schritte = absenden ? schritteAnfrage(t) : SCHRITTE_PRUEFUNG;
   const [art, setArt] = useState<Art>('laptop');
   const [geraet, setGeraet] = useState<GeraetEingabe>(LEER);
   const [schritt, setSchritt] = useState(0);
@@ -184,7 +189,7 @@ export function GeraeteCheck({ abschluss, absenden = false }: { abschluss?: Reac
   const anzahlNachUebernahme = Math.min(MAX_GERAETE, liste.length + (entwurf && r.ergebnis !== 'nichtGeeignet' ? 1 : 0));
 
   const zuAbsenden = () => {
-    const f = pruefeKontakt(kontakt);
+    const f = pruefeKontakt(kontakt, t.kontaktFehler);
     setKontaktFehler(f);
     const erster = KONTAKT_FELDER.find((k) => f[k.key]);
     if (erster) { document.getElementById(`${id}-${erster.key}`)?.focus(); return; }
@@ -203,15 +208,15 @@ export function GeraeteCheck({ abschluss, absenden = false }: { abschluss?: Reac
           idempotencyKey: schluessel?.key, geraete: liste.map((d) => d.eingabe), kontakt, erklaerungen: erkl, website,
         });
         if (antwort.ok) { moved.current = true; setVorgangsnummer(antwort.vorgangsnummer); }
-        else setSendFehler(antwort.fehler);
+        else setSendFehler(antwort.code === 'zuViele' ? mit(t.fehler.zuViele, { max: MAX_GERAETE }) : t.fehler[antwort.code] ?? antwort.fehler);
       } catch {
         // Lost connection or an outdated page after a deploy; the same key makes a retry safe.
-        setSendFehler('Die Verbindung ist fehlgeschlagen. Ihre Angaben sind noch da. Bitte versuchen Sie es erneut.');
+        setSendFehler(t.verbindung);
       }
     });
   };
 
-  const frage = (f: (typeof FRAGEN)[number]) => (
+  const frage = (f: Frage) => (
     <fieldset key={f.key} className={styles.q}>
       <legend>{f.legend}</legend>
       <div className={styles.opts}>
@@ -230,11 +235,11 @@ export function GeraeteCheck({ abschluss, absenden = false }: { abschluss?: Reac
   if (vorgangsnummer) {
     return (
       <section className={`${styles.form} ${styles.danke}`} aria-labelledby={`${id}-danke`}>
-        <h2 id={`${id}-danke`} ref={heading} tabIndex={-1} className={styles.stepHeading}>Vielen Dank für Ihre Spende!</h2>
-        <p>Ihre Anfrage ist bei uns angekommen. Ihre Vorgangsnummer:</p>
+        <h2 id={`${id}-danke`} ref={heading} tabIndex={-1} className={styles.stepHeading}>{t.dankeTitel}</h2>
+        <p>{t.dankeAngekommen}</p>
         <p className={styles.nummer}>{vorgangsnummer}</p>
-        <p>Wir melden uns per E-Mail bei Ihnen, um die Übergabe abzustimmen. Bitte notieren Sie sich die Vorgangsnummer für Rückfragen.</p>
-        <p className={styles.hint}>Bitte bringen oder schicken Sie noch nichts, bevor wir uns gemeldet haben.</p>
+        <p>{t.dankeMelden}</p>
+        <p className={styles.hint}>{t.dankeNochNichts}</p>
       </section>
     );
   }
@@ -243,13 +248,13 @@ export function GeraeteCheck({ abschluss, absenden = false }: { abschluss?: Reac
     <div className={styles.wrap}>
       {liste.length > 0 && schritt !== ABSENDEN && (
         <section className={styles.listBox}>
-          <h2>Ihre Geräte ({liste.length})</h2>
-          <ul aria-label="Ihre Geräte" className={styles.list}>
+          <h2>{t.ihreGeraete} ({liste.length})</h2>
+          <ul aria-label={t.ihreGeraete} className={styles.list}>
             {liste.map((d, i) => (
               <li key={i} className={styles.item}>
-                <span>{geraetName(d.eingabe, i)}</span>
-                <span className={`${styles.chip} ${styles[d.r.ergebnis]}`}>{ERGEBNIS_TEXT[d.r.ergebnis]}</span>
-                <button type="button" className={styles.linkBtn} onClick={() => setListe((l) => l.filter((_, j) => j !== i))}>Entfernen</button>
+                <span>{geraetName(t, d.eingabe, i)}</span>
+                <span className={`${styles.chip} ${styles[d.r.ergebnis]}`}>{ergebnisText(t, d.r.ergebnis)}</span>
+                <button type="button" className={styles.linkBtn} onClick={() => setListe((l) => l.filter((_, j) => j !== i))}>{t.entfernen}</button>
               </li>
             ))}
           </ul>
@@ -270,15 +275,15 @@ export function GeraeteCheck({ abschluss, absenden = false }: { abschluss?: Reac
         if (schritt === KONTAKT) { zuAbsenden(); return; }
         senden();
       }}>
-        <Fortschritt schritte={schritte} schritt={schritt} />
+        <Fortschritt schritte={schritte} schritt={schritt} t={t} />
         <h2 ref={heading} tabIndex={-1} className={styles.stepHeading}>
-          {schritt === 0 ? (liste.length === 0 ? 'Ihr Gerät' : 'Weiteres Gerät') : schritte[schritt]}
+          {schritt === 0 ? (liste.length === 0 ? t.ihrGeraet : t.weiteresGeraet) : schritte[schritt]}
         </h2>
 
         {schritt === 0 && (
           <>
             <fieldset className={styles.q}>
-              <legend>Was möchten Sie spenden?</legend>
+              <legend>{t.wasSpenden}</legend>
               <div className={styles.toggle}>
                 {(Object.keys(ART) as Art[]).map((a) => (
                   <label key={a} className={styles.toggleOpt}>
@@ -289,12 +294,12 @@ export function GeraeteCheck({ abschluss, absenden = false }: { abschluss?: Reac
                 ))}
               </div>
             </fieldset>
-            <p className={styles.hint}>Alle Fragen sind freiwillig. „Weiß ich nicht“ ist immer in Ordnung.</p>
-            {frage({ key: 'typ', schritt: 0, legend: 'Gerätetyp', options: ART[art].typen })}
+            <p className={styles.hint}>{t.freiwillig}</p>
+            {frage({ key: 'typ', schritt: 0, legend: t.geraetetyp, options: ART[art].typen })}
             <div className={styles.row}>
-              <label htmlFor={`${id}-marke`}>Marke</label>
+              <label htmlFor={`${id}-marke`}>{t.marke}</label>
               <input id={`${id}-marke`} value={geraet.marke} onChange={(e) => set('marke', e.target.value)} placeholder={ART[art].marke} autoComplete="off" maxLength={100} />
-              <label htmlFor={`${id}-modell`}>Modell (optional)</label>
+              <label htmlFor={`${id}-modell`}>{t.modellOptional}</label>
               <input id={`${id}-modell`} value={geraet.modell} onChange={(e) => set('modell', e.target.value)} placeholder={ART[art].modell} autoComplete="off" maxLength={100} />
             </div>
           </>
@@ -303,22 +308,22 @@ export function GeraeteCheck({ abschluss, absenden = false }: { abschluss?: Reac
         {FRAGEN.filter((f) => f.schritt === schritt && !(f.nurLaptop && art === 'tablet')).map(frage)}
 
         {/* Safety notes (swollen battery, leasing) must not wait until the last step. */}
-        {schritt <= ERGEBNIS && entwurf && (schritt === ERGEBNIS || r.ergebnis === 'nichtGeeignet') && <Ergebnisbox r={r} />}
+        {schritt <= ERGEBNIS && entwurf && (schritt === ERGEBNIS || r.ergebnis === 'nichtGeeignet') && <Ergebnisbox r={r} t={t} />}
 
         {absenden && schritt === ERGEBNIS && (
           <p className={styles.hint}>
-            {!entwurf ? 'Ihre Geräte sehen Sie oben in der Liste.'
+            {!entwurf ? t.hinweisListe
               : r.ergebnis === 'nichtGeeignet'
-                ? (liste.length > 0 ? 'Dieses Gerät nehmen wir nicht in Ihre Anfrage auf.' : 'Dieses Gerät können wir leider nicht annehmen. Sie können ein anderes Gerät erfassen.')
+                ? (liste.length > 0 ? t.hinweisNichtAufnehmen : t.hinweisNichtAnnehmen)
                 : anzahlNachUebernahme >= MAX_GERAETE
-                  ? `Pro Anfrage sind höchstens ${MAX_GERAETE} Geräte möglich. Für weitere Geräte senden Sie bitte eine zweite Anfrage.`
-                  : 'Möchten Sie noch ein Gerät spenden? Dann erfassen Sie es jetzt, bevor Sie Ihre Kontaktdaten angeben.'}
+                  ? mit(t.hinweisMax, { max: MAX_GERAETE })
+                  : t.hinweisNoch}
           </p>
         )}
 
         {schritt === KONTAKT && (
           <>
-            <p className={styles.hint}>Wir nutzen Ihre Angaben nur, um die Übergabe mit Ihnen abzustimmen.</p>
+            <p className={styles.hint}>{t.hinweisKontakt}</p>
             <div className={styles.row}>
               {KONTAKT_FELDER.map((f) => (
                 <div key={f.key} className={styles.field}>
@@ -333,44 +338,45 @@ export function GeraeteCheck({ abschluss, absenden = false }: { abschluss?: Reac
               ))}
             </div>
             <div className={styles.infoBox}>
-              <strong>Übergabe nach Absprache</strong>
-              <span>Wir melden uns per E-Mail und stimmen Ort und Zeit mit Ihnen ab. Abholung, Paketversand und Sammelstelle folgen.</span>
+              <strong>{t.uebergabeTitel}</strong>
+              <span>{t.uebergabeText}</span>
             </div>
           </>
         )}
 
         {schritt === ABSENDEN && (
           <>
-            <p className={styles.hint}>Bitte prüfen Sie Ihre Angaben.</p>
+            <p className={styles.hint}>{t.bitteAngabenPruefen}</p>
             <div className={styles.summary}>
-              <div className={styles.summaryHead}><h3>Geräte ({liste.length})</h3><button type="button" className={styles.linkBtn} onClick={() => gehe(ERGEBNIS)}>Ändern</button></div>
+              <div className={styles.summaryHead}><h3>{t.geraete} ({liste.length})</h3><button type="button" className={styles.linkBtn} onClick={() => gehe(ERGEBNIS)}>{t.aendern}</button></div>
               {liste.length === 0
-                ? <p className={styles.fehler}>Bitte erfassen Sie mindestens ein Gerät.</p>
-                : <ul className={styles.summaryList}>{liste.map((d, i) => <li key={i}>{geraetName(d.eingabe, i)} – {ERGEBNIS_TEXT[d.r.ergebnis]}</li>)}</ul>}
+                ? <p className={styles.fehler}>{t.mindestensEins}</p>
+                : <ul className={styles.summaryList}>{liste.map((d, i) => <li key={i}>{geraetName(t, d.eingabe, i)} – {ergebnisText(t, d.r.ergebnis)}</li>)}</ul>}
             </div>
             <div className={styles.summary}>
-              <div className={styles.summaryHead}><h3>Kontakt</h3><button type="button" className={styles.linkBtn} onClick={() => gehe(KONTAKT)}>Ändern</button></div>
+              <div className={styles.summaryHead}><h3>{t.kontakt}</h3><button type="button" className={styles.linkBtn} onClick={() => gehe(KONTAKT)}>{t.aendern}</button></div>
               <p className={styles.summaryText}>
-                {kontakt.name}<br />{kontakt.email}<br />PLZ {kontakt.plz}
+                {kontakt.name}<br />{kontakt.email}<br />{t.plzKurz} {kontakt.plz}
                 {kontakt.telefon && <><br />{kontakt.telefon}</>}
                 {kontakt.organisation && <><br />{kontakt.organisation}</>}
               </p>
             </div>
             <fieldset className={styles.q} id={`${id}-erkl`} tabIndex={-1} aria-describedby={erklFehler ? `${id}-erkl-fehler` : undefined}>
-              <legend>Erklärungen</legend>
+              <legend>{t.erklaerungen}</legend>
+              {lang !== 'de' && <p className={styles.hint}>{t.erklaerungenDeutsch}</p>}
               <label className={styles.check}>
                 <input type="checkbox" checked={erkl.eigentum} onChange={(e) => setErkl((x) => ({ ...x, eigentum: e.target.checked }))} />
-                <span>{ERKLAERUNGEN.eigentum}</span>
+                <span lang="de">{ERKLAERUNGEN.eigentum}</span>
               </label>
               <label className={styles.check}>
                 <input type="checkbox" checked={erkl.daten} onChange={(e) => setErkl((x) => ({ ...x, daten: e.target.checked }))} />
-                <span>{ERKLAERUNGEN.daten}</span>
+                <span lang="de">{ERKLAERUNGEN.daten}</span>
               </label>
-              {erklFehler && <span id={`${id}-erkl-fehler`} className={styles.fehler}>Bitte bestätigen Sie beide Erklärungen.</span>}
+              {erklFehler && <span id={`${id}-erkl-fehler`} className={styles.fehler}>{t.erklaerungenBeide}</span>}
             </fieldset>
             <p className={styles.hint}>
-              Wir verarbeiten Ihre Angaben, um Ihre Spende abzuwickeln. Mehr dazu in unserer{' '}
-              <a href="/datenschutz.html">Datenschutzerklärung</a>.
+              {t.datenschutzVor}{' '}
+              <a href="/datenschutz.html" hrefLang="de">{t.datenschutzLink}</a>{t.datenschutzNach}
             </p>
             <div className={styles.honeypot} aria-hidden="true">
               <label htmlFor={`${id}-website`}>Website</label>
@@ -382,21 +388,21 @@ export function GeraeteCheck({ abschluss, absenden = false }: { abschluss?: Reac
 
         <div className={styles.nav}>
           {schritt > 0 && !(schritt === ERGEBNIS && absenden && !entwurf) && (
-            <button type="button" className={styles.back} onClick={() => gehe(schritt - 1)}>Zurück</button>
+            <button type="button" className={styles.back} onClick={() => gehe(schritt - 1)}>{t.zurueck}</button>
           )}
-          {schritt < letzterPruefschritt && <button type="submit" className="btn">Weiter</button>}
+          {schritt < letzterPruefschritt && <button type="submit" className="btn">{t.weiter}</button>}
           {schritt === ERGEBNIS && !absenden && (
-            <button type="submit" className="btn" disabled={r.ergebnis === 'nichtGeeignet'}>Gerät zur Liste hinzufügen</button>
+            <button type="submit" className="btn" disabled={r.ergebnis === 'nichtGeeignet'}>{t.zurListe}</button>
           )}
           {schritt === ERGEBNIS && absenden && (
             <>
-              <button type="button" className={styles.back} onClick={neuesGeraet} disabled={anzahlNachUebernahme >= MAX_GERAETE}>Weiteres Gerät erfassen</button>
-              <button type="submit" className="btn" disabled={anzahlNachUebernahme === 0}>Weiter zu Kontakt</button>
+              <button type="button" className={styles.back} onClick={neuesGeraet} disabled={anzahlNachUebernahme >= MAX_GERAETE}>{t.weiteresErfassen}</button>
+              <button type="submit" className="btn" disabled={anzahlNachUebernahme === 0}>{t.weiterKontakt}</button>
             </>
           )}
-          {schritt === KONTAKT && <button type="submit" className="btn">Weiter</button>}
+          {schritt === KONTAKT && <button type="submit" className="btn">{t.weiter}</button>}
           {schritt === ABSENDEN && (
-            <button type="submit" className="btn" disabled={sendet || liste.length === 0}>{sendet ? 'Wird gesendet …' : 'Anfrage absenden'}</button>
+            <button type="submit" className="btn" disabled={sendet || liste.length === 0}>{sendet ? t.wirdGesendet : t.senden}</button>
           )}
         </div>
 

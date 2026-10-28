@@ -6,6 +6,7 @@ import { ladeSpendenListe } from '@/lib/admin/daten';
 import { geraeteText, statusText } from '@/lib/admin/anzeige';
 import { gatePage } from '@/lib/page-gate';
 import { pageTitle } from '@/lib/sitemap';
+import Link from 'next/link';
 import { abmelden } from './actions';
 import styles from './admin.module.css';
 
@@ -52,6 +53,7 @@ export default async function AdminPage() {
             </tbody>
           </table>
         )}
+        <p className={styles.linkzeile}><Link href="/admin/profil">Mein Profil (Passwort, Zwei-Faktor)</Link></p>
         <form action={abmelden}>
           <button type="submit" className="btn">Abmelden</button>
         </form>

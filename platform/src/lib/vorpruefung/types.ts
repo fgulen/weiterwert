@@ -15,7 +15,14 @@ export type GeraetEingabe = {
 
 export type Ergebnis = 'geeignet' | 'angaben' | 'manuell' | 'nichtGeeignet';
 
-export type Pruefergebnis = { ergebnis: Ergebnis; gruende: string[]; regelVersion: string };
+/** Stable names of the reasons, so the page can show them in the visitor's language. */
+export type GrundCode =
+  | 'akkuGeblaeht' | 'leasing' | 'startetNicht' | 'chromeAlt' | 'alterLaptop' | 'alterAndere' | 'alter10'
+  | 'displaySchaden' | 'akkuSchwach' | 'sperrenKonto' | 'sperrenFirma' | 'ram4' | 'typUnbekannt' | 'alterUnbekannt'
+  | 'startetUnbekannt' | 'displayUnbekannt' | 'akkuUnbekannt' | 'sperrenUnbekannt' | 'eigentumUnbekannt';
+
+/** `gruende` are the German texts (stored and mailed to staff); `codes` are the same reasons for the page. */
+export type Pruefergebnis = { ergebnis: Ergebnis; gruende: string[]; codes: GrundCode[]; regelVersion: string };
 
 export const ERGEBNIS_TEXT: Record<Ergebnis, string> = {
   geeignet: 'Vorläufig geeignet',

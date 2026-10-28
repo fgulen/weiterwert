@@ -1,20 +1,23 @@
 import type { Metadata } from 'next';
 import { FeatureGate } from '@/components/FeatureGate';
+import { aktuelleSprache } from '@/lib/i18n/server';
+import { SEITEN } from '@/lib/i18n/seiten';
 import { gatePage } from '@/lib/page-gate';
-import { pageTitle } from '@/lib/sitemap';
 
-const TITLE = pageTitle('/geraetepartnerschaft');
-export const metadata: Metadata = { title: TITLE };
+export async function generateMetadata(): Promise<Metadata> {
+  const { lang } = await aktuelleSprache();
+  return { title: SEITEN[lang].partner.titel };
+}
 
-export default function GeraetepartnerschaftPage() {
+export default async function GeraetepartnerschaftPage() {
+  const { lang } = await aktuelleSprache();
+  const t = SEITEN[lang].partner;
   gatePage('geraetepartnerschaft');
   return (
     <>
-      <h1>{TITLE}</h1>
+      <h1>{t.titel}</h1>
       <FeatureGate feature="geraetepartnerschaft">
-        <p className="lead">
-          Für Unternehmen und Organisationen, die regelmäßig Geräte abgeben möchten. Jede Lieferung prüfen wir einzeln; eine automatische Annahme gibt es nicht.
-        </p>
+        <p className="lead">{t.lead}</p>
       </FeatureGate>
     </>
   );

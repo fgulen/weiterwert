@@ -46,6 +46,6 @@ describe('sendeAnfrage (production without key)', () => {
     vi.stubEnv('NEXT_PUBLIC_APP_ENV', 'production');
     vi.stubEnv('SUPABASE_SECRET_KEY', '');
     const r = await sendeAnfrage(anfrage('11111111-2222-4333-8444-999999999999'));
-    expect(r).toEqual({ ok: false, fehler: expect.stringContaining('weiterwert@gmail.com') });
+    expect(r).toEqual({ ok: false, fehler: expect.stringContaining('weiterwert@gmail.com'), code: 'technik' });
   });
 });

@@ -47,3 +47,5 @@ Jede Leseaktion auf Anfragen und Dokumente sowie jede Änderung wird protokollie
 
 - Der Supabase-Zugriffsschlüssel, der für diese Einrichtung verwendet wurde, sollte nach Abschluss widerrufen werden.
 - Testpasswörter nicht im Repo speichern; Passwort-Manager verwenden.
+
+Stand 2026-10-28: Profilseite /admin/profil gebaut (Passwort ändern, TOTP einrichten/entfernen, serverseitig). MFA ist weiterhin NICHT Pflicht; Proxy und Login unverändert.

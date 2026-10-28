@@ -1,32 +1,37 @@
 import type { Metadata } from 'next';
-import { FUER_ALLE_GERAETE, KRITERIEN, KRITERIEN_VERSION } from '@/lib/annahmekriterien';
-import { pageTitle } from '@/lib/sitemap';
+import { KRITERIEN_VERSION } from '@/lib/annahmekriterien';
+import { KRITERIEN_TEXTE } from '@/lib/i18n/kriterien';
+import { aktuelleSprache } from '@/lib/i18n/server';
+import { SEITEN } from '@/lib/i18n/seiten';
 import styles from './kriterien.module.css';
 
-const TITLE = pageTitle('/annahmekriterien');
-export const metadata: Metadata = { title: TITLE };
+export async function generateMetadata(): Promise<Metadata> {
+  const { lang } = await aktuelleSprache();
+  return { title: SEITEN[lang].annahme.titel };
+}
 
-export default function AnnahmekriterienPage() {
+export default async function AnnahmekriterienPage() {
+  const { lang } = await aktuelleSprache();
+  const t = SEITEN[lang].annahme;
+  const k = KRITERIEN_TEXTE[lang];
   return (
     <>
-      <h1>{TITLE}</h1>
-      <p><span className={styles.version}>Entwurf {KRITERIEN_VERSION}</span></p>
-      <p className="lead">
-        Diese Werte sind Ziele, keine starren Grenzen. Die Vorprüfung ist eine Einschätzung; endgültig entscheiden wir erst nach der technischen Prüfung des Geräts.
-      </p>
-      <h2>Für alle Geräte</h2>
-      <ul>{FUER_ALLE_GERAETE.map((t) => <li key={t}>{t}</li>)}</ul>
-      {KRITERIEN.map((tab) => (
+      <h1>{t.titel}</h1>
+      <p><span className={styles.version}>{t.entwurf} {KRITERIEN_VERSION}</span></p>
+      <p className="lead">{t.lead}</p>
+      <h2>{t.fuerAlle}</h2>
+      <ul>{k.fuerAlle.map((x) => <li key={x}>{x}</li>)}</ul>
+      {k.tabellen.map((tab) => (
         <section key={tab.geraet}>
           <h2>{tab.geraet}</h2>
           <div className={styles.scroll}>
             <table className={styles.table}>
               <thead>
                 <tr>
-                  <th scope="col">Kriterium</th>
-                  <th scope="col">Vorläufig geeignet</th>
-                  <th scope="col">Manuelle Prüfung</th>
-                  <th scope="col">Voraussichtlich nicht geeignet</th>
+                  <th scope="col">{t.kriterium}</th>
+                  <th scope="col">{t.geeignet}</th>
+                  <th scope="col">{t.pruefung}</th>
+                  <th scope="col">{t.nichtGeeignet}</th>
                 </tr>
               </thead>
               <tbody>

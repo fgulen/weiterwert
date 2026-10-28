@@ -1,12 +1,12 @@
 'use server';
 
 import { createHash } from 'node:crypto';
-import { ERKLAERUNGEN, leseAnfrage } from '@/lib/absenden/anfrage';
+import { ERKLAERUNGEN, leseAnfrage, type FehlerCode } from '@/lib/absenden/anfrage';
 import { mailKonfiguriert, mailText, sendeMail } from '@/lib/absenden/mail';
 import { waehleSpeicher } from '@/lib/absenden/speicher';
 import { pruefe } from '@/lib/vorpruefung/pruefe';
 
-export type Antwort = { ok: true; vorgangsnummer: string } | { ok: false; fehler: string };
+export type Antwort = { ok: true; vorgangsnummer: string } | { ok: false; fehler: string; code: FehlerCode };
 
 const ERKLAERUNG_HASH = createHash('sha256').update(`${ERKLAERUNGEN.eigentum}\n${ERKLAERUNGEN.daten}`).digest('hex');
 const TECHNIK = 'Ihre Anfrage konnte gerade nicht gespeichert werden. Bitte versuchen Sie es später erneut oder schreiben Sie uns an weiterwert@gmail.com.';
@@ -14,17 +14,17 @@ const TECHNIK = 'Ihre Anfrage konnte gerade nicht gespeichert werden. Bitte vers
 /** Public endpoint: everything from the browser is re-checked here. */
 export async function sendeAnfrage(eingabe: unknown): Promise<Antwort> {
   const speicher = waehleSpeicher();
-  if (!speicher) return { ok: false, fehler: TECHNIK };
+  if (!speicher) return { ok: false, fehler: TECHNIK, code: 'technik' };
 
   const gelesen = leseAnfrage(eingabe);
   if (!gelesen.ok) return gelesen;
   const a = gelesen.anfrage;
-  if (a.website) return { ok: false, fehler: TECHNIK };
+  if (a.website) return { ok: false, fehler: TECHNIK, code: 'technik' };
 
   // Same rules as in the browser; a device rated not suitable is never accepted.
   const geraete = a.geraete.map((g) => ({ eingabe: g, r: pruefe(g) }));
   if (geraete.some((g) => g.r.ergebnis === 'nichtGeeignet')) {
-    return { ok: false, fehler: 'Mindestens ein Gerät ist nach unseren Kriterien nicht geeignet. Bitte entfernen Sie es aus der Liste.' };
+    return { ok: false, fehler: 'Mindestens ein Gerät ist nach unseren Kriterien nicht geeignet. Bitte entfernen Sie es aus der Liste.', code: 'nichtGeeignet' };
   }
 
   try {
@@ -56,6 +56,6 @@ export async function sendeAnfrage(eingabe: unknown): Promise<Antwort> {
     return { ok: true, vorgangsnummer: gespeichert.vorgangsnummer };
   } catch (e) {
     console.error('Speichern fehlgeschlagen', e);
-    return { ok: false, fehler: TECHNIK };
+    return { ok: false, fehler: TECHNIK, code: 'technik' };
   }
 }
