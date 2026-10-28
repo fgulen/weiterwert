@@ -1,14 +1,16 @@
 import Link from "next/link";
+import { aktuelleSprache } from "@/lib/i18n/server";
+import { pfadFuer } from "@/lib/i18n/sprache";
+import { UI } from "@/lib/i18n/ui";
 
-export default function Home() {
+export default async function Home() {
+  const { lang } = await aktuelleSprache();
+  const t = UI[lang];
   return (
     <>
-      <h1>Technik weitergeben. Chancen eröffnen.</h1>
-      <p className="lead">
-        Gebrauchte Laptops und Tablets werden geprüft, sicher gelöscht und an Schüler:innen weitergegeben.
-        Prüfen Sie in wenigen Schritten, ob Ihr Gerät passt.
-      </p>
-      <p><Link className="btn" href="/spenden">Laptop oder Tablet spenden</Link></p>
+      <h1>{t.homeH1}</h1>
+      <p className="lead">{t.homeLead}</p>
+      <p><Link className="btn" href={pfadFuer(lang, "/spenden")}>{t.homeCta}</Link></p>
     </>
   );
 }

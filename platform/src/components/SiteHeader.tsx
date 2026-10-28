@@ -1,16 +1,21 @@
 import Link from "next/link";
 import styles from "./SiteHeader.module.css";
+import { SpracheWahl } from "./SpracheWahl";
+import { aktuelleSprache } from "@/lib/i18n/server";
+import { SPRACHEN, pfadFuer, type Lang } from "@/lib/i18n/sprache";
+import { UI } from "@/lib/i18n/ui";
 
 /** The logo always leads to the main homepage, which is the single entry point. */
 export const LOGO_HREF = "https://weiterwert.de/";
 
-// Only the two main actions, styled like the homepage buttons. Further pages live in the footer.
-const NAV = [
-  { href: "/spenden", label: "Gerät spenden", primary: true },
-  { href: "/beantragen", label: "Gerät beantragen", primary: false },
-];
-
-export function SiteHeader() {
+export async function SiteHeader() {
+  const { lang, rest } = await aktuelleSprache();
+  const t = UI[lang];
+  const nav = [
+    { href: "/spenden", label: t.navSpenden, primary: true },
+    { href: "/beantragen", label: t.navBeantragen, primary: false },
+  ];
+  const zielPfade = Object.fromEntries(SPRACHEN.map((l: Lang) => [l, pfadFuer(l, rest)])) as Record<Lang, string>;
   return (
     <header className={styles.header}>
       <div className={`container ${styles.inner}`}>
@@ -19,9 +24,10 @@ export function SiteHeader() {
           <span>Weiter<span className={styles.accent}>Wert</span></span>
         </a>
         <nav aria-label="Hauptmenü" className={styles.nav}>
-          {NAV.map((n) => (
-            <Link key={n.href} href={n.href} className={n.primary ? styles.primary : styles.secondary}>{n.label}</Link>
+          {nav.map((n) => (
+            <Link key={n.href} href={pfadFuer(lang, n.href)} className={n.primary ? styles.primary : styles.secondary}>{n.label}</Link>
           ))}
+          <SpracheWahl lang={lang} zielPfade={zielPfade} label={t.sprachwahl} />
         </nav>
       </div>
     </header>

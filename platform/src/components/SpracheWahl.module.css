@@ -1,0 +1,11 @@
+/* Same size as the homepage language select: 44 px high, 0.95rem text. */
+.select{
+  appearance:none;-webkit-appearance:none;
+  background-color:var(--surface);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6' fill='none' stroke='%2355666F' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 11px center;background-size:9px 6px;
+  border:1px solid var(--line);border-radius:999px;
+  padding:7px 30px 7px 16px;min-height:44px;
+  font:inherit;font-weight:700;font-size:0.95rem;color:var(--ink);cursor:pointer;
+}
+.select:hover{border-color:var(--muted);}
