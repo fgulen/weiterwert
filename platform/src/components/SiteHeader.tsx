@@ -20,11 +20,13 @@ export async function SiteHeader() {
           <img src="/logo-mark.svg" alt="" width={48} height={48} />
           <span>Weiter<span className={styles.accent}>Wert</span></span>
         </a>
+        <div className={styles.lang}>
+          <SpracheWahl lang={lang} zielPfade={zielPfade} label={t.sprachwahl} />
+        </div>
         <nav aria-label="Hauptmenü" className={styles.nav}>
           {nav.map((n) => (
             <Link key={n.href} href={pfadFuer(lang, n.href)} className={n.primary ? styles.primary : styles.secondary}>{n.label}</Link>
           ))}
-          <SpracheWahl lang={lang} zielPfade={zielPfade} label={t.sprachwahl} />
         </nav>
       </div>
     </header>

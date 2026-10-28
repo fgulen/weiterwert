@@ -494,3 +494,9 @@ html{scroll-behavior:auto;}
 /* Breakout: the homepage is full width; the layout wraps pages in .container. */
 main:has(> .container > .home){overflow-x:clip;}
 .home{width:100vw;position:relative;left:50%;margin-left:-50vw;}
+
+/* Animation frame: same look as the static hero drawing (background, 1px border, rounded, brand strip on top).
+   The strip is an overlay, not a border, so the scaled stage is not clipped. */
+.home .ia-frame{background:var(--surface-alt);border:1px solid var(--line);border-radius:var(--radius-lg);}
+.home .ia-frame::before{content:"";position:absolute;top:0;left:0;right:0;height:5px;z-index:3;pointer-events:none;
+  background:linear-gradient(90deg,var(--brand-navy) 0%,var(--brand-green) 33%,var(--brand-blue) 66%,var(--brand-sun) 100%);}
