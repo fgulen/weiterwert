@@ -145,3 +145,33 @@
 3. Branch'i `master`'a alıp yayınlamak için ayrı onay.
 
 **Not (2026-10-28):** Bugünkü iş tamamlandı. Sonraki tüm işler `feature/beantragen-mehrsprachig` dalında yapılacak; `master` yalnızca Fatih onaylayınca güncellenir.
+
+## 2026-10-29 (kapanış)
+
+**Canlıda (master, Git bağlı `weiterwert` projesi):**
+- weiterwert.de artık platform (`weiterwert` projesi). Eski statik `techverband` projesi silindi; `spenden`/`test` alt alanları aynı projede.
+- Ana sayfa platformda (DE/TR/EN), animasyon çalışıyor. Yasal sayfalar (Impressum, Datenschutz, Barrierefreiheit) `platform/public` altında statik dosyalar olarak.
+- Admin (`/admin/login`, `/admin`) production'da **geçici olarak açık** (`admin` = `aktiv`, commit ed931c6). Test bitince gizlenecek.
+- Son canlı commit `1d54b1c` (`.vercelignore` düzeltmesi; Git build'i bu yüzden hata vermişti).
+
+**Commit'li, canlıya gönderilmedi (master'a push bekliyor):**
+- `37ffad0` parola göz simgesi, `85bd8be`, `3d1672c` (yerel derleme klasörü git dışı).
+- `07056e8` mobil başlık: dil seçici logonun karşısında, butonlar altta; animasyon çerçevesi hero ile aynı.
+- `2ba2a62` buton boşluğu, alt bilgide "Team-Anmeldung / Ekip girişi / Team sign-in", canlı banner "Beta – …".
+- Push, `weiterwert.de`'yi hemen günceller. Önce onay gerekiyor.
+
+**Admin (MVP, salt okuma):** giriş e-posta+parola, token HTTP-only çerezle `/admin` yolunda, her istekte Supabase'de doğrulama, rol `app_metadata.role` (admin / mitarbeiter). Liste: vorgang, durum, tarih, cihaz türü; ad/e-posta/adres yok. Test hesapları `admin@weiterwert.de` (admin) ve `mitarbeiter@weiterwert.com` (mitarbeiter) Supabase'de; kayıt kapalı (test: 422). MFA (TOTP) projede açık; zorunlu kılma plan: `docs/admin-mfa-plan.md`.
+
+**Güvenlik kontrolü (kapanış, manuel):** Commit geçmişinde `sbp_` (erişim anahtarı), test parolaları ve servis anahtarı yok (git grep ile doğrulandı). Bulunan: `platform/playwright.config.ts` içinde test ortamı temel-kimlik parolası `e2e-geheim` (yalnız test sunucusu; üretim değil). Admin girişinde uygulama düzeyinde hız sınırı yok; Supabase'in kendi sınırına güveniliyor (açık madde). `dangerouslySetInnerHTML` üç yerde; hepsi sabit şablon veya kaçışlı sözlük değerleri. `/code-review` skill'i bu oturumda çalıştırılmadı (maliyet); yapılan tam kapsamlı kod incelemesi değil, güvenlik odaklı elle kontrol.
+
+**Testler (son durum, 2ba2a62):** Vitest 75/75, Playwright 46/46, `tsc` temiz, statik 20/20. Mobil ölçüm: 320, 390, 412, 1280 px; DE/TR/EN/Spenden; yatay taşma yok.
+
+**Açık işler (Fatih):**
+1. Push onayı: `master`'a gönderilsin mi (weiterwert.de canlı güncellenir)?
+2. Admin production'da kapatılacak mı, yoksa MFA zorunlu olana kadar açık mı kalacak? (Şu an açık.)
+3. Admin test parolalarını yenile: parolalar sohbette ve yerel girişte kullanıldı.
+4. Banner metni: "Beta" (önerilen) mi, "Beta-Version" mi?
+5. Ana sayfaya ayrıca giriş düğmesi istenirse eklenecek (şu an sadece alt bilgide).
+6. Vercel AVV / Supabase DPA ve Datenschutz boşlukları (önceki oturumdan) hâlâ açık.
+
+**Sonraki adım:** Onay gelince push + canlı kontrol; sonra admin'i kapatma/MFA kararı.
