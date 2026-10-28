@@ -1,7 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { SITEMAP } from '../src/lib/sitemap';
 
-for (const p of SITEMAP.filter((x) => x.path !== '/')) {
+// /admin redirects to the sign-in page; it is covered in admin.test-env.spec.ts.
+for (const p of SITEMAP.filter((x) => x.path !== '/' && x.path !== '/admin')) {
   test(`${p.path} renders with its title`, async ({ page }) => {
     const res = await page.goto(p.path);
     expect(res?.status()).toBe(200);
