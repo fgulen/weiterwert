@@ -13,9 +13,9 @@ export async function SiteFooter() {
     { href: "/geraetepartnerschaft", label: t.partner },
   ];
   const LEGAL = [
-    { href: "https://weiterwert.de/impressum.html", label: t.impressum },
-    { href: "https://weiterwert.de/datenschutz.html", label: t.datenschutz },
-    { href: "https://weiterwert.de/barrierefreiheit.html", label: t.barrierefrei },
+    { href: "/impressum.html", label: t.impressum },
+    { href: "/datenschutz.html", label: t.datenschutz },
+    { href: "/barrierefreiheit.html", label: t.barrierefrei },
   ];
   return (
     <footer className={styles.footer}>

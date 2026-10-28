@@ -5,9 +5,6 @@ import { aktuelleSprache } from "@/lib/i18n/server";
 import { SPRACHEN, pfadFuer, type Lang } from "@/lib/i18n/sprache";
 import { UI } from "@/lib/i18n/ui";
 
-/** The logo always leads to the main homepage, which is the single entry point. */
-export const LOGO_HREF = "https://weiterwert.de/";
-
 export async function SiteHeader() {
   const { lang, rest } = await aktuelleSprache();
   const t = UI[lang];
@@ -19,7 +16,7 @@ export async function SiteHeader() {
   return (
     <header className={styles.header}>
       <div className={`container ${styles.inner}`}>
-        <a href={LOGO_HREF} className={styles.brand}>
+        <a href={pfadFuer(lang, "/")} className={styles.brand}>
           <img src="/logo-mark.svg" alt="" width={48} height={48} />
           <span>Weiter<span className={styles.accent}>Wert</span></span>
         </a>

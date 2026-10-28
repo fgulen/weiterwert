@@ -370,7 +370,7 @@ export function GeraeteCheck({ abschluss, absenden = false }: { abschluss?: Reac
             </fieldset>
             <p className={styles.hint}>
               Wir verarbeiten Ihre Angaben, um Ihre Spende abzuwickeln. Mehr dazu in unserer{' '}
-              <a href="https://weiterwert.de/datenschutz.html">Datenschutzerklärung</a>.
+              <a href="/datenschutz.html">Datenschutzerklärung</a>.
             </p>
             <div className={styles.honeypot} aria-hidden="true">
               <label htmlFor={`${id}-website`}>Website</label>

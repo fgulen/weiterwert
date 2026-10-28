@@ -122,7 +122,7 @@ export function homeHtml(lang: Lang): string {
               <img class="ia-logo ia-pop" style="--d:19.2s" src="/logo-mark.svg" alt="" width="220" height="220">
               <p class="ia-h2 ia-in" style="--d:19.6s;top:430px">${esc(H.approachH2)}</p>
               <div class="ia-ctawrap ia-in" style="--d:20.8s"><span class="ia-cta-text">${esc(H.heroCtaPrimary)}</span></div>
-              <div class="ia-url ia-in" style="--d:21.8s">spenden.weiterwert.de/spenden</div>
+              <div class="ia-url ia-in" style="--d:21.8s">weiterwert.de/spenden</div>
             </div>
 
           </div>
@@ -184,7 +184,7 @@ export function homeHtml(lang: Lang): string {
               <img class="ia-logo ia-pop" style="--d:19.2s;top:470px" src="/logo-mark.svg" alt="" width="260" height="260">
               <p class="ia-h2 ia-in" style="--d:19.6s;top:820px">${esc(H.approachH2)}</p>
               <div class="ia-ctawrap ia-in" style="--d:20.8s;top:1100px"><span class="ia-cta-text">${esc(H.heroCtaPrimary)}</span></div>
-              <div class="ia-url ia-in" style="--d:21.8s;top:1250px">spenden.weiterwert.de/spenden</div>
+              <div class="ia-url ia-in" style="--d:21.8s;top:1250px">weiterwert.de/spenden</div>
             </div>
 
           </div>
