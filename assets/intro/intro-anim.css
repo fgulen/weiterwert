@@ -72,3 +72,31 @@
 .ia-ctawrap{position:absolute;left:0;right:0;top:760px;text-align:center;}
 .ia-cta-text{font-weight:800;font-size:46px;color:var(--brand-navy);}
 .ia-url{position:absolute;left:0;right:0;top:920px;text-align:center;font-weight:600;font-size:32px;color:var(--muted);}
+
+/* Phones (below 760 px) get a portrait version of the same 24 s animation, designed at 1080x1920.
+   Without reduced motion it replaces the static hero drawing; reduced-motion visitors keep the drawing. */
+.ia-wrap-v{display:none;position:relative;margin:24px 0 0;}
+@media (max-width:759px) and (prefers-reduced-motion:no-preference){
+  .hero-art{display:none;}
+  .ia-wrap-v{display:block;}
+}
+.ia-wrap-v .ia-frame{aspect-ratio:9/16;}
+.ia-wrap-v .ia-controls{position:static;justify-content:flex-end;margin-top:12px;}
+.ia-stage-v{width:1080px;height:1920px;}
+.ia-stage-v .ia-h2{font-size:88px;padding:0 60px;box-sizing:border-box;}
+.ia-stage-v .ia-label{width:520px;margin-left:0;text-align:left;font-size:48px;}
+.ia-stage-v .ia-eyebrow{font-size:44px;}
+.ia-stage-v .ia-body{width:900px;font-size:52px;}
+.ia-stage-v .ia-card{width:960px;height:300px;padding:44px 56px;border-top-width:12px;}
+.ia-stage-v .ia-tag{font-size:40px;}
+.ia-stage-v .ia-name{font-size:58px;}
+.ia-stage-v .ia-stepname{font-size:52px;}
+.ia-stage-v .ia-num{width:150px;height:150px;font-size:70px;margin:0;}
+.ia-stage-v .ia-cta-text{font-size:64px;}
+.ia-stage-v .ia-url{font-size:50px;}
+.ia-stage-v .ia-logo{width:260px;height:260px;left:0;right:0;margin:0 auto;}
+.ia-stage-v .ia-arrow-v{width:6px;height:150px;left:297px;}
+.ia-draw-v{transform:scaleY(0);transform-origin:center top;animation:ia-draw-v .7s ease-out var(--d) both;}
+@keyframes ia-draw-v{to{transform:scaleY(1)}}
+.ia-step-v{position:absolute;left:0;right:0;height:150px;display:flex;align-items:center;gap:56px;padding-left:240px;box-sizing:border-box;}
+.ia-rail-v{position:absolute;left:314px;top:480px;width:6px;height:960px;background:var(--line);}

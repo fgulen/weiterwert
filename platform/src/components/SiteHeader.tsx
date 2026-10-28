@@ -15,7 +15,7 @@ export function SiteHeader() {
     <header className={styles.header}>
       <div className={`container ${styles.inner}`}>
         <a href={LOGO_HREF} className={styles.brand}>
-          <img src="/logo-mark.svg" alt="" width={44} height={44} />
+          <img src="/logo-mark.svg" alt="" width={48} height={48} />
           <span>Weiter<span className={styles.accent}>Wert</span></span>
         </a>
         <nav aria-label="Hauptmenü" className={styles.nav}>
