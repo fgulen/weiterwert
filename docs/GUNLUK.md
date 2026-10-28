@@ -6,7 +6,7 @@
 - [ ] Admin test parolalarını yenile (Supabase → Authentication → Users → kullanıcı → Send password recovery; mail adresine erişim gerekir).
 - [ ] MFA (TOTP) zorunlu hale getir: `docs/admin-mfa-plan.md`.
 - [ ] Vercel AVV / Supabase DPA ve Datenschutz boşlukları.
-- [ ] Ana sayfaya giriş düğmesi istenirse eklenecek (şu an alt bilgide "Team-Anmeldung").
+- [x] Ana menüde "Team-Anmeldung" eklendi (668db89).
 
 
 ## 2026-10-22
@@ -184,3 +184,23 @@
 6. Vercel AVV / Supabase DPA ve Datenschutz boşlukları (önceki oturumdan) hâlâ açık.
 
 **Sonraki adım:** Onay gelince push + canlı kontrol; sonra admin'i kapatma/MFA kararı.
+
+## 2026-10-29 (ikinci kapanış)
+
+**Canlıda (`master` 668db89, derleme tamamlandı):**
+- Banner (live): "Die Seite befindet sich derzeit in der Testphase." (TR "Site şu an test aşamasında.", EN "The site is currently in its test phase."). Fatih seçti (a).
+- Ana menüde "Team-Anmeldung" (TR "Ekip girişi", EN "Team sign-in") → `/admin/login`. Mobilde tam genişlik, masaüstünde sakin kenarlıklı düğme. Alt bilgideki bağlantı da duruyor.
+
+**Commit'li, canlıda (önceki):** `7fe4912` ana sayfa stil dosyası kök düzende (buton titremesi giderildi; canlıda doğrulanmadı).
+
+**Kontrol:** Statik 20/20, Vitest 75/75, Playwright 46/46, `tsc` temiz. Başlık 320/390/412/1280 px'te taşmıyor. Canlı: banner ve menü düğmesi `weiterwert.de` HTML'inde görünüyor.
+
+**Güvenlik kontrolü (ikinci):** `git grep` ile HEAD'de gerçek erişim anahtarı, test parolaları ve servis anahtarı yok (yalnızca bu günlükteki açıklama metni `sbp_` kalıbını içeriyor). Yeni giriş bağlantısı düz `href`; kimlik doğrulama değişmedi. `/code-review` skill'i çalıştırılmadı.
+
+**Açık işler (Fatih):**
+1. Admin production'da açık (geçici). Kapatma/MFA kararı bekleniyor (yukarıdaki hatırlatmalara bak).
+2. Test parolalarını yenile (Supabase → Authentication → Users → Send password recovery).
+3. Vercel AVV / Supabase DPA ve Datenschutz boşlukları.
+4. Titreme düzeltmesini canlıda gözle kontrol et (buton geçişleri).
+
+**Sonraki adım:** Admin kararı ve parola yenilemesi; ardından MFA zorunlu hale getirme planı.
