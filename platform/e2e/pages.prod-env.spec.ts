@@ -1,8 +1,9 @@
 import { test, expect } from '@playwright/test';
 
-test('/admin does not exist in production', async ({ page }) => {
+// TEMPORARY (live check of the admin sign-in): /admin is open in production. Set back to 404 after the check.
+test('/admin sign-in is served in production (temporary)', async ({ page }) => {
   const res = await page.goto('/admin');
-  expect(res?.status()).toBe(404);
+  expect(res?.status()).toBe(200);
 });
 
 // Without the server-side key, production ends at the result and points to e-mail.

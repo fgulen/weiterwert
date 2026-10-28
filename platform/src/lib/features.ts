@@ -24,7 +24,7 @@ export const FEATURES: Record<FeatureKey, { status: FeatureStatus; label: string
   geraetBeantragen: { status: 'demnaechst', label: 'Gerät beantragen' },
   freiwilligTransport: { status: 'demnaechst', label: 'Freiwillig transportieren' },
   spendenbeleg: { status: 'verborgen', label: 'Spendenbeleg' },
-  admin: { status: 'verborgen', label: 'Verwaltung' },
+  admin: { status: 'aktiv', label: 'Verwaltung' }, // TEMPORARY: live check of sign-in and list; set back to 'verborgen' afterwards
 };
 
 export function resolveVisibility(status: FeatureStatus, env: AppEnv): Visibility {

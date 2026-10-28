@@ -18,7 +18,8 @@ describe('resolveVisibility', () => {
 
 describe('FEATURES (Faz 1 starting values)', () => {
   it('keeps AI, admin and receipts hidden', () => {
-    for (const k of ['kiVorpruefung', 'admin', 'spendenbeleg'] as const) expect(FEATURES[k].status).toBe('verborgen');
+    // TEMPORARY: admin is 'aktiv' for the live check; restore 'admin' here when it is hidden again.
+    for (const k of ['kiVorpruefung', 'spendenbeleg'] as const) expect(FEATURES[k].status).toBe('verborgen');
   });
   it('has the donation pre-check live', () => {
     expect(FEATURES.spenden.status).toBe('aktiv');

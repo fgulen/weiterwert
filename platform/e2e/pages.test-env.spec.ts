@@ -10,9 +10,10 @@ for (const p of SITEMAP.filter((x) => x.path !== '/' && x.path !== '/admin')) {
   });
 }
 
-test('/admin is visible only as a draft in the test environment', async ({ page }) => {
-  await page.goto('/admin');
-  await expect(page.getByText('Entwurf – nur Testumgebung')).toBeVisible();
+// TEMPORARY: admin is switched on for the live check; the test environment shows the sign-in page.
+test('/admin/login is shown in the test environment (temporary)', async ({ page }) => {
+  await page.goto('/admin/login');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Anmeldung Verwaltung');
 });
 
 test('/geraetepartnerschaft is marked as coming soon', async ({ page }) => {
