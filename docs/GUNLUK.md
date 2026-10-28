@@ -1,5 +1,14 @@
 # WeiterWert – çalışma günlüğü
 
+## HATIRLATMALAR (en üstte, 2026-10-29)
+
+- [ ] Admin production'da açık (geçici). Test bitince `features.ts` içinde `admin` → `verborgen`, üç "TEMPORARY" testi geri al, yeniden yayınla.
+- [ ] Admin test parolalarını yenile (Supabase → Authentication → Users → kullanıcı → Send password recovery; mail adresine erişim gerekir).
+- [ ] MFA (TOTP) zorunlu hale getir: `docs/admin-mfa-plan.md`.
+- [ ] Vercel AVV / Supabase DPA ve Datenschutz boşlukları.
+- [ ] Ana sayfaya giriş düğmesi istenirse eklenecek (şu an alt bilgide "Team-Anmeldung").
+
+
 ## 2026-10-22
 
 **Planlama**
