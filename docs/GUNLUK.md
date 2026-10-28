@@ -215,3 +215,18 @@
 
 **Kapanış (2026-10-28):** Statik 20/20, tsc temiz, Vitest 113/113 (18 dosya), Playwright 69/69. Güvenlik bakışı: `konto.ts` ve `profil/actions.ts` elle okundu; her işlem token ve rolü Supabase'de yeniden doğruluyor, service key tarayıcıya gitmiyor. Bulgu yok; bilinen açıklar: parola değişince oturumlar kapanmıyor, uygulama düzeyinde hız sınırı yok. `/code-review` skill'i bu kapanışta çalıştırılmadı (haftalık kullanım sınırı). Parola kuralı (12+, büyük/küçük/rakam) henüz kodda yok; commit mesajında açık.
 Commit yerelde; push ve deploy yok. `tsconfig.json`, `.claude/`, `.next-local*` ve iki mp4 bilerek commit'e girmedi.
+
+## 2026-10-28 (canlı deploy ve Gerät beantragen kararı)
+
+**Deploy:** spenden.weiterwert.de (Vercel `weiterwert`, Root Directory `platform` → `.`, Fatih panelden değiştirdi) `vercel deploy --prod` ile yayınlandı; hedef production, `/`, `/tr`, `/en`, `/spenden`, `/annahmekriterien`, `/admin/login` 200. Canlıda mobil kontrol ve gerçek Supabase ile profil denemesi yapılmadı.
+
+**Git:** `feature/beantragen-mehrsprachig` origin'e push edildi (commit `d57a550`). `master` ve weiterwert.de değişmedi.
+
+**Kararlar:**
+- Vercel proje ayarı (Root Directory) değişikliği otomatik güvenlik kontrolüne takıldı; Claude bunu API ya da tarayıcıdan denemedi, Fatih elle yaptı. Kalıcı izin kuralı eklenmedi.
+- "Gerät beantragen" formu açılmadı. Üretimde kayıt yeri yok (`waehleAntragSpeicher()` yalnız test ortamında dönüyor), belge yükleme yapılmadı, cihaz sınırı (kodda 10) ve Kurum/Privat kararı açık. Canlıda bekleme sayfası kalıyor.
+
+**Açık işler (Fatih):**
+1. Gerät beantragen için seçenek: (1) bekleme sayfası kalsın (önerilen), (2) belgesiz ön başvuru, (3) belge yüklemeli tam sürüm. Karar gelmeden kod yazılmaz.
+2. Profil: parola kuralı (12+, büyük/küçük harf, rakam) ve diğer oturumları kapatma henüz uygulanmadı.
+3. Canlı mobil kontrol (320/390/412 px) spenden ve profil için.
