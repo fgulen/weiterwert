@@ -25,7 +25,8 @@ export function pruefe(e: GeraetEingabe): Pruefergebnis {
   if (e.akku === 'schwach') add('manuell', 'akkuSchwach', 'Schwacher Akku: Wir prüfen, ob ein Austausch nötig ist.');
   if (e.sperren === 'konto') add('manuell', 'sperrenKonto', 'Bitte melden Sie alle Konten ab (z. B. Microsoft, Apple-ID, Google) und entfernen Sie Passwörter vor der Übergabe.');
   if (e.sperren === 'firma') add('manuell', 'sperrenFirma', 'Firmen-Verwaltung (z. B. Autopilot, Intune, MDM) muss vor der Übergabe durch Ihre IT entfernt werden.');
-  if (e.ram === '4') add('manuell', 'ram4', '4 GB Arbeitsspeicher: Wir prüfen, ob sich der Speicher aufrüsten lässt.');
+  if (e.ram === '4') add('manuell', 'ram4', '4 bis 6 GB Arbeitsspeicher: Wir prüfen, ob sich der Speicher aufrüsten lässt.');
+  if (e.ram === 'unter4') add('manuell', 'ramNiedrig', 'Weniger als 4 GB Arbeitsspeicher: Wir prüfen, ob das Gerät für die Weitergabe geeignet ist.');
 
   if (e.typ === 'unbekannt') add('angaben', 'typUnbekannt', 'Gerätetyp unbekannt. Das ist kein Problem, wir schauen es uns an.');
   if (e.alter === 'unbekannt') add('angaben', 'alterUnbekannt', 'Alter unbekannt. Eine grobe Schätzung hilft uns weiter.');

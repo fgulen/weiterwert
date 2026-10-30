@@ -60,7 +60,7 @@ const WERTE: { [K in Exclude<keyof GeraetEingabe, 'marke' | 'modell'>]: readonly
   akku: ['ok', 'schwach', 'gebläht', 'unbekannt'],
   sperren: ['keine', 'konto', 'firma', 'unbekannt'],
   eigentum: ['ja', 'leasing', 'unbekannt'],
-  ram: ['8+', '4', 'unbekannt'],
+  ram: ['8+', '4', 'unter4', 'unbekannt'],
 };
 
 const text = (v: unknown, max = MAX_TEXT) => (typeof v === 'string' && v.length <= max ? v : null);

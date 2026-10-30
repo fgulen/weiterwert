@@ -54,7 +54,7 @@ const fragen = (t: CheckTexte): Frage[] => {
     { key: 'akku', schritt: 1, legend: t.qAkku, options: [
       { value: 'ok', label: t.inOrdnung }, { value: 'schwach', label: t.akkuSchwach }, { value: 'gebläht', label: t.akkuGeblaeht }, unbekannt,
     ] },
-    { key: 'ram', schritt: 1, nurLaptop: true, legend: t.qRam, options: [{ value: '8+', label: t.ram8 }, { value: '4', label: t.ram4 }, unbekannt] },
+    { key: 'ram', schritt: 1, nurLaptop: true, legend: t.qRam, options: [{ value: '8+', label: t.ram8 }, { value: '4', label: t.ram4 }, { value: 'unter4', label: t.ramUnter4 }, unbekannt] },
     { key: 'sperren', schritt: 2, legend: t.qSperren, options: [
       { value: 'keine', label: t.sperrenKeine }, { value: 'konto', label: t.sperrenKonto }, { value: 'firma', label: t.sperrenFirma }, unbekannt,
     ] },
@@ -140,6 +140,8 @@ export function GeraeteCheck({ abschluss, absenden = false, lang = 'de' }: { abs
   const schritte = absenden ? schritteAnfrage(t) : SCHRITTE_PRUEFUNG;
   const [art, setArt] = useState<Art>('laptop');
   const [geraet, setGeraet] = useState<GeraetEingabe>(LEER);
+  // Only answers the donor actually gave are shown as selected; unanswered questions still count as "unbekannt".
+  const [beantwortet, setBeantwortet] = useState<Set<FrageKey>>(() => new Set());
   const [schritt, setSchritt] = useState(0);
   const [liste, setListe] = useState<Eintrag[]>([]);
   // False once the current device has been put on the list (e.g. after "Weiter zu Kontakt").
@@ -158,6 +160,16 @@ export function GeraeteCheck({ abschluss, absenden = false, lang = 'de' }: { abs
   const heading = useRef<HTMLHeadingElement>(null);
   const moved = useRef(false);
   const r = pruefe(geraet);
+  // Read-only overview of the donor's answers for the result step; "Ändern" jumps back to the question's step.
+  const zeilen: { key: string; frage: string; antwort: string; schritt: number }[] = [];
+  if (beantwortet.has('typ')) zeilen.push({ key: 'typ', frage: t.geraetetyp, antwort: ART[art].typen.find((o) => o.value === geraet.typ)?.label ?? t.weissNicht, schritt: 0 });
+  if (geraet.marke) zeilen.push({ key: 'marke', frage: t.marke, antwort: geraet.marke, schritt: 0 });
+  if (geraet.modell) zeilen.push({ key: 'modell', frage: t.modellOptional, antwort: geraet.modell, schritt: 0 });
+  for (const f of FRAGEN) {
+    if (f.nurLaptop && art === 'tablet') continue;
+    const o = f.options.find((x) => x.value === geraet[f.key]);
+    zeilen.push({ key: f.key, frage: f.legend, antwort: beantwortet.has(f.key) && o ? o.label : t.keineAngabe, schritt: f.schritt });
+  }
   const set = <K extends keyof GeraetEingabe>(k: K, v: GeraetEingabe[K]) => setGeraet((g) => ({ ...g, [k]: v }));
   const letzterPruefschritt = SCHRITTE_PRUEFUNG.length - 1;
 
@@ -177,12 +189,19 @@ export function GeraeteCheck({ abschluss, absenden = false, lang = 'de' }: { abs
       typ: ART[a].typen.some((t) => t.value === g.typ) ? g.typ : 'unbekannt',
       ram: a === 'tablet' ? 'unbekannt' : g.ram,
     }));
+    setBeantwortet((b) => {
+      const n = new Set(b);
+      if (!ART[a].typen.some((t) => t.value === geraet.typ)) n.delete('typ');
+      if (a === 'tablet') n.delete('ram');
+      return n;
+    });
   };
 
   // Puts the current device on the list unless it is rated not suitable; either way the draft ends.
   const uebernehmeEntwurf = () => {
     if (entwurf && r.ergebnis !== 'nichtGeeignet') setListe((l) => (l.length < MAX_GERAETE ? [...l, { eingabe: geraet, r }] : l));
     setGeraet(LEER);
+    setBeantwortet(new Set());
     setEntwurf(false);
   };
   const neuesGeraet = () => { uebernehmeEntwurf(); setEntwurf(true); gehe(0); };
@@ -223,8 +242,8 @@ export function GeraeteCheck({ abschluss, absenden = false, lang = 'de' }: { abs
         {f.options.map((o) => (
           <label key={o.value} className={styles.opt}>
             <input type="radio" name={`${id}-${f.key}`} value={o.value}
-              checked={geraet[f.key] === o.value}
-              onChange={() => set(f.key, o.value as never)} />
+              checked={beantwortet.has(f.key) && geraet[f.key] === o.value}
+              onChange={() => { set(f.key, o.value as never); setBeantwortet((b) => new Set(b).add(f.key)); }} />
             <span>{o.label}</span>
           </label>
         ))}
@@ -268,6 +287,7 @@ export function GeraeteCheck({ abschluss, absenden = false, lang = 'de' }: { abs
           if (r.ergebnis === 'nichtGeeignet') return;
           setListe((l) => [...l, { eingabe: geraet, r }]);
           setGeraet(LEER);
+          setBeantwortet(new Set());
           gehe(0);
           return;
         }
@@ -309,6 +329,25 @@ export function GeraeteCheck({ abschluss, absenden = false, lang = 'de' }: { abs
 
         {/* Safety notes (swollen battery, leasing) must not wait until the last step. */}
         {schritt <= ERGEBNIS && entwurf && (schritt === ERGEBNIS || r.ergebnis === 'nichtGeeignet') && <Ergebnisbox r={r} t={t} />}
+
+        {schritt === ERGEBNIS && entwurf && (
+          <section className={styles.summary} aria-labelledby={`${id}-angaben`}>
+            <div className={styles.summaryHead}><h3 id={`${id}-angaben`}>{t.ihreAngaben}</h3></div>
+            <table role="table" className={styles.angabenTabelle} aria-labelledby={`${id}-angaben`}>
+              <tbody>
+                {zeilen.map((z) => (
+                  <tr key={z.key} role="row">
+                    <th scope="row" role="rowheader">{z.frage}</th>
+                    <td role="cell">
+                      <span>{z.antwort}</span>
+                      <button type="button" className={styles.linkBtn} aria-label={`${t.aendern}: ${z.frage}`} onClick={() => gehe(z.schritt)}>{t.aendern}</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        )}
 
         {absenden && schritt === ERGEBNIS && (
           <p className={styles.hint}>

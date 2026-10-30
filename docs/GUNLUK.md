@@ -9,6 +9,29 @@
 - [x] Ana menüde "Team-Anmeldung" eklendi (668db89).
 
 
+## 2026-10-30 (Gerät-Formu: RAM, seçim, özet tablosu)
+
+**Değişiklikler:**
+- RAM soruları: "8 GB oder mehr", "4 bis 6 GB" (değer `4`, eski kayıtlar uyumlu), "Weniger als 4 GB" (yeni `unter4`). `pruefe.ts`: 4 GB altı → "manuell", yeni neden kodu `ramNiedrig`.
+- Seçim: Başta hiçbir seçenek seçili gelmiyor. Yalnızca bağışçının verdiği cevaplar seçili görünüyor (`beantwortet` listesi). Cevapsız sorular yine "unbekannt" sayılıyor, sonuç değişmiyor.
+- Sonuç adımında "Ihre Angaben" tablosu (salt okunur, "Ändern" ile ilgili adıma dönüş). Cevapsız satır "Keine Angabe". Yalnızca taslak cihaz varken görünüyor (Kontakt → Zurück sonrası kaybolur).
+- Hatalar düzeltildi: özet, taslak yokken de görünüyordu; sadece "absenden" olmayan kullanımda cevaplar sonraki cihaza taşınıyordu.
+- Erişilebilirlik: "Ändern" düğmelerinde soru adı (aria-label), tablo rolleri açık.
+
+**Kontrol:** `tsc` temiz. Vitest 113/113, Playwright 70/70, `test:static` 20/20. Mobil: 320/390/412 px, yerel sunucuda iframe ile (gerçek telefon değil): RAM seçenekleri, sonuç kutusu ve özet tablosu taşmadan görünüyor. Kod incelemesi: kendi diff okuması; `/code-review` skill'i çalıştırılmadı. Yeni uç nokta ya da kimlik değişikliği yok; sunucuya giden doğrulama (`anfrage.ts`) `unter4` değerini ekleyerek güncellendi.
+
+**Bilerek bırakılanlar:**
+- Cevapsız sorular göndermeyi engellemiyor (sayfa "freiwillig" diyor, spesifikasyon "Weiß ich nicht" her zaman seçilebilir).
+- 4–6 GB cihazlar hâlâ "manuell" incelemeye düşüyor. Politika kararı Fatih'te.
+
+**Açık kararlar (Fatih):**
+1. Durum fotoğrafları: önerilen sıra gönderimden sonra, isteğe bağlı, yalnızca ekran/açılmama/sınırda durumlarda. İlk adım sıfır kodlu test (onay e-postasında istemek). Yükleme için EXIF temizliği, depolama, Datenschutz ve AVV gerekir.
+2. Cevapsızları zorunlu seçtirmek mi, "Keine Angabe" ile açık bırakmak mı (şu an açık bırakma).
+
+**Commit:** Yalnızca bu işin dosyaları (`platform/src/...`, `platform/e2e/...`, `docs/GUNLUK.md`). `platform/tsconfig.json`, `.claude/`, `.next-local*`, `node_modules/` ve iki mp4 bilerek dışarıda.
+
+**Açık işler:** Push ve deploy onayı Fatih'te. Canlı spenden değişikliklerinin deploy'u onay bekliyor.
+
 ## 2026-10-22
 
 **Planlama**

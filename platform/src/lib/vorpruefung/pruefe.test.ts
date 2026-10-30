@@ -27,7 +27,7 @@ describe('pruefe (Annahmekriterien v0.1)', () => {
   it('sends uncertain or borderline cases to manual review, never to rejection', () => {
     for (const patch of [
       { startet: 'nein' }, { alter: '7-9' }, { alter: '10+' }, { display: 'schaden' },
-      { akku: 'schwach' }, { sperren: 'konto' }, { sperren: 'firma' }, { ram: '4' },
+      { akku: 'schwach' }, { sperren: 'konto' }, { sperren: 'firma' }, { ram: '4' }, { ram: 'unter4' },
     ] as Partial<GeraetEingabe>[]) {
       expect(pruefe({ ...gut, ...patch }).ergebnis, JSON.stringify(patch)).toBe('manuell');
     }

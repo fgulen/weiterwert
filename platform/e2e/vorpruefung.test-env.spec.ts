@@ -59,7 +59,7 @@ test('switching to tablet drops laptop-only answers', async ({ page }) => {
   await choose(page, 'Gerätetyp', 'Chromebook');
   await weiter(page);
   await choose(page, 'Ungefähres Alter', '7 bis 9 Jahre');
-  await choose(page, 'Arbeitsspeicher (optional)', '4 GB');
+  await choose(page, 'Arbeitsspeicher (optional)', '4 bis 6 GB');
   await page.getByRole('button', { name: 'Zurück' }).click();
   await choose(page, 'Was möchten Sie spenden?', 'Tablet');
   await weiter(page);
@@ -102,6 +102,24 @@ test('several devices can be collected in one request', async ({ page }) => {
   await expect(list.getByRole('listitem')).toHaveCount(2);
   await expect(list).toContainText('Lenovo');
   await expect(list).toContainText('Apple');
+});
+
+test('the result step lists the answers, skipped ones read as no answer, and the list hides after going back', async ({ page }) => {
+  await page.goto('/spenden');
+  await weiter(page);
+  await choose(page, 'Ungefähres Alter', 'bis 3 Jahre');
+  await choose(page, 'Startet das Gerät?', 'Ja');
+  await weiter(page);
+  await weiter(page);
+  const table = page.getByRole('table', { name: 'Ihre Angaben' });
+  await expect(table.getByRole('row').filter({ hasText: 'Ungefähres Alter' })).toContainText('bis 3 Jahre');
+  await expect(table.getByRole('row').filter({ hasText: 'Startet das Gerät?' })).toContainText('Ja');
+  await expect(table.getByRole('row').filter({ hasText: 'Display' })).toContainText('Keine Angabe');
+  await zuKontakt(page).click();
+  await expect(page.getByText('Schritt 5 von 6')).toBeVisible();
+  await page.getByRole('button', { name: 'Zurück' }).click();
+  await expect(page.getByText('Schritt 4 von 6')).toBeVisible();
+  await expect(page.getByRole('table', { name: 'Ihre Angaben' })).toHaveCount(0);
 });
 
 test('a device rated not suitable alone cannot lead to the contact step', async ({ page }) => {

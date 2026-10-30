@@ -32,7 +32,7 @@ describe('criteria tables', () => {
 describe('pre-check reasons', () => {
   it('has a text for every reason code', () => {
     for (const s of ['de', 'tr', 'en'] as const) {
-      expect(Object.keys(CHECK[s].gruende).length).toBe(19);
+      expect(Object.keys(CHECK[s].gruende).length).toBe(20);
     }
   });
 });
