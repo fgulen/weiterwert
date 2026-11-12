@@ -44,8 +44,8 @@ export default async function AdminPage() {
             <tbody>
               {zeilen.map((z) => (
                 <tr key={z.vorgangsnummer}>
-                  <td>{z.vorgangsnummer}</td>
-                  <td>{statusText(z.status)}</td>
+                  <td><Link className={styles.zelle} href={`/admin/vorgang/${z.vorgangsnummer}`}>{z.vorgangsnummer}</Link></td>
+                  <td><Link className={styles.zelle} href={`/admin/vorgang/${z.vorgangsnummer}`}>{statusText(z.status)}</Link></td>
                   <td>{z.angelegt}</td>
                   <td>{z.geraete.map(geraeteText).join(', ') || '–'}</td>
                 </tr>

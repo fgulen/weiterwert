@@ -6,7 +6,7 @@ export type Visibility = 'show' | 'show-disabled' | 'show-draft' | 'hide';
 export type FeatureKey =
   | 'spenden' | 'ocr' | 'uebergabeAbsprache' | 'abholung' | 'paketversand' | 'sammelstelle'
   | 'kiVorpruefung' | 'konto' | 'statusUpdates' | 'newsletter' | 'geraetepartnerschaft'
-  | 'geraetBeantragen' | 'freiwilligTransport' | 'spendenbeleg' | 'admin';
+  | 'geraetBeantragen' | 'freiwilligTransport' | 'spendenbeleg' | 'admin' | 'geraetFoto';
 
 // Faz 1: nothing works yet, so everything is "demnaechst"; later phases switch features to "aktiv".
 export const FEATURES: Record<FeatureKey, { status: FeatureStatus; label: string }> = {
@@ -24,6 +24,8 @@ export const FEATURES: Record<FeatureKey, { status: FeatureStatus; label: string
   geraetBeantragen: { status: 'demnaechst', label: 'Gerät beantragen' },
   freiwilligTransport: { status: 'demnaechst', label: 'Freiwillig transportieren' },
   spendenbeleg: { status: 'verborgen', label: 'Spendenbeleg' },
+  // Photos stay hidden in production until the DSFA, the Datenschutz text and the deletion test are done (see docs/geraete-formu-kararlari.md).
+  geraetFoto: { status: 'verborgen', label: 'Gerät-Fotos' },
   admin: { status: 'aktiv', label: 'Verwaltung' }, // TEMPORARY: live check of sign-in and list; set back to 'verborgen' afterwards
 };
 

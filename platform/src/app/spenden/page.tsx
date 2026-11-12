@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { FeatureGate } from '@/components/FeatureGate';
 import { StatusBadge } from '@/components/StatusBadge';
-import { FEATURES, type FeatureKey } from '@/lib/features';
+import { FEATURES, resolveVisibility, type FeatureKey } from '@/lib/features';
+import { getAppEnv } from '@/lib/env';
 import { aktuelleSprache } from '@/lib/i18n/server';
 import { SEITEN } from '@/lib/i18n/seiten';
 import { gatePage, isUsable } from '@/lib/page-gate';
@@ -19,13 +20,14 @@ const UEBERGABE = ['uebergabeAbsprache', 'abholung', 'paketversand', 'sammelstel
 export default async function SpendenPage() {
   const { lang } = await aktuelleSprache();
   const t = SEITEN[lang];
+  const fotosErlaubt = resolveVisibility(FEATURES.geraetFoto.status, getAppEnv()) !== 'hide';
   gatePage('spenden');
   return (
     <>
       <h1>{t.spenden.titel}</h1>
       <p className="lead">{t.spenden.lead}</p>
       <FeatureGate feature="spenden">
-        {absendenMoeglich() ? <GeraeteCheck absenden lang={lang} /> : <GeraeteCheck lang={lang} abschluss={
+        {absendenMoeglich() ? <GeraeteCheck absenden lang={lang} fotos={fotosErlaubt} /> : <GeraeteCheck lang={lang} abschluss={
           <details className={styles.more}>
             <summary>{t.spenden.weiter}</summary>
             <p>{t.spenden.bisDahinVor} <a href="mailto:weiterwert@gmail.com">weiterwert@gmail.com</a>.</p>

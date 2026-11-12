@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { FeatureGate } from '@/components/FeatureGate';
 import { PasswortFeld } from '@/components/PasswortFeld';
 import { gatePage } from '@/lib/page-gate';
@@ -24,6 +25,7 @@ export default async function AdminLogin({ searchParams }: { searchParams: Promi
           <PasswortFeld name="passwort" label="Passwort" autoComplete="current-password" />
           <button type="submit" className="btn btn-primary">Anmelden</button>
         </form>
+        <p><Link href="/admin/passwort-vergessen">Passwort vergessen?</Link></p>
       </FeatureGate>
     </>
   );

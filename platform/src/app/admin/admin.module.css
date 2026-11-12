@@ -16,3 +16,14 @@
 .schritte{padding-left:20px;}
 .linkzeile{margin:16px 0;}
 .linkzeile a{display:inline-flex;align-items:center;min-height:44px;}
+.zelle{display:inline-flex;align-items:center;min-height:44px;}
+.kopf{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;}
+.angaben{display:grid;grid-template-columns:minmax(120px,max-content) 1fr;gap:6px 16px;margin:8px 0 20px;}
+.angaben dt{color:var(--muted);}
+.angaben dd{margin:0;overflow-wrap:anywhere;}
+.geraet{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:16px;margin:12px 0;}
+.geraet h3{margin:0 0 8px;}
+@media (max-width:480px){.angaben{grid-template-columns:1fr;}.angaben dt{margin-top:8px;}}
+.fotos{list-style:none;padding:0;display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));}
+.foto{border:1px solid var(--line);border-radius:12px;padding:8px;background:var(--surface);}
+.fotoBild{width:100%;height:auto;border-radius:8px;display:block;}

@@ -7,6 +7,7 @@ import type { Lang } from '@/lib/i18n/sprache';
 import { pruefe } from '@/lib/vorpruefung/pruefe';
 import type { Ergebnis, GeraetEingabe, Geraetetyp, Pruefergebnis } from '@/lib/vorpruefung/types';
 import { sendeAnfrage } from './actions';
+import { FotoUpload } from './FotoUpload';
 import styles from './check.module.css';
 
 type Option<V extends string> = { value: V; label: string };
@@ -131,7 +132,7 @@ function Fortschritt({ schritte, schritt, t }: { schritte: string[]; schritt: nu
  * Pre-check wizard. With `absenden` the donor can send the request (contact + submit steps);
  * without it the flow ends at the result and `abschluss` explains how to continue.
  */
-export function GeraeteCheck({ abschluss, absenden = false, lang = 'de' }: { abschluss?: ReactNode; absenden?: boolean; lang?: Lang }) {
+export function GeraeteCheck({ abschluss, absenden = false, lang = 'de', fotos = false }: { abschluss?: ReactNode; absenden?: boolean; lang?: Lang; fotos?: boolean }) {
   const t = CHECK[lang];
   const ART = artDaten(t);
   const FRAGEN = fragen(t);
@@ -259,6 +260,7 @@ export function GeraeteCheck({ abschluss, absenden = false, lang = 'de' }: { abs
         <p className={styles.nummer}>{vorgangsnummer}</p>
         <p>{t.dankeMelden}</p>
         <p className={styles.hint}>{t.dankeNochNichts}</p>
+        {fotos && schluessel && <FotoUpload idempotencyKey={schluessel.key} t={t} />}
       </section>
     );
   }

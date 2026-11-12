@@ -2,13 +2,21 @@
 export const PASSWORT_MIN = 12;
 export const PASSWORT_MAX = 72; // bcrypt limit used by Supabase
 
-export type PruefFehler = 'leer' | 'zu-kurz' | 'zu-lang' | 'ungleich' | 'gleich' | 'code';
+export type PruefFehler = 'leer' | 'zu-kurz' | 'zu-lang' | 'schwach' | 'ungleich' | 'gleich' | 'code';
+
+/** Strength rule for new passwords: length, upper case, lower case and a digit. */
+export function pruefeStaerke(neu: string): PruefFehler | null {
+  if (neu.length < PASSWORT_MIN) return 'zu-kurz';
+  if (neu.length > PASSWORT_MAX) return 'zu-lang';
+  if (!/[a-zäöüß]/.test(neu) || !/[A-ZÄÖÜ]/.test(neu) || !/\d/.test(neu)) return 'schwach';
+  return null;
+}
 
 /** Checks the password-change form. Returns an error key or null. */
 export function pruefePasswortWechsel(aktuell: string, neu: string, wiederholung: string): PruefFehler | null {
   if (!aktuell || !neu) return 'leer';
-  if (neu.length < PASSWORT_MIN) return 'zu-kurz';
-  if (neu.length > PASSWORT_MAX) return 'zu-lang';
+  const staerke = pruefeStaerke(neu);
+  if (staerke) return staerke;
   if (neu !== wiederholung) return 'ungleich';
   if (neu === aktuell) return 'gleich';
   return null;
@@ -29,6 +37,7 @@ export const FEHLER_TEXT: Record<PruefFehler, string> = {
   leer: 'Bitte alle Felder ausfüllen.',
   'zu-kurz': `Das neue Passwort muss mindestens ${PASSWORT_MIN} Zeichen haben.`,
   'zu-lang': `Das neue Passwort darf höchstens ${PASSWORT_MAX} Zeichen haben.`,
+  schwach: 'Das neue Passwort braucht Groß- und Kleinbuchstaben sowie eine Ziffer.',
   ungleich: 'Die beiden neuen Passwörter stimmen nicht überein.',
   gleich: 'Das neue Passwort muss sich vom alten unterscheiden.',
   code: 'Der Code ist nicht richtig. Bitte einen 6-stelligen Code eingeben.',

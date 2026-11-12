@@ -253,3 +253,21 @@ Commit yerelde; push ve deploy yok. `tsconfig.json`, `.claude/`, `.next-local*` 
 1. Gerät beantragen için seçenek: (1) bekleme sayfası kalsın (önerilen), (2) belgesiz ön başvuru, (3) belge yüklemeli tam sürüm. Karar gelmeden kod yazılmaz.
 2. Profil: parola kuralı (12+, büyük/küçük harf, rakam) ve diğer oturumları kapatma henüz uygulanmadı.
 3. Canlı mobil kontrol (320/390/412 px) spenden ve profil için.
+
+## 2026-11-12 (Admin: Status, Protokoll, Fotos, Parola-Kuralı, Canlı-Hazırlık)
+
+**Yapılan (yerel, bu commit):**
+- Vorgang-Detail: Statusablauf Neu → Geprüft → Zugeordnet → Übergeben → Abgeschlossen (nur nächster Schritt). Protokoll zuerst, dann Änderung.
+- `admin_audit`: Statuswechsel, PDF-Downloads, Fotoansicht, Fotolöschung. Migration `20261112_admin_audit.sql` in Supabase ausgeführt.
+- Passwortregel (12+, Groß-/Kleinbuchstaben, Ziffer) in Profil und Passwort-Zurücksetzen.
+- Gerät-Foto nach der Anfrage: JPEG/PNG, bis 3 Fotos, je 4 MB, EXIF/XMP/Text-Metadaten entfernt (7 Tests), 14 Tage Löschfrist. Feature `geraetFoto` ist in der Produktion **verborgen**. Migration `20261112_donation_photo.sql` ist **noch nicht** ausgeführt.
+- Plan für Admin-Module: `docs/plan-admin-aufgaben.md`.
+
+**Tests:** tsc, 128 Vitest, 20 Statik, 70 Playwright, `next build` grün.
+
+**Bekannt:** `BeantragenForm.tsx` hat einen ESLint-Fehler (setState im Effekt), nicht aus dieser Änderung.
+
+**Offen (Fatih):**
+1. Supabase: Site URL steht auf `http://localhost:3000` (Sicherheitsprüfung hat die Änderung blockiert). Canlı-Mailbağlantıları için `https://weiterwert.de` setzen und Redirect-URL `…/admin/passwort-neu` für die Produktion hinzufügen.
+2. `test-admin@weiterwert.de`: gesperrt (ban), später löschen.
+3. Foto-Migration im SQL-Editor ausführen, dann Foto-Funktion prüfen. Vor Live-Schaltung: Datenschutztext, DSFA, Löschtest.
