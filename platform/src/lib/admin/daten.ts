@@ -31,28 +31,29 @@ export async function ladeSpendenListe(): Promise<AnfrageZeile[]> {
   const key = process.env.SUPABASE_SECRET_KEY;
   if (!url || !key) return [];
 
-  const select = 'vorgangsnummer,status,created_at,donation_device(typ,marke,modell),donation_photo(id)';
-  const res = await fetch(`${url}/rest/v1/donation_request?select=${select}&order=created_at.desc&limit=200`, {
-    headers: {
-      apikey: key,
-      // Same rule as speicher.ts: legacy service_role keys are also sent as bearer token; sb_secret_ keys are not.
-      ...(key.startsWith('eyJ') ? { Authorization: `Bearer ${key}` } : {}),
-    },
-    cache: 'no-store',
-  });
+  const kopf = { apikey: key, ...(key.startsWith('eyJ') ? { Authorization: `Bearer ${key}` } : {}) };
+  const abfrage = (select: string) =>
+    fetch(`${url}/rest/v1/donation_request?select=${select}&order=created_at.desc&limit=200`, { headers: kopf, cache: 'no-store' });
+  // Until the donation_photo migration has run, the photo join fails: then the list still loads, without photo counts.
+  let res = await abfrage('vorgangsnummer,status,created_at,donation_device(typ,marke,modell),donation_photo(id)');
+  let mitFotos = true;
+  if (!res.ok) {
+    res = await abfrage('vorgangsnummer,status,created_at,donation_device(typ,marke,modell)');
+    mitFotos = false;
+  }
   if (!res.ok) throw new Error(`Supabase Liste: ${res.status}`);
   const zeilen = (await res.json()) as Array<{
     vorgangsnummer: string;
     status: string;
     created_at: string;
     donation_device: ListenGeraet[];
-    donation_photo: Array<{ id: string }>;
+    donation_photo?: Array<{ id: string }>;
   }>;
   return zeilen.map((z) => ({
     vorgangsnummer: z.vorgangsnummer,
     status: z.status,
     angelegt: z.created_at,
-    fotos: z.donation_photo.length,
+    fotos: mitFotos ? (z.donation_photo?.length ?? 0) : 0,
     geraete: z.donation_device,
   }));
 }
