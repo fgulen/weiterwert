@@ -306,3 +306,19 @@ Commit yerelde; push ve deploy yok. `tsconfig.json`, `.claude/`, `.next-local*` 
 3. Supabase Redirect URLs: `…/tr/admin/passwort-neu` (und `/en/…`) eintragen, sonst funktioniert der Reset-Link auf Türkisch nicht.
 4. Admin auf Englisch übersetzen?
 5. Begründungen in der Datenbank bleiben deutsch gespeichert. Nur bekannte Sätze werden übersetzt.
+
+## 2026-11-13 (Betroffenenanfragen, Foto-Frist-Cron)
+
+**Neu:**
+- `/admin/betroffene` (nur Admin): Suche nach E-Mail, Auskunft als JSON (Art. 15) und Löschung aller Vorgänge einer Person (Art. 17), zweistufig. Die Auskunft wird im Protokoll festgehalten; ohne Protokolleintrag wird nichts herausgegeben.
+- `/admin/betroffene/auskunft?email=…`: JSON-Datei. Fotos sind nur als Anzahl enthalten, nicht als Dateien.
+- `/api/cron/fotos-loeschen`: löscht Fotos nach Fristablauf (14 Tage). Geschützt durch `CRON_SECRET`, ohne Geheimnis 503. `vercel.json`: täglich 03:30 UTC.
+- Lösch-Logik in `src/lib/admin/loeschen.ts`, von Einzel- und Sammellöschung gemeinsam genutzt.
+
+**Tests:** tsc, vitest 130, Playwright 71, test:static 20, Lint sauber. Dev-Browsertest: Suche, Auskunft (200, attachment), Löschung, danach leer.
+
+**Nicht erledigt / offen:**
+1. Vor dem Cron-Lauf in Vercel `CRON_SECRET` setzen (Fatih). Ohne das bleibt der Cron wirkungslos (503).
+2. Der 401-Pfad mit gesetztem Geheimnis ist nur per Code gelesen, nicht getestet.
+3. Betroffenenseite gegen die Live-Datenbank nicht getestet. E-Mail-Suche in der Datenbank ist exakt (Groß-/Kleinschreibung zählt).
+4. Dokumentation: Datenschutztext muss Auskunft und Löschung auf Wunsch nennen.

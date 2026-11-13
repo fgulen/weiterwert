@@ -33,6 +33,7 @@ export default async function AdminPage() {
           <h1 className={styles.titel}>{t.verwaltung}</h1>
           <div className={styles.nutzer}>
             <span>{mit(t.nutzerZeile, { email: nutzer.email, rolle })}</span>
+            {nutzer.rolle === 'admin' && <Link href={p('/admin/betroffene')}>{t.betroffene.titel}</Link>}
             <Link href={p('/admin/profil')}>{t.profil}</Link>
             <form action={abmelden}>
               <button type="submit" className={styles.btnZweit}>{t.abmelden}</button>

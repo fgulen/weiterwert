@@ -7,9 +7,10 @@ import { datenbankKonfiguriert, dbKopfzeilen } from '@/lib/admin/db';
 import { ladeVorgang, VORGANGSNUMMER } from '@/lib/admin/vorgang';
 import { schreibeProtokoll } from '@/lib/admin/protokoll';
 import { istErlaubterWechsel } from '@/lib/admin/status';
-import { ladeFotos, loescheFoto } from '@/lib/fotos/speicher';
+import { loescheFoto } from '@/lib/fotos/speicher';
 import { pruefeKontakt, type Kontakt, type KontaktFehler } from '@/lib/absenden/anfrage';
-import { devEntfernen, devFotoLoeschen, devKontaktAendern, devVorschauAktiv } from '@/lib/dev/vorschau';
+import { devFotoLoeschen, devKontaktAendern, devVorschauAktiv } from '@/lib/dev/vorschau';
+import { loescheVorgang } from '@/lib/admin/loeschen';
 import { aktuelleSprache } from '@/lib/i18n/server';
 import { adminTexte } from '@/lib/i18n/admin';
 import { pfadFuer } from '@/lib/i18n/sprache';
@@ -157,45 +158,8 @@ export async function vorgangLoeschen(nummer: string): Promise<LoeschErgebnis> {
   const nutzer = await aktuellerNutzer();
   if (!nutzer || nutzer.rolle !== 'admin') return { fehler: t.detail.loeschenNurAdmin };
 
-  if (devVorschauAktiv()) {
-    devEntfernen(nummer);
-    revalidatePath('/admin');
-    redirect(zurListe);
-  }
-
-  const v = await ladeVorgang(nummer);
-  if (!v) return { fehler: t.detail.vorgangNichtGefunden };
-  const db = datenbankKonfiguriert();
-  if (!db) return { fehler: t.loeschenNichtVerfuegbar };
-
-  const fotos = await ladeFotos(v.id).catch(() => null);
-  if (fotos === null) return { fehler: t.detail.loeschenFotosLesen };
-  try {
-    await schreibeProtokoll({ nutzer: nutzer.email, aktion: 'vorgang-geloescht', vorgang: nummer, details: { fotos: fotos.length } });
-  } catch {
-    return { fehler: t.detail.loeschenProtokoll };
-  }
-  for (const f of fotos) {
-    try {
-      await loescheFoto({ id: f.id, pfad: f.pfad, requestId: v.id, nutzer: nutzer.email, vorgang: nummer });
-    } catch {
-      return { fehler: t.detail.loeschenFoto };
-    }
-  }
-  const res = await fetch(`${db.url}/rest/v1/donation_request?vorgangsnummer=eq.${nummer}`, {
-    method: 'DELETE',
-    headers: dbKopfzeilen(db.key),
-    cache: 'no-store',
-  });
-  if (!res.ok) return { fehler: t.detail.loeschenDb };
-  // The contact row is the parent of the request: remove it too, so no personal data stays behind.
-  const kontakt = await fetch(`${db.url}/rest/v1/contact?id=eq.${v.kontaktId}`, {
-    method: 'DELETE',
-    headers: dbKopfzeilen(db.key),
-    cache: 'no-store',
-  });
-  if (!kontakt.ok) return { fehler: t.detail.loeschenDb };
-
+  const ergebnis = await loescheVorgang(nummer, nutzer.email, t);
+  if (ergebnis.fehler) return { fehler: ergebnis.fehler };
   revalidatePath('/admin');
   redirect(zurListe);
 }
