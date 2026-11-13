@@ -14,6 +14,8 @@ const beispiel: VorgangDaten = {
   erklaerungHash: 'a'.repeat(64),
   kontakt: { name: 'Şükrü Ğülİ', email: 'test@example.com', plz: '10115', telefon: null, organisation: 'Schule İzmir' },
   geraete: Array.from({ length: 12 }, (_, i) => ({
+    id: `g-${i + 1}`,
+    akte: { seriennummer: null, loeschverfahren: null, loeschdatum: null, loeschperson: null, lagerort: null, zustand: null, entsorgungsweg: null, entsorger: null, nachweisnummer: null, entsorgungsdatum: null },
     position: i + 1,
     typ: 'laptop',
     marke: 'Lenovo',

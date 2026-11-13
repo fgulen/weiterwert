@@ -1,4 +1,5 @@
 import { getAppEnv } from '@/lib/env';
+import type { VorgangDaten } from './vorgang';
 import { devEintraege } from '@/lib/dev/vorschau';
 
 export type ListenGeraet = { typ: string; marke: string | null; modell: string | null };
@@ -56,4 +57,12 @@ export async function ladeSpendenListe(): Promise<AnfrageZeile[]> {
     fotos: mitFotos ? (z.donation_photo?.length ?? 0) : 0,
     geraete: z.donation_device,
   }));
+}
+
+/** Every request with its devices and device records (for the inventory). Newest first, at most 200. */
+export async function ladeAlleVorgaenge(): Promise<VorgangDaten[]> {
+  const { ladeVorgang } = await import('./vorgang');
+  const liste = await ladeSpendenListe();
+  const ergebnisse = await Promise.all(liste.slice(0, 200).map((z) => ladeVorgang(z.vorgangsnummer).catch(() => null)));
+  return ergebnisse.filter((v): v is VorgangDaten => v !== null);
 }

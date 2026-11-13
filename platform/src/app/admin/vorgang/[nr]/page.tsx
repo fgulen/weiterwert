@@ -111,6 +111,9 @@ export default async function VorgangSeite({ params }: Props) {
           <div className={styles.aktionen}>
             <a className={styles.btnZweit} href={`/admin/vorgang/${v.vorgangsnummer}/pdf`} download>{t.detail.pdf}</a>
             <a className={styles.btnZweit} href={`/admin/vorgang/${v.vorgangsnummer}/uebergabe`} download>{t.detail.uebergabePdf}</a>
+            <a className={styles.btnZweit} href={`/admin/vorgang/${v.vorgangsnummer}/loeschprotokoll`} download>{t.akte.belegLoeschprotokoll}</a>
+            <a className={styles.btnZweit} href={`/admin/vorgang/${v.vorgangsnummer}/entsorgung`} download>{t.akte.belegEntsorgung}</a>
+            <Link className={styles.btnZweit} href={p(`/admin/vorgang/${v.vorgangsnummer}/akte`)}>{t.akte.titel}</Link>
             <a className={styles.btnZweit} href="#kontakt">{t.detail.bearbeiten}</a>
             {nutzer.rolle === 'admin' && <a className={styles.btnGefahr} href="#loeschen">{t.detail.loeschenKopf}</a>}
           </div>

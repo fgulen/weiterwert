@@ -337,3 +337,19 @@ Commit yerelde; push ve deploy yok. `tsconfig.json`, `.claude/`, `.next-local*` 
 5. Supabase Redirect-URLs für `/tr/admin/passwort-neu` ergänzen.
 
 **Deploy-Hinweis:** `platform/.vercel` zeigt auf das Projekt `weiterwert`, das `weiterwert.de` besitzt. Jeder `vercel deploy --prod` ändert deshalb die Hauptdomain. Vor dem nächsten Deploy klären.
+
+## 2026-11-13 (Geräteakte, Löschprotokoll, Entsorgungsnachweis, Envanter)
+
+**Neu:**
+- Geräteakte je Gerät (`/admin/vorgang/[nr]/akte`): Seriennummer, Lagerort, Zustand, Löschverfahren, Löschdatum, Gelöscht von, Entsorgungsweg, Entsorgungsfachbetrieb, Nachweisnummer, Entsorgungsdatum. Auswahlfelder mit fester Liste. Admin und Mitarbeiter. Änderungen werden protokolliert (nur geänderte Feldnamen).
+- Löschprotokoll-PDF und Entsorgungsnachweis-PDF je Vorgang (nur Geräte mit eingetragener Löschung bzw. Entsorgung). Downloads werden protokolliert (außer lokale Vorschau). Inhalt bleibt deutsch, wie bei den amtlichen Belegen.
+- Envanter (`/admin/envanter`): alle Geräte mit Seriennummer, Zustand, Lagerort, Löschverfahren. CSV-Download (Semikolon, UTF-8 mit BOM).
+
+**Datenbank (noch nicht angewendet):** `supabase/migrations/20261113_device_record.sql`. Bis zur Anwendung: Die Geräteakte kann in Produktion nicht gespeichert werden (Meldung wird angezeigt). Die Vorgangsseite lädt trotzdem, weil die Abfrage bei fehlender Tabelle ohne Geräteakte wiederholt wird.
+
+**Tests:** tsc, vitest 139, Playwright 71, test:static 20, Lint sauber. Lokal: Anfrage angelegt, Akte gespeichert, beide PDFs und CSV geprüft (als Bild).
+
+**Offen (Fatih):**
+1. Migration `20261113_device_record.sql` im Supabase-SQL-Editor ausführen.
+2. Vor dem Deploy: `platform/.vercel` zeigt auf das Projekt `weiterwert` (Hauptdomain). Klären.
+3. Erinnerungen aus dem letzten Log (DNS-Eintrag `spenden`, alte Deployments, `CRON_SECRET`, Supabase-Redirect-URLs).

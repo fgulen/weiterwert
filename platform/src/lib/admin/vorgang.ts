@@ -8,7 +8,11 @@ export const VORGANGSNUMMER = /^WW-\d{4}-\d{6}$/;
 
 export type KontaktDaten = { name: string; email: string; plz: string; telefon: string | null; organisation: string | null };
 
+import { LEER_AKTE, type GeraetAkte } from './akte';
+
 export type GeraetDaten = {
+  id: string;
+  akte: GeraetAkte;
   position: number;
   typ: string;
   marke: string | null;
@@ -51,6 +55,8 @@ export async function ladeVorgang(nummer: string): Promise<VorgangDaten | null> 
       kontaktId: "dev",
       kontakt: p.kontakt,
       geraete: p.geraete.map((g, i) => ({
+        id: `dev-${i + 1}`,
+        akte: { ...LEER_AKTE, ...((g.akte as Partial<GeraetAkte>) ?? {}) },
         position: i + 1,
         typ: String(g.typ),
         marke: (g.marke as string | null) ?? null,
@@ -68,19 +74,25 @@ export async function ladeVorgang(nummer: string): Promise<VorgangDaten | null> 
   const select = [
     'id', 'vorgangsnummer', 'status', 'created_at', 'regel_version', 'erklaerung_version', 'erklaerung_hash',
     'contact(id,name,email,plz,telefon,organisation)',
-    'donation_device(position,typ,marke,modell,angaben,ergebnis,gruende)',
+    'donation_device(id,position,typ,marke,modell,angaben,ergebnis,gruende,device_record(seriennummer,loeschverfahren,loeschdatum,loeschperson,lagerort,zustand,entsorgungsweg,entsorger,nachweisnummer,entsorgungsdatum))',
   ].join(',');
-  const res = await fetch(
-    `${url}/rest/v1/donation_request?select=${select}&vorgangsnummer=eq.${nummer}&limit=1`,
-    {
+  const holen = (sel: string) =>
+    fetch(`${url}/rest/v1/donation_request?select=${sel}&vorgangsnummer=eq.${nummer}&limit=1`, {
       headers: {
         apikey: key,
         // Same rule as speicher.ts: legacy service_role keys are also sent as bearer token; sb_secret_ keys are not.
         ...(key.startsWith('eyJ') ? { Authorization: `Bearer ${key}` } : {}),
       },
       cache: 'no-store',
-    },
-  );
+    });
+  let res = await holen(select);
+  if (!res.ok) {
+    // Until the device_record migration has run, the embed fails: load the case without the device records.
+    const ohneAkte = ['id', 'vorgangsnummer', 'status', 'created_at', 'regel_version', 'erklaerung_version', 'erklaerung_hash',
+      'contact(id,name,email,plz,telefon,organisation)',
+      'donation_device(id,position,typ,marke,modell,angaben,ergebnis,gruende)'].join(',');
+    res = await holen(ohneAkte);
+  }
   if (!res.ok) throw new Error(`Supabase Vorgang: ${res.status}`);
   const zeilen = (await res.json()) as Array<{
     id: string;
@@ -91,7 +103,7 @@ export async function ladeVorgang(nummer: string): Promise<VorgangDaten | null> 
     erklaerung_version: string;
     erklaerung_hash: string;
     contact: KontaktDaten & { id: string };
-    donation_device: GeraetDaten[];
+    donation_device: Array<Omit<GeraetDaten, 'akte'> & { device_record: Array<Partial<GeraetAkte>> | null }>;
   }>;
   const z = zeilen[0];
   if (!z) return null;
@@ -105,7 +117,9 @@ export async function ladeVorgang(nummer: string): Promise<VorgangDaten | null> 
     erklaerungHash: z.erklaerung_hash,
     kontaktId: z.contact.id,
     kontakt: { name: z.contact.name, email: z.contact.email, plz: z.contact.plz, telefon: z.contact.telefon, organisation: z.contact.organisation },
-    geraete: [...z.donation_device].sort((a, b) => a.position - b.position),
+    geraete: [...z.donation_device]
+      .sort((a, b) => a.position - b.position)
+      .map(({ device_record, ...d }) => ({ ...d, akte: { ...LEER_AKTE, ...(device_record?.[0] ?? {}) } })),
   };
 }
 

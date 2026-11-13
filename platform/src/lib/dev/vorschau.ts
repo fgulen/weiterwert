@@ -87,3 +87,14 @@ export function devEntfernen(vorgangsnummer: string): boolean {
   if (!devVorschauAktiv()) return false;
   return speicher().delete(vorgangsnummer);
 }
+
+/** Stores the device record of one device (position starts at 1). */
+export function devAkteSetzen(vorgangsnummer: string, position: number, akte: Record<string, unknown>): boolean {
+  const e = devEintrag(vorgangsnummer);
+  if (!e) return false;
+  const geraete = (e.payload.geraete as Array<Record<string, unknown>> | undefined) ?? [];
+  const g = geraete[position - 1];
+  if (!g) return false;
+  g.akte = akte;
+  return true;
+}
