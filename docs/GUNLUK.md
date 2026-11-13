@@ -353,3 +353,14 @@ Commit yerelde; push ve deploy yok. `tsconfig.json`, `.claude/`, `.next-local*` 
 1. Migration `20261113_device_record.sql` im Supabase-SQL-Editor ausführen.
 2. Vor dem Deploy: `platform/.vercel` zeigt auf das Projekt `weiterwert` (Hauptdomain). Klären.
 3. Erinnerungen aus dem letzten Log (DNS-Eintrag `spenden`, alte Deployments, `CRON_SECRET`, Supabase-Redirect-URLs).
+
+**Review (medium) vor Deploy, Befunde behoben:**
+- Vorgangsabfrage fällt nur noch bei HTTP 400 auf den Rückfall zurück. Vorher hätte ein vorübergehender Fehler die Geräteakte leer erscheinen lassen, und ein Speichern hätte Nachweise überschrieben.
+- Foto-Abfrage im Envanter/Liste: gleiche Regel (nur 400).
+- CSV: Zellen mit `=`, `+`, `-`, `@` werden mit Apostroph entschärft (Formelinjektion).
+- Vorgang löschen: Kontakt zuerst (Kaskade entfernt Anfrage, Geräte, Akte). Schlägt das fehl, bleibt kein verwaister Kontakt zurück.
+- Auskunft: Fotofehler bricht ab, statt 0 auszugeben.
+- Betroffenen-Suche: E-Mail ohne Groß-/Kleinschreibung (ilike mit Escaping).
+- Sammellöschung: Ausnahmen werden als Teilerfolg gemeldet.
+
+**Bekannte Grenzen (nicht behoben):** Vorgangsliste und Envanter sind auf 200 Vorgänge begrenzt; Envanter lädt je Vorgang eine Abfrage. Cron: Protokollfehler nach dem Löschen wird als fehlgeschlagen gezählt.

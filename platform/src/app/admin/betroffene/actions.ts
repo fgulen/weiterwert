@@ -21,7 +21,12 @@ export async function alleLoeschen(email: string): Promise<LoeschAlleErgebnis> {
   const treffer = await sucheNachEmail(adresse);
   let geloescht = 0;
   for (const x of treffer) {
-    const r = await loescheVorgang(x.vorgangsnummer, nutzer.email, t);
+    let r: { fehler?: string };
+    try {
+      r = await loescheVorgang(x.vorgangsnummer, nutzer.email, t);
+    } catch {
+      r = { fehler: t.detail.loeschenDb };
+    }
     if (r.fehler) {
       revalidatePath('/admin');
       return { fehler: mit(t.betroffene.teilweise, { n: geloescht }) };

@@ -198,7 +198,9 @@ export async function baueEntsorgungsnachweis(v: VorgangDaten, erstelltAm: Date)
 export function envanterCsv(vorgaenge: VorgangDaten[]): string {
   const kopf = ['Vorgang', 'Position', 'Gerät', 'Seriennummer', 'Zustand', 'Lagerort', 'Löschverfahren', 'Löschdatum', 'Entsorgungsweg', 'Nachweisnummer'];
   const zelle = (x: string | null | undefined) => {
-    const s = (x ?? '').replace(/"/g, '""');
+    // Cells starting with = + - @ or a tab/CR are read as formulas by Excel: prefix them with an apostrophe.
+    let s = (x ?? '').replace(/"/g, '""');
+    if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
     return /[";\r\n]/.test(s) ? `"${s}"` : s;
   };
   const zeilen = [kopf.join(';')];

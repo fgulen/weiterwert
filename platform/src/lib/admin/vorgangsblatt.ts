@@ -13,7 +13,6 @@ const SEITE = { breite: 595.28, hoehe: 841.89, rand: 50 };
 const FARBE_TEXT = rgb(0.1, 0.12, 0.16);
 const FARBE_NEBEN = rgb(0.4, 0.43, 0.48);
 
-/** Builds the internal case sheet (Vorgangsblatt). Its title and footer are neutral: it is not a tax receipt. */
 /** Handover protocol (Übergabeprotokoll): the same layout, plus a signature block for the handover. */
 export async function baueUebergabeprotokoll(v: VorgangDaten, erstelltAm: Date): Promise<Uint8Array> {
   return baueDokument(v, erstelltAm, 'uebergabe');

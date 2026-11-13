@@ -26,7 +26,7 @@ export async function sucheNachEmail(email: string): Promise<Treffer[]> {
   const db = datenbankKonfiguriert();
   if (!db) return [];
   const res = await fetch(
-    `${db.url}/rest/v1/donation_request?select=vorgangsnummer,status,created_at,donation_device(id),contact!inner(email)&contact.email=eq.${encodeURIComponent(email)}&order=created_at.desc`,
+    `${db.url}/rest/v1/donation_request?select=vorgangsnummer,status,created_at,donation_device(id),contact!inner(email)&contact.email=ilike.${encodeURIComponent(email.replace(/[\\%_]/g, (m) => '\\' + m))}&order=created_at.desc`,
     { headers: dbKopfzeilen(db.key), cache: 'no-store' },
   );
   if (!res.ok) throw new Error(`Suche: ${res.status}`);
@@ -46,7 +46,7 @@ export async function auskunftFuer(email: string, nutzerEmail: string, aktion: s
     if (!v) continue;
     const fotos = devVorschauAktiv()
       ? (devEintrag(t.vorgangsnummer)?.fotos.length ?? 0)
-      : (await ladeFotos(v.id).catch(() => [])).length;
+      : (await ladeFotos(v.id)).length; // a failed read must not turn into "0 photos" in the export
     eintraege.push({
       vorgangsnummer: v.vorgangsnummer,
       status: v.status,

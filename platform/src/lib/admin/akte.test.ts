@@ -50,4 +50,16 @@ describe('envanterCsv', () => {
     expect(zeilen[1]).toContain('"SN;1"');
     expect(zeilen[1]).toContain('"Regal ""A"""');
   });
+
+  it('neutralises spreadsheet formulas in user text', () => {
+    const akte = pruefeAkte({ seriennummer: '=HYPERLINK("http://x";"klick")', lagerort: '+49 Lager' }).werte;
+    const v = {
+      vorgangsnummer: 'WW-2026-123456',
+      geraete: [{ id: 'x', position: 1, typ: 'laptop', marke: '@evil', modell: null, akte }],
+    } as unknown as VorgangDaten;
+    const zeile = envanterCsv([v]).split('\r\n')[1];
+    expect(zeile).toContain("'=HYPERLINK");
+    expect(zeile).toContain("'+49 Lager");
+    expect(zeile).toContain("'@evil");
+  });
 });

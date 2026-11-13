@@ -40,13 +40,8 @@ export async function loescheVorgang(nummer: string, nutzerEmail: string, t: Adm
       return { fehler: t.detail.loeschenFoto };
     }
   }
-  const res = await fetch(`${db.url}/rest/v1/donation_request?vorgangsnummer=eq.${nummer}`, {
-    method: 'DELETE',
-    headers: dbKopfzeilen(db.key),
-    cache: 'no-store',
-  });
-  if (!res.ok) return { fehler: t.detail.loeschenDb };
-  // The contact row is the parent of the request: remove it too, so no personal data stays behind.
+  // The contact is the parent of the request: deleting it cascades to the request, devices and records.
+  // Deleting the contact first means a failure leaves no orphan contact that the search cannot find.
   const kontakt = await fetch(`${db.url}/rest/v1/contact?id=eq.${v.kontaktId}`, {
     method: 'DELETE',
     headers: dbKopfzeilen(db.key),

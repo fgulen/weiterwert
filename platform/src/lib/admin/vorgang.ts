@@ -86,7 +86,8 @@ export async function ladeVorgang(nummer: string): Promise<VorgangDaten | null> 
       cache: 'no-store',
     });
   let res = await holen(select);
-  if (!res.ok) {
+  if (res.status === 400) {
+    // Only a bad request (missing table or column) falls back; other errors must not hide device records.
     // Until the device_record migration has run, the embed fails: load the case without the device records.
     const ohneAkte = ['id', 'vorgangsnummer', 'status', 'created_at', 'regel_version', 'erklaerung_version', 'erklaerung_hash',
       'contact(id,name,email,plz,telefon,organisation)',

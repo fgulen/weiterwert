@@ -38,7 +38,8 @@ export async function ladeSpendenListe(): Promise<AnfrageZeile[]> {
   // Until the donation_photo migration has run, the photo join fails: then the list still loads, without photo counts.
   let res = await abfrage('vorgangsnummer,status,created_at,donation_device(typ,marke,modell),donation_photo(id)');
   let mitFotos = true;
-  if (!res.ok) {
+  if (res.status === 400) {
+    // Only a bad request (missing photo table) falls back; other errors must not show 0 photos silently.
     res = await abfrage('vorgangsnummer,status,created_at,donation_device(typ,marke,modell)');
     mitFotos = false;
   }
