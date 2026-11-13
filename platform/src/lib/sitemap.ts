@@ -11,7 +11,7 @@ export const SITEMAP: SitemapEntry[] = [
   { path: '/beantragen', title: 'Gerät beantragen', feature: 'geraetBeantragen' },
   { path: '/impressum', title: 'Impressum', germanOnly: true },
   { path: '/datenschutz', title: 'Datenschutzerklärung', germanOnly: true },
-  { path: '/admin', title: 'Verwaltung', feature: 'admin', germanOnly: true },
+  { path: '/admin', title: 'Verwaltung', feature: 'admin' },
 ];
 
 export function pageTitle(path: string): string {

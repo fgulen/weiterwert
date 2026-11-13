@@ -156,6 +156,11 @@ export function GeraeteCheck({ abschluss, absenden = false, lang = 'de', fotos =
   const [schluessel, setSchluessel] = useState<{ key: string; inhalt: string } | null>(null);
   const [sendFehler, setSendFehler] = useState<string | null>(null);
   const [vorgangsnummer, setVorgangsnummer] = useState<string | null>(null);
+  // Photos are chosen on the summary step and sent right after the request is saved (the route looks the request up by its key).
+  const [fotoDateien, setFotoDateien] = useState<File[]>([]);
+  const [fotoRest, setFotoRest] = useState<File[]>([]);
+  const [fotoStatus, setFotoStatus] = useState<'laeuft' | 'fehler' | 'fertig'>('fertig');
+  const [fotoFehler, setFotoFehler] = useState<string | null>(null);
   const [sendet, startSenden] = useTransition();
   const id = useId();
   const heading = useRef<HTMLHeadingElement>(null);
@@ -218,8 +223,36 @@ export function GeraeteCheck({ abschluss, absenden = false, lang = 'de', fotos =
     gehe(ABSENDEN);
   };
 
+  // One photo per call: a single file stays well under the request body limit of Vercel Functions.
+  // On failure the rest stays in fotoRest and "erneut senden" continues with the same key.
+  const hochladenFotos = async (key: string, offen: File[]) => {
+    setFotoStatus('laeuft');
+    setFotoFehler(null);
+    for (let i = 0; i < offen.length; i++) {
+      const fd = new FormData();
+      fd.set('idempotencyKey', key);
+      fd.append('foto', offen[i]);
+      let meldung = t.fotoFehler;
+      try {
+        const res = await fetch('/api/spenden/foto', { method: 'POST', body: fd });
+        const data = (await res.json()) as { ok?: boolean; fehler?: string };
+        if (res.ok && data.ok) continue;
+        meldung = data.fehler ?? meldung;
+      } catch {
+        // Keep the generic message; the donor can retry.
+      }
+      setFotoRest(offen.slice(i));
+      setFotoFehler(meldung);
+      setFotoStatus('fehler');
+      return;
+    }
+    setFotoRest([]);
+    setFotoStatus('fertig');
+  };
+
   const senden = () => {
     if (!erkl.eigentum || !erkl.daten) { setErklFehler(true); document.getElementById(`${id}-erkl`)?.focus(); return; }
+    if (fotos && fotoDateien.length === 0) return;
     setErklFehler(false);
     setSendFehler(null);
     startSenden(async () => {
@@ -227,7 +260,11 @@ export function GeraeteCheck({ abschluss, absenden = false, lang = 'de', fotos =
         const antwort = await sendeAnfrage({
           idempotencyKey: schluessel?.key, geraete: liste.map((d) => d.eingabe), kontakt, erklaerungen: erkl, website,
         });
-        if (antwort.ok) { moved.current = true; setVorgangsnummer(antwort.vorgangsnummer); }
+        if (antwort.ok) {
+          moved.current = true;
+          setVorgangsnummer(antwort.vorgangsnummer);
+          if (fotos && schluessel) void hochladenFotos(schluessel.key, fotoDateien);
+        }
         else setSendFehler(antwort.code === 'zuViele' ? mit(t.fehler.zuViele, { max: MAX_GERAETE }) : t.fehler[antwort.code] ?? antwort.fehler);
       } catch {
         // Lost connection or an outdated page after a deploy; the same key makes a retry safe.
@@ -260,7 +297,14 @@ export function GeraeteCheck({ abschluss, absenden = false, lang = 'de', fotos =
         <p className={styles.nummer}>{vorgangsnummer}</p>
         <p>{t.dankeMelden}</p>
         <p className={styles.hint}>{t.dankeNochNichts}</p>
-        {fotos && schluessel && <FotoUpload idempotencyKey={schluessel.key} t={t} />}
+        {fotos && fotoStatus === 'laeuft' && <p role="status">{t.fotoLaeuft}</p>}
+        {fotos && fotoStatus === 'fertig' && <p role="status">{t.fotoFertig}</p>}
+        {fotos && fotoStatus === 'fehler' && (
+          <div>
+            <p role="alert" className={styles.fehlerBox}>{fotoFehler}</p>
+            <button type="button" className="btn" onClick={() => schluessel && hochladenFotos(schluessel.key, fotoRest)}>{t.fotoWiederholen}</button>
+          </div>
+        )}
       </section>
     );
   }
@@ -402,6 +446,14 @@ export function GeraeteCheck({ abschluss, absenden = false, lang = 'de', fotos =
                 {kontakt.organisation && <><br />{kontakt.organisation}</>}
               </p>
             </div>
+            {fotos && (
+              <section className={styles.summary} aria-labelledby={`${id}-fotos`}>
+                <div className={styles.summaryHead}><h3 id={`${id}-fotos`}>{t.fotos} ({fotoDateien.length})</h3></div>
+                <p className={styles.hint}>{t.fotoGrund}</p>
+                {fotoDateien.length === 0 && <p className={styles.fehler}>{t.fotoFehlt}</p>}
+                <FotoUpload dateien={fotoDateien} onChange={setFotoDateien} t={t} />
+              </section>
+            )}
             <fieldset className={styles.q} id={`${id}-erkl`} tabIndex={-1} aria-describedby={erklFehler ? `${id}-erkl-fehler` : undefined}>
               <legend>{t.erklaerungen}</legend>
               {lang !== 'de' && <p className={styles.hint}>{t.erklaerungenDeutsch}</p>}
@@ -443,7 +495,7 @@ export function GeraeteCheck({ abschluss, absenden = false, lang = 'de', fotos =
           )}
           {schritt === KONTAKT && <button type="submit" className="btn">{t.weiter}</button>}
           {schritt === ABSENDEN && (
-            <button type="submit" className="btn" disabled={sendet || liste.length === 0}>{sendet ? t.wirdGesendet : t.senden}</button>
+            <button type="submit" className="btn" disabled={sendet || liste.length === 0 || (fotos && fotoDateien.length === 0)}>{sendet ? t.wirdGesendet : t.senden}</button>
           )}
         </div>
 

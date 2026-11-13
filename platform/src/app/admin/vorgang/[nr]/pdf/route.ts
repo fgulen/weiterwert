@@ -4,6 +4,7 @@ import { ladeVorgang, VORGANGSNUMMER } from '@/lib/admin/vorgang';
 import { baueVorgangsblatt } from '@/lib/admin/vorgangsblatt';
 import { schreibeProtokoll } from '@/lib/admin/protokoll';
 import { gatePage } from '@/lib/page-gate';
+import { devVorschauAktiv } from '@/lib/dev/vorschau';
 
 type Kontext = { params: Promise<{ nr: string }> };
 
@@ -20,10 +21,13 @@ export async function GET(_req: Request, { params }: Kontext) {
   if (!vorgang) notFound();
 
   // Every download is recorded first (Plan §11). If the record cannot be written, no file is handed out.
-  try {
-    await schreibeProtokoll({ nutzer: nutzer.email, aktion: 'pdf', vorgang: nr, details: {} });
-  } catch {
-    return new Response('Der Download konnte nicht protokolliert werden.', { status: 503, headers: { 'Cache-Control': 'no-store' } });
+  // Dev preview has no database: the record is skipped there only.
+  if (!devVorschauAktiv()) {
+    try {
+      await schreibeProtokoll({ nutzer: nutzer.email, aktion: 'pdf', vorgang: nr, details: {} });
+    } catch {
+      return new Response('Der Download konnte nicht protokolliert werden.', { status: 503, headers: { 'Cache-Control': 'no-store' } });
+    }
   }
 
   const pdf = await baueVorgangsblatt(vorgang, new Date());

@@ -3,11 +3,11 @@ import path from 'node:path';
 import { PDFDocument, PDFFont, PDFPage, rgb } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import { ANGABE_REIHENFOLGE, angabeLabel, angabeText, ERGEBNIS_KURZ, type VorgangDaten } from './vorgang';
-import { statusText } from './anzeige';
+import { datumDe, datumZeitDe, statusText } from './anzeige';
 
 // Inter (SIL OFL) from public/fonts. Standard PDF fonts cannot show ş, ğ, ı or İ, so the font is embedded.
-const SCHRIFT = path.join(process.cwd(), 'public/fonts/inter-latin-ext-400.woff2');
-const SCHRIFT_FETT = path.join(process.cwd(), 'public/fonts/inter-latin-ext-700.woff2');
+const SCHRIFT = path.join(process.cwd(), 'public/fonts/inter-merged-400.ttf');
+const SCHRIFT_FETT = path.join(process.cwd(), 'public/fonts/inter-merged-700.ttf');
 
 const SEITE = { breite: 595.28, hoehe: 841.89, rand: 50 };
 const FARBE_TEXT = rgb(0.1, 0.12, 0.16);
@@ -17,8 +17,8 @@ const FARBE_NEBEN = rgb(0.4, 0.43, 0.48);
 export async function baueVorgangsblatt(v: VorgangDaten, erstelltAm: Date): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
   doc.registerFontkit(fontkit);
-  const normal = await doc.embedFont(await readFile(SCHRIFT), { subset: false });
-  const fett = await doc.embedFont(await readFile(SCHRIFT_FETT), { subset: false });
+  const normal = await doc.embedFont(await readFile(SCHRIFT), { subset: true });
+  const fett = await doc.embedFont(await readFile(SCHRIFT_FETT), { subset: true });
   doc.setTitle(`Vorgangsblatt ${v.vorgangsnummer}`);
   doc.setSubject('Vorgangsblatt / Annahmeprotokoll');
   doc.setAuthor('WeiterWert');
@@ -40,13 +40,25 @@ export async function baueVorgangsblatt(v: VorgangDaten, erstelltAm: Date): Prom
     const woerter = text.split(/\s+/).filter(Boolean);
     const zeilen: string[] = [];
     let aktuell = '';
-    for (const wort of woerter) {
-      const probe = aktuell ? `${aktuell} ${wort}` : wort;
-      if (font.widthOfTextAtSize(probe, groesse) <= max) {
-        aktuell = probe;
-      } else {
-        if (aktuell) zeilen.push(aktuell);
-        aktuell = wort;
+    for (const wort0 of woerter) {
+      // A single word wider than the column (e.g. a checksum) is cut into pieces.
+      const teile: string[] = [];
+      let rest = wort0;
+      while (font.widthOfTextAtSize(rest, groesse) > max && rest.length > 1) {
+        let n = rest.length - 1;
+        while (n > 1 && font.widthOfTextAtSize(rest.slice(0, n), groesse) > max) n--;
+        teile.push(rest.slice(0, n));
+        rest = rest.slice(n);
+      }
+      teile.push(rest);
+      for (const wort of teile) {
+        const probe = aktuell ? `${aktuell} ${wort}` : wort;
+        if (font.widthOfTextAtSize(probe, groesse) <= max) {
+          aktuell = probe;
+        } else {
+          if (aktuell) zeilen.push(aktuell);
+          aktuell = wort;
+        }
       }
     }
     if (aktuell) zeilen.push(aktuell);
@@ -95,9 +107,9 @@ export async function baueVorgangsblatt(v: VorgangDaten, erstelltAm: Date): Prom
   abstand(10);
 
   ueberschrift('Vorgang');
-  zeileKV('Eingegangen am', v.angelegt);
+  zeileKV('Eingegangen am', v.angelegt.length > 10 ? datumZeitDe(v.angelegt) : datumDe(v.angelegt));
   zeileKV('Status', statusText(v.status));
-  zeileKV('Ausgedruckt am', erstelltAm.toISOString().slice(0, 16).replace('T', ' ') + ' UTC');
+  zeileKV('Ausgedruckt am', datumZeitDe(erstelltAm.toISOString()));
 
   ueberschrift('Kontakt (Spender/in)');
   zeileKV('Name', v.kontakt.name);

@@ -20,7 +20,7 @@ const SPRACH_SCRIPT = "document.documentElement.lang=/^\\/(tr|en)(\\/|$)/.exec(l
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="de">
+    <html lang="de" suppressHydrationWarning>
       <body>
         <script dangerouslySetInnerHTML={{ __html: SPRACH_SCRIPT }} />
         <Suspense fallback={null}>

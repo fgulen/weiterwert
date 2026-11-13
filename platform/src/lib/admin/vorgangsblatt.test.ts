@@ -5,6 +5,7 @@ import type { VorgangDaten } from './vorgang';
 
 const beispiel: VorgangDaten = {
   id: 'd21ad96a-0000-0000-0000-000000000000',
+  kontaktId: 'k-1',
   vorgangsnummer: 'WW-2026-123456',
   status: 'neu',
   angelegt: '2026-11-12',

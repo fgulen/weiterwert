@@ -1,4 +1,7 @@
+import { adminTexte } from '@/lib/i18n/admin';
+import type { Lang } from '@/lib/i18n/sprache';
 import { getAppEnv } from '@/lib/env';
+import { devEintrag } from '@/lib/dev/vorschau';
 
 /** WW-2026-123456: the number the donor receives. Anything else is refused before it reaches the database. */
 export const VORGANGSNUMMER = /^WW-\d{4}-\d{6}$/;
@@ -23,6 +26,8 @@ export type VorgangDaten = {
   regelVersion: string;
   erklaerungVersion: string;
   erklaerungHash: string;
+  /** Contact row id (needed to correct the contact). Dev preview uses "dev". */
+  kontaktId: string;
   kontakt: KontaktDaten;
   geraete: GeraetDaten[];
 };
@@ -30,14 +35,39 @@ export type VorgangDaten = {
 /** One request with its contact and devices. Null when the number is unknown or the database is not configured. */
 export async function ladeVorgang(nummer: string): Promise<VorgangDaten | null> {
   if (!VORGANGSNUMMER.test(nummer)) return null;
-  if (getAppEnv() === 'test') return null;
+  if (getAppEnv() === 'test') {
+    // Dev preview only (next dev): the request as it was sent in this session.
+    const e = devEintrag(nummer);
+    if (!e) return null;
+    const p = e.payload as { idempotency_key: string; kontakt: KontaktDaten; geraete: Array<Record<string, unknown>>; regel_version: string; erklaerung_version: string; erklaerung_hash: string };
+    return {
+      id: String(p.idempotency_key),
+      vorgangsnummer: nummer,
+      status: 'neu',
+      angelegt: e.angelegt,
+      regelVersion: p.regel_version,
+      erklaerungVersion: p.erklaerung_version,
+      erklaerungHash: p.erklaerung_hash,
+      kontaktId: "dev",
+      kontakt: p.kontakt,
+      geraete: p.geraete.map((g, i) => ({
+        position: i + 1,
+        typ: String(g.typ),
+        marke: (g.marke as string | null) ?? null,
+        modell: (g.modell as string | null) ?? null,
+        angaben: (g.angaben as Record<string, string>) ?? {},
+        ergebnis: String(g.ergebnis),
+        gruende: (g.gruende as string[]) ?? [],
+      })),
+    };
+  }
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SECRET_KEY;
   if (!url || !key) return null;
 
   const select = [
     'id', 'vorgangsnummer', 'status', 'created_at', 'regel_version', 'erklaerung_version', 'erklaerung_hash',
-    'contact(name,email,plz,telefon,organisation)',
+    'contact(id,name,email,plz,telefon,organisation)',
     'donation_device(position,typ,marke,modell,angaben,ergebnis,gruende)',
   ].join(',');
   const res = await fetch(
@@ -60,7 +90,7 @@ export async function ladeVorgang(nummer: string): Promise<VorgangDaten | null> 
     regel_version: string;
     erklaerung_version: string;
     erklaerung_hash: string;
-    contact: KontaktDaten;
+    contact: KontaktDaten & { id: string };
     donation_device: GeraetDaten[];
   }>;
   const z = zeilen[0];
@@ -73,48 +103,37 @@ export async function ladeVorgang(nummer: string): Promise<VorgangDaten | null> 
     regelVersion: z.regel_version,
     erklaerungVersion: z.erklaerung_version,
     erklaerungHash: z.erklaerung_hash,
-    kontakt: z.contact,
+    kontaktId: z.contact.id,
+    kontakt: { name: z.contact.name, email: z.contact.email, plz: z.contact.plz, telefon: z.contact.telefon, organisation: z.contact.organisation },
     geraete: [...z.donation_device].sort((a, b) => a.position - b.position),
   };
 }
 
-/** Short result labels for the case sheet and the admin detail page. Unknown values stay as they are. */
-export const ERGEBNIS_KURZ: Record<string, string> = {
-  geeignet: 'Vorläufig geeignet',
-  angaben: 'Weitere Angaben erforderlich',
-  manuell: 'Manuelle Prüfung erforderlich',
-  nichtGeeignet: 'Nach den veröffentlichten Kriterien voraussichtlich nicht geeignet',
-};
+/** Result labels for the case sheet, the admin pages and the PDF (German by default). */
+export function ergebnisKurz(ergebnis: string, lang: Lang = 'de'): string {
+  const e = adminTexte(lang);
+  const map: Record<string, string> = {
+    geeignet: e.detail.ergebnisGeeignet,
+    angaben: e.detail.ergebnisAngaben,
+    manuell: e.detail.ergebnisManuell,
+    nichtGeeignet: e.detail.ergebnisNichtGeeignet,
+  };
+  return map[ergebnis] ?? ergebnis;
+}
 
-/** Readable German labels for the stored reason and answer values. Unknown values stay as they are. */
-const ANGABE_TEXT: Record<string, Record<string, string>> = {
-  typ: { laptop: 'Laptop', chromebook: 'Chromebook', macbook: 'MacBook', android: 'Android-Tablet', ipad: 'iPad', unbekannt: 'unbekannt' },
-  alter: { '0-3': '0–3 Jahre', '4-6': '4–6 Jahre', '7-9': '7–9 Jahre', '10+': '10 Jahre oder älter', unbekannt: 'unbekannt' },
-  startet: { ja: 'ja', nein: 'nein', unbekannt: 'unbekannt' },
-  display: { ok: 'ohne Schaden', schaden: 'Schaden', unbekannt: 'unbekannt' },
-  akku: { ok: 'in Ordnung', schwach: 'schwach', gebläht: 'aufgebläht', unbekannt: 'unbekannt' },
-  sperren: { keine: 'keine', konto: 'Konto-Sperre', firma: 'Firmen-Sperre', unbekannt: 'unbekannt' },
-  eigentum: { ja: 'ja, eigenes Gerät', leasing: 'Leasing / Miete', unbekannt: 'unbekannt' },
-  ram: { '8+': '8 GB oder mehr', '4': '4 bis 6 GB', unter4: 'weniger als 4 GB', unbekannt: 'unbekannt' },
-};
-
-const ANGABE_LABEL: Record<string, string> = {
-  typ: 'Gerätetyp',
-  alter: 'Alter',
-  startet: 'Startet',
-  display: 'Display',
-  akku: 'Akku',
-  sperren: 'Sperren',
-  eigentum: 'Eigentum',
-  ram: 'Arbeitsspeicher',
-};
+/** Kept for the PDF, which stays German. */
+export const ERGEBNIS_KURZ: Record<string, string> = Object.fromEntries(
+  ['geeignet', 'angaben', 'manuell', 'nichtGeeignet'].map((k) => [k, ergebnisKurz(k, 'de')]),
+);
 
 export const ANGABE_REIHENFOLGE = ['typ', 'alter', 'startet', 'display', 'akku', 'sperren', 'eigentum', 'ram'] as const;
 
-export function angabeText(feld: string, wert: string): string {
-  return ANGABE_TEXT[feld]?.[wert] ?? wert;
+export function angabeText(feld: string, wert: string, lang: Lang = 'de'): string {
+  const w = adminTexte(lang).angabe.wert as Record<string, Record<string, string>>;
+  return w[feld]?.[wert] ?? wert;
 }
 
-export function angabeLabel(feld: string): string {
-  return ANGABE_LABEL[feld] ?? feld;
+export function angabeLabel(feld: string, lang: Lang = 'de'): string {
+  const l = adminTexte(lang).angabe.label as Record<string, string>;
+  return l[feld] ?? feld;
 }

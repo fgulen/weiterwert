@@ -4,20 +4,18 @@ import { getAppEnv } from '@/lib/env';
 import { datenbankKonfiguriert, dbKopfzeilen } from '@/lib/admin/db';
 import { bereinigeFoto, FOTO_MAX_ANZAHL } from '@/lib/fotos/bild';
 import { speichereFoto } from '@/lib/fotos/speicher';
+import { devFotosHinzu } from '@/lib/dev/vorschau';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
- * Optional photos after a donation request was saved. The donor proves ownership with the idempotency key
+ * Device photos, sent right after a donation request was saved (one file per call). The donor proves ownership with the idempotency key
  * of their request (a random UUID that only the browser that submitted the request knows).
  */
 export async function POST(req: Request) {
   if (resolveVisibility(FEATURES.geraetFoto.status, getAppEnv()) === 'hide') {
     return NextResponse.json({ ok: false, fehler: 'Nicht verfügbar.' }, { status: 404 });
   }
-  const db = datenbankKonfiguriert();
-  if (!db) return NextResponse.json({ ok: false, fehler: 'Speichern ist hier nicht verfügbar.' }, { status: 503 });
-
   let form: FormData;
   try {
     form = await req.formData();
@@ -32,6 +30,23 @@ export async function POST(req: Request) {
   if (dateien.length > FOTO_MAX_ANZAHL) {
     return NextResponse.json({ ok: false, fehler: `Höchstens ${FOTO_MAX_ANZAHL} Fotos möglich.` }, { status: 400 });
   }
+
+  // Test environment: the files are checked like in production, but nothing is stored.
+  if (getAppEnv() === 'test') {
+    const bilder: ReturnType<typeof bereinigeFoto>[] = [];
+    for (const datei of dateien) {
+      try {
+        bilder.push(bereinigeFoto(new Uint8Array(await datei.arrayBuffer())));
+      } catch (e) {
+        return NextResponse.json({ ok: false, fehler: e instanceof Error ? e.message : 'Die Datei ist nicht erlaubt.' }, { status: 400 });
+      }
+    }
+    devFotosHinzu(schluessel, bilder);
+    return NextResponse.json({ ok: true, gespeichert: dateien.length });
+  }
+
+  const db = datenbankKonfiguriert();
+  if (!db) return NextResponse.json({ ok: false, fehler: 'Speichern ist hier nicht verfügbar.' }, { status: 503 });
 
   // Find the request by its key and count the photos it already has.
   const r = await fetch(

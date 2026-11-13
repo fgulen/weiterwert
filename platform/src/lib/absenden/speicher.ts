@@ -1,4 +1,5 @@
 import { getAppEnv } from '@/lib/env';
+import { devSpeichere } from '@/lib/dev/vorschau';
 
 export type Gespeichert = { vorgangsnummer: string; neu: boolean; outboxId: string | null };
 
@@ -52,6 +53,7 @@ const attrappe: Speicher = (() => {
       if (vorhanden) return { vorgangsnummer: vorhanden, neu: false, outboxId: null };
       const nr = `WW-${new Date().getUTCFullYear()}-${String(Math.floor(Math.random() * 1_000_000)).padStart(6, '0')}`;
       nachSchluessel.set(key, nr);
+      devSpeichere(nr, payload);
       return { vorgangsnummer: nr, neu: true, outboxId: null };
     },
     async markiere() {},

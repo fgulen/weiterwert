@@ -14,7 +14,9 @@ function Auge({ offen }: { offen: boolean }) {
 }
 
 /** Password field with an eye button to show or hide the typed password. */
-export function PasswortFeld({ name, label, autoComplete }: { name: string; label: string; autoComplete: string }) {
+export function PasswortFeld({
+  name, label, autoComplete, anzeigen = 'Passwort anzeigen', verbergen = 'Passwort verbergen',
+}: { name: string; label: string; autoComplete: string; anzeigen?: string; verbergen?: string }) {
   const [sichtbar, setSichtbar] = useState(false);
   const id = useId();
   return (
@@ -31,9 +33,9 @@ export function PasswortFeld({ name, label, autoComplete }: { name: string; labe
         />
         <button
           type="button"
-          aria-label={sichtbar ? 'Passwort verbergen' : 'Passwort anzeigen'}
+          aria-label={sichtbar ? verbergen : anzeigen}
           aria-pressed={sichtbar}
-          title={sichtbar ? 'Passwort verbergen' : 'Passwort anzeigen'}
+          title={sichtbar ? verbergen : anzeigen}
           onClick={() => setSichtbar((v) => !v)}
           style={{ minWidth: 44, minHeight: 44, display: 'grid', placeItems: 'center', border: '1px solid var(--line-strong)', borderRadius: 10, background: 'var(--surface)', color: 'var(--muted)', cursor: 'pointer' }}
         >

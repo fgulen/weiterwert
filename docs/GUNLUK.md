@@ -271,3 +271,38 @@ Commit yerelde; push ve deploy yok. `tsconfig.json`, `.claude/`, `.next-local*` 
 1. Supabase: Site URL steht auf `http://localhost:3000` (Sicherheitsprüfung hat die Änderung blockiert). Canlı-Mailbağlantıları için `https://weiterwert.de` setzen und Redirect-URL `…/admin/passwort-neu` für die Produktion hinzufügen.
 2. `test-admin@weiterwert.de`: gesperrt (ban), später löschen.
 3. Foto-Migration im SQL-Editor ausführen, dann Foto-Funktion prüfen. Vor Live-Schaltung: Datenschutztext, DSFA, Löschtest.
+
+## 2026-11-13 (Spenden-Foto Pflicht, Admin-Ausbau, Admin Türkisch, PDF-Fix)
+
+**Spenden (`/spenden`):**
+- Fotos sind Pflicht, wenn das Feature aktiv ist: mindestens 1, höchstens 3. Auswahl im Schritt "Absenden", ohne Foto ist "Anfrage absenden" gesperrt.
+- Upload erst nach dem Speichern der Anfrage, eine Datei pro Aufruf (Vercel-Limit 4,5 MB). Bei Fehler bleibt die Vorgangsnummer, "Fotos erneut senden" setzt fort.
+- Gerekçe-Text (DE/TR/EN): Fotos zuerst für die Erstprüfung, Gerät erst nach Rückmeldung senden (CO₂, Versand, Aufwand).
+- Feature `geraetFoto` bleibt **verborgen**. Canlıda foto alanı yok, zorunluluk da yok.
+
+**Admin (`/admin`, `/tr/admin`):**
+- Liste: Marke/Modell, Status-Pille, Datum, Fotozahl, ganze Zeile klickbar, Mobil als Karten.
+- Detail: Reihenfolge Status, Geräte, Fotos, Kontakt, Protokoll (eingeklappt), Löschen. Nur beantwortete Angaben, Rest als "Keine Angabe".
+- Kontakt bearbeiten (Admin und Mitarbeiter). Geräteantworten und Erklärungen bleiben schreibgeschützt. Protokoll enthält geänderte Feldnamen, keine Werte.
+- Vorgang löschen (nur Admin): Zweistufig, ohne Browser-Dialog. Protokoll zuerst, dann Fotodateien, dann Zeile (Kaskade löscht Kontakt, Geräte, Foto-Zeilen).
+- Türkische Oberfläche über `src/lib/i18n/admin.ts`. Englisch fällt auf Deutsch zurück. PDF bleibt Deutsch.
+- Sitzungs-Cookie-Pfad von `/admin` auf `/` geändert, weil der Browser sonst unter `/tr/admin` kein Cookie sendet. Abwägung: Cookie wird nun bei allen Seiten mitgeschickt (httpOnly, sameSite=lax).
+
+**Dev-Vorschau (nur `next dev` + `APP_ENV=test`):** Anfragen und bereinigte Fotos im Serverspeicher (`src/lib/dev/vorschau.ts`), Liste/Detail/Fotos/PDF/Löschen funktionieren damit lokal. Verloren beim Neustart. Canlıda ve test build'te kapalı.
+
+**Sonstiges:**
+- PDF-Schrift: Inter Latin und Latin-Ext waren getrennt; die Datei mit nur Latin-Ext ließ alle Buchstaben als "V/W" erscheinen. Jetzt eine zusammengeführte TTF (`public/fonts/inter-merged-{400,700}.ttf`), Subsetting an.
+- PDF-Download lokal ohne Protokolleintrag (nur Dev-Vorschau), Produktion unverändert.
+- `<html lang>` mit `suppressHydrationWarning`: Sprachskript setzt `lang` vor der Hydration; sonst Hydration-Warnung auf allen `/tr`- und `/en`-Seiten.
+- Admin-Seiten nicht mehr als "nur Deutsch" markiert.
+
+**Tests:** tsc sauber, vitest 128, Playwright 71, `test:static` 20. Gegen die Live-Datenbank nicht getestet: Kontakt bearbeiten, Löschen, Foto-Löschen im Produktionszweig. Keine neue SQL-Migration nötig.
+
+**Nicht deployt.** Branch lokal, nicht gepusht.
+
+**Offen (Fatih):**
+1. Foto-Feature: Live-Schaltung erst nach Datenschutztext, AVV und DSFA. Entscheidung, ob das Flag aktiviert wird.
+2. Foto-Obergrenze 4 MB: Telefonfotos werden abgelehnt. Im Browser verkleinern?
+3. Supabase Redirect URLs: `…/tr/admin/passwort-neu` (und `/en/…`) eintragen, sonst funktioniert der Reset-Link auf Türkisch nicht.
+4. Admin auf Englisch übersetzen?
+5. Begründungen in der Datenbank bleiben deutsch gespeichert. Nur bekannte Sätze werden übersetzt.

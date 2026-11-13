@@ -1,59 +1,31 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useState } from 'react';
+import { FOTO_MAX_ANZAHL, FOTO_MAX_BYTES } from '@/lib/fotos/bild';
 import type { CheckTexte } from '@/lib/i18n/check';
 
-/** Optional photos after the request was saved. Sent to the API route; the server checks and cleans every file. */
-export function FotoUpload({ idempotencyKey, t }: { idempotencyKey: string; t: CheckTexte }) {
-  const id = useId();
-  const [dateien, setDateien] = useState<File[]>([]);
-  const [status, setStatus] = useState<'bereit' | 'sendet' | 'fertig' | 'fehler'>('bereit');
-  const [meldung, setMeldung] = useState<string | null>(null);
+/**
+ * Photo picker for the summary step. The files are sent together with the request by GeraeteCheck,
+ * one file per call. Files over 4 MB are left out and the donor is told why.
+ */
+export function FotoUpload({ dateien, onChange, t }: { dateien: File[]; onChange: (d: File[]) => void; t: CheckTexte }) {
+  const [hinweis, setHinweis] = useState<string | null>(null);
 
-  async function senden() {
-    if (dateien.length === 0) return;
-    setStatus('sendet');
-    setMeldung(null);
-    const fd = new FormData();
-    fd.set('idempotencyKey', idempotencyKey);
-    for (const f of dateien) fd.append('foto', f);
-    try {
-      const res = await fetch('/api/spenden/foto', { method: 'POST', body: fd });
-      const data = (await res.json()) as { ok?: boolean; fehler?: string };
-      if (res.ok && data.ok) {
-        setStatus('fertig');
-        setDateien([]);
-      } else {
-        setStatus('fehler');
-        setMeldung(data.fehler ?? t.fotoFehler);
-      }
-    } catch {
-      setStatus('fehler');
-      setMeldung(t.fotoFehler);
-    }
+  function waehle(liste: FileList | null) {
+    const alle = Array.from(liste ?? []);
+    const zuGross = alle.some((f) => f.size > FOTO_MAX_BYTES);
+    setHinweis(zuGross ? t.fotoZuGross : null);
+    onChange(alle.filter((f) => f.size > 0 && f.size <= FOTO_MAX_BYTES).slice(0, FOTO_MAX_ANZAHL));
   }
 
-  if (status === 'fertig') return <p role="status">{t.fotoFertig}</p>;
-
   return (
-    <section aria-labelledby={`${id}-titel`} style={{ marginTop: 16 }}>
-      <h3 id={`${id}-titel`}>{t.fotoTitel}</h3>
-      <p>{t.fotoText}</p>
-      <label style={{ display: 'grid', gap: 6, maxWidth: 420 }}>
+    <div style={{ display: 'grid', gap: 8, minWidth: 0 }}>
+      <label style={{ display: 'grid', gap: 6, minWidth: 0 }}>
         {t.fotoWaehlen}
-        <input
-          type="file"
-          accept="image/jpeg,image/png"
-          multiple
-          onChange={(e) => setDateien(Array.from(e.target.files ?? []).slice(0, 3))}
-          style={{ minHeight: 44 }}
-        />
+        <input type="file" accept="image/jpeg,image/png" multiple onChange={(e) => waehle(e.target.files)} style={{ minHeight: 44, width: '100%', maxWidth: '100%', minWidth: 0 }} />
       </label>
       {dateien.length > 0 && <p>{dateien.map((f) => f.name).join(', ')}</p>}
-      {meldung && <p role="alert">{meldung}</p>}
-      <button type="button" className="btn" onClick={senden} disabled={dateien.length === 0 || status === 'sendet'} style={{ marginTop: 8 }}>
-        {t.fotoSenden}
-      </button>
-    </section>
+      {hinweis && <p role="alert">{hinweis}</p>}
+    </div>
   );
 }

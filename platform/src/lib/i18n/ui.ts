@@ -37,7 +37,7 @@ export const UI: Record<Lang, UiTexte> = {
     barrierefrei: 'Barrierefreiheit',
     bannerTest: 'Testumgebung – keine echten Spenden',
     bannerLive: 'Die Seite befindet sich derzeit in der Testphase.',
-    teamAnmeldung: 'Team-Anmeldung',
+    teamAnmeldung: 'Anmelden',
     nurDeutsch: '',
     homeH1: 'Technik weitergeben. Chancen eröffnen.',
     homeLead:

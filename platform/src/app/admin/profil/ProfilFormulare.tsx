@@ -2,6 +2,7 @@
 
 import { useActionState, useState, useTransition } from 'react';
 import { PasswortFeld } from '@/components/PasswortFeld';
+import type { AdminTexte } from '@/lib/i18n/admin';
 import { mfaBestaetigen, mfaEntfernen, mfaStarten, passwortAendern, type Ergebnis } from './actions';
 import styles from '../admin.module.css';
 
@@ -13,30 +14,30 @@ function Meldung({ e }: { e: Ergebnis }) {
   return null;
 }
 
-function CodeFeld({ id }: { id: string }) {
+function CodeFeld({ id, t }: { id: string; t: AdminTexte }) {
   return (
     <label className={styles.feld} htmlFor={id}>
-      Code aus der Authenticator-App
+      {t.konto.pwCode}
       <input id={id} name="code" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9 ]*" maxLength={7} required className={styles.eingabe} />
     </label>
   );
 }
 
-export function PasswortFormular({ mitCode }: { mitCode: boolean }) {
+export function PasswortFormular({ mitCode, t }: { mitCode: boolean; t: AdminTexte }) {
   const [e, aktion, laeuft] = useActionState(passwortAendern, LEER);
   return (
     <form action={aktion} className={styles.formular}>
-      <PasswortFeld name="aktuell" label="Aktuelles Passwort" autoComplete="current-password" />
-      <PasswortFeld name="neu" label="Neues Passwort (mindestens 12 Zeichen)" autoComplete="new-password" />
-      <PasswortFeld name="wiederholung" label="Neues Passwort wiederholen" autoComplete="new-password" />
-      {mitCode && <CodeFeld id="pw-code" />}
+      <PasswortFeld name="aktuell" label={t.konto.pwAktuell} autoComplete="current-password" anzeigen={t.passwortAnzeigen} verbergen={t.passwortVerbergen} />
+      <PasswortFeld name="neu" label={t.konto.pwNeu} autoComplete="new-password" anzeigen={t.passwortAnzeigen} verbergen={t.passwortVerbergen} />
+      <PasswortFeld name="wiederholung" label={t.konto.pwWiederholung} autoComplete="new-password" anzeigen={t.passwortAnzeigen} verbergen={t.passwortVerbergen} />
+      {mitCode && <CodeFeld id="pw-code" t={t} />}
       <Meldung e={e} />
-      <button type="submit" className="btn btn-primary" disabled={laeuft}>Passwort ändern</button>
+      <button type="submit" className="btn btn-primary" disabled={laeuft}>{t.konto.pwAendern}</button>
     </form>
   );
 }
 
-export function MfaBereich({ faktorId, verifiziert }: { faktorId: string | null; verifiziert: boolean }) {
+export function MfaBereich({ faktorId, verifiziert, t }: { faktorId: string | null; verifiziert: boolean; t: AdminTexte }) {
   const [start, setStart] = useState<Ergebnis>(LEER);
   const [wartet, starte] = useTransition();
   const [bestaetigt, bestaetigeAktion, laeuftB] = useActionState(mfaBestaetigen, LEER);
@@ -46,13 +47,13 @@ export function MfaBereich({ faktorId, verifiziert }: { faktorId: string | null;
     if (entfernt.ok) return <Meldung e={entfernt} />;
     return (
       <>
-        <p><strong>Eingerichtet.</strong> Eine Authenticator-App ist mit diesem Konto verbunden.</p>
-        <p className={styles.meta}>Zum Entfernen bitte einen aktuellen Code eingeben.</p>
+        <p><strong>{t.konto.mfaEingerichtet}</strong> {t.konto.mfaVerbunden}</p>
+        <p className={styles.meta}>{t.konto.mfaEntfernenHinweis}</p>
         <form action={entferneAktion} className={styles.formular}>
           <input type="hidden" name="faktor" value={faktorId} />
-          <CodeFeld id="mfa-entf" />
+          <CodeFeld id="mfa-entf" t={t} />
           <Meldung e={entfernt} />
-          <button type="submit" className="btn" disabled={laeuftE}>Zwei-Faktor-Anmeldung entfernen</button>
+          <button type="submit" className="btn" disabled={laeuftE}>{t.konto.mfaEntfernen}</button>
         </form>
       </>
     );
@@ -64,10 +65,10 @@ export function MfaBereich({ faktorId, verifiziert }: { faktorId: string | null;
   if (!ein) {
     return (
       <>
-        <p>Noch nicht eingerichtet. Die Anmeldung ist vorerst auch ohne zweiten Faktor möglich.</p>
+        <p>{t.konto.mfaNichtEingerichtet}</p>
         <Meldung e={start} />
         <button type="button" className="btn btn-primary" disabled={wartet} onClick={() => starte(async () => setStart(await mfaStarten()))}>
-          Zwei-Faktor-Anmeldung einrichten
+          {t.konto.mfaEinrichten}
         </button>
       </>
     );
@@ -76,21 +77,21 @@ export function MfaBereich({ faktorId, verifiziert }: { faktorId: string | null;
   return (
     <>
       <ol className={styles.schritte}>
-        <li>Authenticator-App öffnen (z. B. Google Authenticator, Aegis, 2FAS).</li>
-        <li>QR-Code scannen oder den Schlüssel von Hand eingeben.</li>
-        <li>Den 6-stelligen Code unten eingeben.</li>
+        <li>{t.konto.mfaSchritt1}</li>
+        <li>{t.konto.mfaSchritt2}</li>
+        <li>{t.konto.mfaSchritt3}</li>
       </ol>
       {ein.qr && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={ein.qr} alt="QR-Code zum Einrichten der Authenticator-App" width={200} height={200} className={styles.qr} />
+        <img src={ein.qr} alt={t.konto.mfaQrAlt} width={200} height={200} className={styles.qr} />
       )}
-      <p className={styles.meta}>Schlüssel zur Handeingabe:</p>
+      <p className={styles.meta}>{t.konto.mfaSchluessel}</p>
       <code className={styles.schluessel}>{ein.secret}</code>
       <form action={bestaetigeAktion} className={styles.formular}>
         <input type="hidden" name="faktor" value={ein.faktorId} />
-        <CodeFeld id="mfa-neu" />
+        <CodeFeld id="mfa-neu" t={t} />
         <Meldung e={bestaetigt} />
-        <button type="submit" className="btn btn-primary" disabled={laeuftB}>Code bestätigen</button>
+        <button type="submit" className="btn btn-primary" disabled={laeuftB}>{t.konto.mfaBestaetigen}</button>
       </form>
     </>
   );

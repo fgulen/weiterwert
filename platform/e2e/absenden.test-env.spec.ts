@@ -19,7 +19,11 @@ async function kontaktAusfuellen(page: Page) {
   await page.getByLabel('Postleitzahl').fill('50667');
 }
 
-async function bisAbsenden(page: Page) {
+async function fotoHinzufuegen(page: Page) {
+  await page.locator('input[type="file"]').setInputFiles('e2e/fixtures/geraet.png');
+}
+
+async function bisAbsenden(page: Page, mitFoto = true) {
   await page.goto('/spenden');
   await geraetErfassen(page, 'Lenovo');
   await page.getByRole('button', { name: 'Weiter zu Kontakt' }).click();
@@ -27,6 +31,7 @@ async function bisAbsenden(page: Page) {
   await kontaktAusfuellen(page);
   await weiter(page);
   await expect(page.getByText('Schritt 6 von 6')).toBeVisible();
+  if (mitFoto) await fotoHinzufuegen(page);
 }
 
 async function erklaeren(page: Page) {
@@ -43,7 +48,17 @@ test('a donor sends a request and gets a Vorgangsnummer', async ({ page }) => {
   await page.getByRole('button', { name: 'Anfrage absenden' }).click();
   await expect(page.getByRole('heading', { name: 'Vielen Dank für Ihre Spende!' })).toBeVisible();
   await expect(page.getByText(/^WW-\d{4}-\d{6}$/)).toBeVisible();
+  await expect(page.getByText('Danke, Ihre Fotos sind angekommen.')).toBeVisible();
   await expect(page.getByRole('list', { name: 'Fortschritt' })).toHaveCount(0);
+});
+
+test('a request cannot be sent without a photo', async ({ page }) => {
+  await bisAbsenden(page, false);
+  await erklaeren(page);
+  await expect(page.getByText('Bitte fügen Sie mindestens ein Foto hinzu, bevor Sie absenden.')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Anfrage absenden' })).toBeDisabled();
+  await fotoHinzufuegen(page);
+  await expect(page.getByRole('button', { name: 'Anfrage absenden' })).toBeEnabled();
 });
 
 test('contact errors are shown on Weiter and the first wrong field gets focus', async ({ page }) => {

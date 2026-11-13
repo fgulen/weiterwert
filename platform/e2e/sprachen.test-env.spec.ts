@@ -111,6 +111,7 @@ for (const [lang, width, weiter, kontakt, absenden, danke] of [
     await page.getByRole('button', { name: weiter, exact: true }).click();
     await page.getByRole('checkbox').nth(0).check();
     await page.getByRole('checkbox').nth(1).check();
+    await page.locator('input[type="file"]').setInputFiles('e2e/fixtures/geraet.png');
     const breit = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(breit).toBeLessThanOrEqual(0);
     await page.getByRole('button', { name: absenden }).click();

@@ -1,29 +1,129 @@
-.tabelle{width:100%;border-collapse:collapse;margin:12px 0 20px;font-size:0.95rem;background:var(--surface);}
-.tabelle th,.tabelle td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top;}
-.tabelle th{font-weight:700;color:var(--ink);background:var(--surface-alt);}
-.tabelle td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;}
-.meta{color:var(--muted);font-size:0.95rem;}
-.karte{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:16px;margin:16px 0;max-width:480px;}
+/* Back-office look: grey page, white cards, one accent for the main action, red only for delete. */
+
+.seite{max-width:1120px;margin:0 auto;padding:8px 0 48px;}
+.seite h2{font-size:1.1rem;margin:0 0 12px;}
+.titel{font-size:1.6rem;line-height:1.25;margin:0;}
+
+/* Top bar */
+.topBar{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between;padding:12px 0 18px;border-bottom:1px solid var(--line);margin-bottom:20px;}
+.topBar .titel{flex:1 1 auto;}
+.nutzer{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;color:var(--muted);font-size:0.9rem;}
+.nutzer a{display:inline-flex;align-items:center;min-height:40px;}
+.nutzer form{margin:0;}
+
+/* Cards and sections */
+.karte{border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);padding:18px 20px;margin:0 0 16px;}
 .karte h2{margin-top:0;}
-.formular{display:grid;gap:12px;max-width:420px;}
-.formular :global(.btn){min-height:44px;}
-.feld{display:grid;gap:6px;}
-.eingabe{min-height:44px;padding:8px 12px;font:inherit;width:100%;box-sizing:border-box;}
-.fehler{color:#b00020;margin:0;}
-.erfolg{color:#116530;margin:0;}
-.qr{display:block;max-width:100%;height:auto;background:#fff;border:1px solid var(--line);border-radius:8px;margin:8px 0;}
-.schluessel{display:block;overflow-wrap:anywhere;word-break:break-all;padding:8px 12px;background:var(--surface-alt);border-radius:8px;margin-bottom:12px;}
-.schritte{padding-left:20px;}
-.linkzeile{margin:16px 0;}
+.bereich{display:grid;gap:16px;align-content:start;}
+@media (min-width:900px){
+  .zweispaltig{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:20px;align-items:start;}
+}
+
+/* Buttons (plain links and buttons, the global .btn stays the accent) */
+.aktionen{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+.btnZweit{display:inline-flex;align-items:center;min-height:44px;padding:10px 18px;border-radius:999px;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);font:inherit;font-weight:600;text-decoration:none;cursor:pointer;}
+.btnZweit:hover{background:var(--surface-alt);}
+.btnGefahr{display:inline-flex;align-items:center;min-height:44px;padding:10px 18px;border-radius:999px;border:1px solid #B42318;background:#FFFFFF;color:#B42318;font:inherit;font-weight:600;cursor:pointer;}
+.btnGefahr:hover{background:#FDECEA;}
+.btnGefahrFest{display:inline-flex;align-items:center;min-height:44px;padding:10px 18px;border-radius:999px;border:0;background:#B42318;color:#FFFFFF;font:inherit;font-weight:600;cursor:pointer;}
+.btnGefahrFest:hover{background:#912018;}
+.btnGefahrFest:disabled,.btnGefahr:disabled{opacity:0.6;cursor:default;}
+
+/* Status pills (text first, colour second) */
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:0.85rem;font-weight:600;white-space:nowrap;}
+.pill::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor;}
+.pill-neu{background:#E0F2F7;color:#064E67;}
+.pill-geprueft{background:#FEF3C7;color:#8A5A00;}
+.pill-zugeordnet{background:#E0E7FF;color:#3730A3;}
+.pill-uebergeben{background:#DCFCE7;color:#166534;}
+.pill-abgeschlossen{background:#E5E7EB;color:#374151;}
+
+/* Overview table; on phones every row becomes a card */
+.tabelle{width:100%;border-collapse:collapse;margin:0;font-size:0.95rem;background:var(--surface);}
+.tabelle th,.tabelle td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle;}
+.tabelle th{font-weight:700;color:var(--muted);font-size:0.85rem;background:var(--surface-alt);}
+.tabelle td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;}
+.zeile:hover td{background:#F7FAFB;}
+.zeile{position:relative;}
+/* The whole row is one link: the stretched link covers the row, the button stays visible. */
+.ganzeZeile::after{content:'';position:absolute;inset:0;}
+.geraeteText{color:var(--ink);}
+.zahl{color:var(--muted);font-size:0.9rem;}
+.oeffnen{display:inline-flex;align-items:center;min-height:40px;padding:8px 16px;border-radius:999px;background:var(--accent);color:var(--on-accent);font-weight:600;text-decoration:none;position:relative;z-index:1;}
+.oeffnen:hover{background:var(--accent-dark);}
+.leer{padding:28px 20px;text-align:center;color:var(--muted);background:var(--surface);border:1px dashed var(--line-strong);border-radius:var(--radius);}
+
+@media (max-width:639px){
+  .tabelle thead{display:none;}
+  .tabelle,.tabelle tbody{display:block;}
+  .tabelle tr{display:grid;grid-template-columns:1fr auto;gap:6px 12px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--surface);margin:0 0 12px;}
+  .tabelle td{display:block;border:0;padding:0;}
+  .tabelle td:first-child{grid-column:1;font-weight:700;white-space:normal;}
+  .tabelle td:nth-child(2){grid-column:2;grid-row:1;justify-self:end;}
+  .tabelle td:nth-child(3),.tabelle td:nth-child(4){grid-column:1 / -1;color:var(--muted);font-size:0.9rem;}
+  .tabelle td:nth-child(5){grid-column:1 / -1;}
+  .oeffnen{width:100%;justify-content:center;}
+}
+
+/* Meta text and links */
+.meta{color:var(--muted);font-size:0.95rem;margin:4px 0;}
+.linkzeile{margin:0 0 12px;}
 .linkzeile a{display:inline-flex;align-items:center;min-height:44px;}
 .zelle{display:inline-flex;align-items:center;min-height:44px;}
 .kopf{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;}
-.angaben{display:grid;grid-template-columns:minmax(120px,max-content) 1fr;gap:6px 16px;margin:8px 0 20px;}
+
+/* Key-value lists */
+.angaben{display:grid;grid-template-columns:minmax(120px,max-content) 1fr;gap:8px 16px;margin:8px 0 4px;}
 .angaben dt{color:var(--muted);}
 .angaben dd{margin:0;overflow-wrap:anywhere;}
-.geraet{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:16px;margin:12px 0;}
-.geraet h3{margin:0 0 8px;}
+.angaben ul{margin:0;padding-left:18px;}
 @media (max-width:480px){.angaben{grid-template-columns:1fr;}.angaben dt{margin-top:8px;}}
-.fotos{list-style:none;padding:0;display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));}
-.foto{border:1px solid var(--line);border-radius:12px;padding:8px;background:var(--surface);}
-.fotoBild{width:100%;height:auto;border-radius:8px;display:block;}
+.keineAngabe{color:var(--muted);font-size:0.9rem;margin:10px 0 0;}
+
+/* Device cards */
+.geraet{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:16px 18px;margin:0 0 12px;}
+.geraet h3{margin:0 0 4px;font-size:1.05rem;}
+.geraetKopf{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between;margin-bottom:8px;}
+
+/* Photos */
+.fotos{list-style:none;padding:0;margin:0;display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));}
+.foto{border:1px solid var(--line);border-radius:12px;padding:8px;background:var(--surface);display:grid;gap:6px;align-content:start;}
+.fotoBild{width:100%;height:auto;border-radius:8px;display:block;aspect-ratio:4 / 3;object-fit:cover;background:var(--surface-alt);}
+.foto form{margin:0;}
+
+/* Forms */
+.formular{display:grid;gap:12px;max-width:520px;}
+.formular :global(.btn){min-height:44px;}
+.feld{display:grid;gap:6px;}
+.eingabe{min-height:44px;padding:8px 12px;font:inherit;width:100%;box-sizing:border-box;border:1px solid var(--line-strong);border-radius:10px;background:var(--surface);}
+.zeilenPaar{display:grid;gap:12px;grid-template-columns:1fr;}
+@media (min-width:560px){.zeilenPaar{grid-template-columns:1fr 1fr;}}
+.fehler{color:#B42318;margin:0;}
+.erfolg{color:#116530;margin:0;}
+.fehlerBox{color:#B42318;background:#FDECEA;border-radius:10px;padding:10px 12px;margin:0;}
+.qr{display:block;max-width:100%;height:auto;background:#fff;border:1px solid var(--line);border-radius:8px;margin:8px 0;}
+.schluessel{display:block;overflow-wrap:anywhere;word-break:break-all;padding:8px 12px;background:var(--surface-alt);border-radius:8px;margin-bottom:12px;}
+.schritte{padding-left:20px;}
+
+/* Delete confirmation */
+.gefahrKarte{border:1px solid #F2C4BE;background:#FFF8F7;border-radius:var(--radius);padding:16px 18px;margin:0 0 16px;}
+.gefahrKarte p{margin:0 0 12px;}
+
+/* Protocol */
+.protokoll details summary{cursor:pointer;font-weight:600;min-height:44px;display:flex;align-items:center;}
+
+.nurLesen{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
+/* Detail layout: one column on phones, two from 900 px. Cards are ordered the same way everywhere. */
+.detailGrid{display:flex;flex-direction:column;gap:16px;}
+.spalte{display:contents;}
+.ordStatus{order:1;}
+.ordGeraete{order:2;}
+.ordFotos{order:3;}
+.ordKontakt{order:4;}
+.ordProtokoll{order:5;}
+.ordLoeschen{order:6;}
+@media (min-width:900px){
+  .detailGrid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:20px;align-items:start;}
+  .spalte{display:flex;flex-direction:column;gap:16px;min-width:0;}
+  .ordProtokoll,.ordLoeschen{grid-column:1 / -1;}
+}
