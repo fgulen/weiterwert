@@ -322,3 +322,18 @@ Commit yerelde; push ve deploy yok. `tsconfig.json`, `.claude/`, `.next-local*` 
 2. Der 401-Pfad mit gesetztem Geheimnis ist nur per Code gelesen, nicht getestet.
 3. Betroffenenseite gegen die Live-Datenbank nicht getestet. E-Mail-Suche in der Datenbank ist exakt (Groß-/Kleinschreibung zählt).
 4. Dokumentation: Datenschutztext muss Auskunft und Löschung auf Wunsch nennen.
+
+## 2026-11-13 (Übergabeprotokoll, Erinnerungen)
+
+**Neu:** Übergabeprotokoll als PDF (`/admin/vorgang/[nr]/uebergabe`): gleiche Vorgangsdaten wie das Vorgangsblatt, dazu Abschnitt „Übergabe“ mit Übergabeort, Datum, Seriennummern je Gerät und zwei Unterschriftszeilen. Hinweis: keine Weiterveräußerung. Download wird protokolliert (außer lokaler Vorschau). Text im PDF bleibt Deutsch.
+
+**Tests:** tsc, vitest 131, Playwright 71, test:static 20, Lint sauber. Lokal: PDF erzeugt und als Bild geprüft.
+
+**Erinnerungen (Fatih):**
+1. DNS: Beim Domain-Anbieter den Eintrag für `spenden` prüfen und ggf. löschen.
+2. Vercel: Alte Deployments aufräumen (Liste gemeinsam auswählen, Löschen ist endgültig).
+3. `CRON_SECRET` in Vercel setzen (Foto-Frist-Cron).
+4. Migration `20261112_donation_photo.sql` im Supabase SQL-Editor ausführen, falls noch nicht geschehen.
+5. Supabase Redirect-URLs für `/tr/admin/passwort-neu` ergänzen.
+
+**Deploy-Hinweis:** `platform/.vercel` zeigt auf das Projekt `weiterwert`, das `weiterwert.de` besitzt. Jeder `vercel deploy --prod` ändert deshalb die Hauptdomain. Vor dem nächsten Deploy klären.

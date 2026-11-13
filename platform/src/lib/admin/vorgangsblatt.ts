@@ -14,13 +14,24 @@ const FARBE_TEXT = rgb(0.1, 0.12, 0.16);
 const FARBE_NEBEN = rgb(0.4, 0.43, 0.48);
 
 /** Builds the internal case sheet (Vorgangsblatt). Its title and footer are neutral: it is not a tax receipt. */
+/** Handover protocol (Übergabeprotokoll): the same layout, plus a signature block for the handover. */
+export async function baueUebergabeprotokoll(v: VorgangDaten, erstelltAm: Date): Promise<Uint8Array> {
+  return baueDokument(v, erstelltAm, 'uebergabe');
+}
+
+/** Builds the internal case sheet (Vorgangsblatt). Its title and footer are neutral: it is not a tax receipt. */
 export async function baueVorgangsblatt(v: VorgangDaten, erstelltAm: Date): Promise<Uint8Array> {
+  return baueDokument(v, erstelltAm, 'vorgang');
+}
+
+async function baueDokument(v: VorgangDaten, erstelltAm: Date, art: 'vorgang' | 'uebergabe'): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
   doc.registerFontkit(fontkit);
   const normal = await doc.embedFont(await readFile(SCHRIFT), { subset: true });
   const fett = await doc.embedFont(await readFile(SCHRIFT_FETT), { subset: true });
-  doc.setTitle(`Vorgangsblatt ${v.vorgangsnummer}`);
-  doc.setSubject('Vorgangsblatt / Annahmeprotokoll');
+  const titel = art === 'uebergabe' ? 'Übergabeprotokoll' : 'Vorgangsblatt / Annahmeprotokoll';
+  doc.setTitle(art === 'uebergabe' ? `Übergabeprotokoll ${v.vorgangsnummer}` : `Vorgangsblatt ${v.vorgangsnummer}`);
+  doc.setSubject(titel);
   doc.setAuthor('WeiterWert');
   doc.setCreator('WeiterWert Admin');
 
@@ -101,7 +112,7 @@ export async function baueVorgangsblatt(v: VorgangDaten, erstelltAm: Date): Prom
   // Kopf
   zeile('WeiterWert', normal, 9, FARBE_NEBEN);
   abstand(4);
-  zeile('Vorgangsblatt / Annahmeprotokoll', fett, 18);
+  zeile(titel, fett, 18);
   abstand(6);
   zeile(`Vorgangsnummer ${v.vorgangsnummer}`, fett, 13);
   abstand(10);
@@ -136,6 +147,19 @@ export async function baueVorgangsblatt(v: VorgangDaten, erstelltAm: Date): Prom
     abstand(8);
   }
 
+  if (art === 'uebergabe') {
+    ueberschrift('Übergabe');
+    zeile('Die übergebenen Geräte dürfen nicht weiterverkauft werden. Die übernehmende Stelle bestätigt das mit ihrer Unterschrift.', normal, 10);
+    abstand(6);
+    zeileKV('Übergeben von', `${v.kontakt.name}, ${v.kontakt.email}`);
+    zeileKV('Übergabeort', '______________________________');
+    zeileKV('Übergabedatum', '______________________________');
+    zeileKV('Seriennummern', v.geraete.map((g) => `${g.position}. ${[g.marke, g.modell].filter(Boolean).join(' ') || 'ohne Angabe'}: ______________`).join(' · '));
+    abstand(16);
+    zeileKV('Unterschrift Übergebende/r', '______________________________');
+    zeileKV('Unterschrift Übernehmende/r', '______________________________');
+  }
+
   ueberschrift('Erklärungen der Spenderin / des Spenders');
   zeile('Eigentum: Die Geräte gehören der Spenderin / dem Spender oder dürfen gespendet werden.', normal, 10);
   zeile('Datensicherung: Die Spenderin / der Spender hat die eigenen Daten gesichert.', normal, 10);
@@ -144,11 +168,13 @@ export async function baueVorgangsblatt(v: VorgangDaten, erstelltAm: Date): Prom
   zeileKV('Prüfsumme (SHA-256)', v.erklaerungHash);
   zeileKV('Regelversion Vorprüfung', v.regelVersion);
 
-  ueberschrift('Bearbeitung');
-  zeile('Übergabe und Datenlöschung werden auf den Protokollen dieses Vorgangs festgehalten.', normal, 10, FARBE_NEBEN);
-  abstand(14);
-  zeileKV('Geprüft von', '______________________________');
-  zeileKV('Datum', '______________________________');
+  if (art === 'vorgang') {
+    ueberschrift('Bearbeitung');
+    zeile('Übergabe und Datenlöschung werden auf den Protokollen dieses Vorgangs festgehalten.', normal, 10, FARBE_NEBEN);
+    abstand(14);
+    zeileKV('Geprüft von', '______________________________');
+    zeileKV('Datum', '______________________________');
+  }
 
   // Fußzeile auf jeder Seite
   const seiten = doc.getPages();

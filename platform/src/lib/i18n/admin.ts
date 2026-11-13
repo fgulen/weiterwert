@@ -55,6 +55,7 @@ const DE = {
   detail: {
     eingang: 'Eingang {datum}',
     pdf: 'PDF',
+    uebergabePdf: 'Übergabeprotokoll',
     bearbeiten: 'Bearbeiten',
     loeschenKopf: 'Löschen',
     statusTitel: 'Status',
@@ -270,6 +271,7 @@ const TR: typeof DE = {
   detail: {
     eingang: 'Geliş {datum}',
     pdf: 'PDF',
+    uebergabePdf: 'Teslim tutanağı',
     bearbeiten: 'Düzenle',
     loeschenKopf: 'Sil',
     statusTitel: 'Durum',
