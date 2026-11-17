@@ -40,7 +40,7 @@ describe('Gesamtprozess passt zu den Regeln', () => {
 
   it('offene Punktnummern gibt es in der Liste der offenen Fragen', () => {
     const nummern = new Set(
-      ABLAUF_STAND_GRUPPEN.flatMap((g) => g.punkte).map((p) => Number(p.text.de.match(/Punkt (\d+)/)?.[1] ?? p.text.tr.match(/madde (\d+)/)?.[1])),
+      ABLAUF_STAND_GRUPPEN.flatMap((g) => g.punkte).map((p) => p.nr),
     );
     for (const s of GERAET_PROZESS) {
       for (const n of s.offen) expect(nummern.has(n), `Punkt ${n} fehlt`).toBe(true);

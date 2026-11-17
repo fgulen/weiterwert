@@ -16,100 +16,97 @@ export const metadata: Metadata = { title: pageTitle('/admin'), robots: { index:
 
 type Sprache = 'de' | 'tr';
 
-// Schema: die sieben Schritte eines Vorgangs, wer sie macht und was mit dem Gerät passiert.
-const SCHEMA: Record<Sprache, {
-  titel: string; einordnung: string; abzweige: string;
-  rolle: string; geraet: string;
-  schritte: { name: string; rolle: string; geraet: string }[];
-  bild: { t: string; r: string; z: string[] }[];
-  bildTitel: string;
+const GRUEN = '#1e4d2b';
+
+const TEXTE: Record<Sprache, {
+  titel: string;
+  einordnung: string;
+  schritteTitel: string;
+  rolle: string;
+  schritte: { t: string; r: string; z: string[] }[];
+  abzweigeTitel: string;
+  abzweige: { t: string; z: string[] }[];
+  legendeTitel: string;
+  legende: string[];
+  offenTitel: string;
 }> = {
   de: {
     titel: 'So läuft ein Vorgang im Admin',
-    bild: [
+    einordnung: 'Ein Vorgang kann mehrere Geräte haben. Jedes Gerät läuft einzeln durch die Schritte. Der Vorgang wird abgeschlossen, wenn alle Geräte am Ende sind.',
+    schritteTitel: 'Hauptweg (Schritte 1 bis 7)',
+    rolle: 'Wer',
+    schritte: [
       { t: 'Eingang', r: 'Technik, Admin', z: ['Gerät erfasst'] },
       { t: 'Zweite Kontrolle', r: 'Admin', z: ['Löschung oder Quarantäne'] },
       { t: 'Annahme', r: 'Mitarbeiter, Admin', z: ['Protokoll mit Unterschrift'] },
-      { t: 'Löschung', r: 'Technik, Admin', z: ['Gerät gelöscht', 'Fehler: zweite Person'] },
+      { t: 'Löschung', r: 'Technik, Admin', z: ['Gerät gelöscht', 'Bei Fehler: zweite Person'] },
       { t: 'Technik', r: 'Technik, Admin', z: ['Prüfung: frei, Reparatur', 'oder Entsorgung'] },
-      { t: 'Übergabe', r: 'Mitarbeiter, Technik, Admin', z: ['Gerät übergeben'] },
-      { t: 'Abschluss', r: 'Admin', z: ['Vorgang abgeschlossen'] },
+      { t: 'Übergabe', r: 'Mitarbeiter, Technik, Admin', z: ['Gerät übergeben', '(Übergabe-Protokoll)'] },
+      { t: 'Abschluss', r: 'Admin', z: ['Vorgang abschließen', '(wenn alle Geräte fertig)'] },
     ],
-    bildTitel: 'Ablauf auf einen Blick',
-    einordnung: 'Ein Vorgang kann mehrere Geräte haben. Jedes Gerät läuft einzeln durch die Geräte-Schritte. Der Vorgang wird abgeschlossen, wenn alle Geräte am Ende sind.',
-    abzweige: 'Abzweige: Quarantäne (führt zu Löschung oder Rückgabe), Reparatur (zurück zur Technik-Prüfung). Endstatus: übergeben, Rückgabe, entsorgt.',
-    rolle: 'Wer', geraet: 'Gerätestatus',
-    schritte: [
-      { name: 'Eingang', rolle: 'Technik, Admin', geraet: 'eingegangen → Gerät erfasst' },
-      { name: 'Zweite Kontrolle', rolle: 'Admin', geraet: 'zweite_kontrolle → Löschung oder Quarantäne' },
-      { name: 'Annahme', rolle: 'Mitarbeiter, Admin', geraet: 'Annahme-Protokoll (PDF) mit Unterschrift' },
-      { name: 'Löschung', rolle: 'Technik, Admin', geraet: 'loeschung_offen → geloescht (bei Fehler: zweite Person)' },
-      { name: 'Technik', rolle: 'Technik, Admin', geraet: 'technische_pruefung → reparatur, frei oder entsorgt' },
-      { name: 'Übergabe', rolle: 'Mitarbeiter, Technik, Admin', geraet: 'reserviert → uebergeben (Übergabe-Protokoll)' },
-      { name: 'Abschluss', rolle: 'Admin', geraet: 'alle Geräte am Ende → "Vorgang abschließen" (protokolliert)' },
+    abzweigeTitel: 'Abzweige (Sonderfälle)',
+    abzweige: [
+      { t: 'Quarantäne', z: ['Nach Zweiter Kontrolle', 'führt zu Löschung oder Rückgabe'] },
+      { t: 'Reparatur', z: ['Aus der Technik-Prüfung', 'zurück zur Technik-Prüfung'] },
+      { t: 'Rückgabe', z: ['Endstatus: Gerät geht zurück an den Spender'] },
+      { t: 'Entsorgung', z: ['Endstatus: Gerät wird entsorgt'] },
+      { t: 'Löschung fehlgeschlagen', z: ['Zweite Person entscheidet', '(Ausnahme oder Vernichtung)'] },
     ],
+    legendeTitel: 'Begriffe',
+    legende: [
+      'Schritt 1 bis 7: Hauptweg eines Vorgangs (Schrittleiste im Admin).',
+      'Punkt 1 bis 24: offene Fragen. Einwände bitte mit dieser Punktnummer melden.',
+      'Dok. 07, 18, 20, 28: Nummern der Vorlagen und Richtlinien.',
+      'Rollen: Admin (alles), Technik (Eingang, Löschung, Technik, Übergabe), Mitarbeiter (Annahme, Übergabe).',
+    ],
+    offenTitel: 'Offene Punkte mit Nummer',
   },
   tr: {
     titel: 'Yönetim panelinde bir başvuru böyle ilerler',
-    bild: [
+    einordnung: 'Bir başvuruda birden çok cihaz olabilir. Her cihaz adımlardan ayrı ayrı geçer. Tüm cihazlar son durumda olduğunda başvuru kapanır.',
+    schritteTitel: 'Ana yol (adım 1 - 7)',
+    rolle: 'Kim',
+    schritte: [
       { t: 'Giriş', r: 'Teknik, Admin', z: ['Cihaz kaydedildi'] },
       { t: 'İkinci kontrol', r: 'Admin', z: ['Silme veya karantina'] },
-      { t: 'Kabul', r: 'Çalışan, Admin', z: ['Protokol ve imza'] },
-      { t: 'Silme', r: 'Teknik, Admin', z: ['Cihaz silindi', 'Hata: ikinci kişi'] },
+      { t: 'Kabul', r: 'Çalışan, Admin', z: ['İmzalı protokol'] },
+      { t: 'Silme', r: 'Teknik, Admin', z: ['Cihaz silindi', 'Hatada: ikinci kişi'] },
       { t: 'Teknik', r: 'Teknik, Admin', z: ['Kontrol: serbest, onarım', 'veya imha'] },
-      { t: 'Teslim', r: 'Çalışan, Teknik, Admin', z: ['Cihaz teslim edildi'] },
-      { t: 'Kapanış', r: 'Admin', z: ['Başvuru kapatıldı'] },
+      { t: 'Teslim', r: 'Çalışan, Teknik, Admin', z: ['Cihaz teslim edildi', '(Teslim protokolü)'] },
+      { t: 'Kapanış', r: 'Admin', z: ['Başvuruyu kapat', '(tüm cihazlar hazırsa)'] },
     ],
-    bildTitel: 'Akış bir bakışta',
-    einordnung: 'Bir başvuruda birden çok cihaz olabilir. Her cihaz cihaz adımlarından ayrı ayrı geçer. Tüm cihazlar son durumda olduğunda başvuru kapanır.',
-    abzweige: 'Dallanmalar: Karantina (silme veya iade’ye gider), Onarım (teknik kontrole geri döner). Son durumlar: teslim edildi, iade, imha.',
-    rolle: 'Kim', geraet: 'Cihaz durumu',
-    schritte: [
-      { name: 'Giriş', rolle: 'Teknik, Admin', geraet: 'eingegangen → cihaz kaydedildi' },
-      { name: 'İkinci kontrol', rolle: 'Admin', geraet: 'zweite_kontrolle → silme veya karantina' },
-      { name: 'Kabul', rolle: 'Çalışan, Admin', geraet: 'Kabul protokolü (PDF), imzalı' },
-      { name: 'Silme', rolle: 'Teknik, Admin', geraet: 'loeschung_offen → geloescht (hata olursa ikinci kişi)' },
-      { name: 'Teknik', rolle: 'Teknik, Admin', geraet: 'technische_pruefung → reparatur, frei veya entsorgt' },
-      { name: 'Teslim', rolle: 'Çalışan, Teknik, Admin', geraet: 'reserviert → uebergeben (Teslim protokolü)' },
-      { name: 'Kapanış', rolle: 'Admin', geraet: 'tüm cihazlar son durumda → "Başvuruyu kapat" (kayda geçer)' },
+    abzweigeTitel: 'Dallanmalar (özel durumlar)',
+    abzweige: [
+      { t: 'Karantina', z: ['İkinci kontrolden sonra', 'silme veya iade’ye gider'] },
+      { t: 'Onarım', z: ['Teknik kontrolden', 'teknik kontrole geri döner'] },
+      { t: 'İade', z: ['Son durum: cihaz bağışçıya döner'] },
+      { t: 'İmha', z: ['Son durum: cihaz imha edilir'] },
+      { t: 'Silme başarısız', z: ['İkinci kişi karar verir', '(istisna veya imha)'] },
     ],
+    legendeTitel: 'Terimler',
+    legende: [
+      'Adım 1 - 7: başvurunun ana yolu (yönetim panelindeki adım çubuğu).',
+      'Madde 1 - 24: açık sorular. İtirazları bu madde numarasıyla bildirin.',
+      'Dok. 07, 18, 20, 28: şablon ve yönerge numaraları.',
+      'Roller: Admin (her şey), Teknik (Giriş, Silme, Teknik, Teslim), Çalışan (Kabul, Teslim).',
+    ],
+    offenTitel: 'Numaralı açık maddeler',
   },
 };
 
-
-// Ablaufdiagramm: 7 Kästen in zwei Reihen (1-4 oben, 5-7 unten, rückwärts), mit Pfeilen.
-function Flussbild({ bild, titel }: { bild: { t: string; r: string; z: string[] }[]; titel: string }) {
-  const pos = [[20, 40], [280, 40], [540, 40], [800, 40], [800, 230], [540, 230], [280, 230]];
-  const B = 220, H = 150;
+function Kasten({ nr, titel, zeilen, gestrichelt }: { nr?: number; titel: string; zeilen: string[]; gestrichelt?: boolean }) {
   return (
-    <svg viewBox="0 0 1040 420" role="img" aria-label={titel} style={{ width: '100%', height: 'auto', maxWidth: 1040, display: 'block' }}>
-      <defs>
-        <marker id="pfeil" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
-          <path d="M0,0 L10,5 L0,10 z" fill="#1e4d2b" />
-        </marker>
-      </defs>
-      {bild.map((b, i) => {
-        const [x, y] = pos[i];
-        return (
-          <g key={b.t}>
-            <rect x={x} y={y} width={B} height={H} rx={12} fill="#f4f8f5" stroke="#1e4d2b" strokeWidth={2} />
-            <circle cx={x + 26} cy={y + 26} r={16} fill="#1e4d2b" />
-            <text x={x + 26} y={y + 32} textAnchor="middle" fontSize={16} fontWeight={700} fill="#fff">{i + 1}</text>
-            <text x={x + 52} y={y + 32} fontSize={17} fontWeight={700} fill="#1b1b1b">{b.t}</text>
-            <text x={x + 14} y={y + 66} fontSize={13} fill="#555">{b.r}</text>
-            {b.z.map((zeile, j) => (
-              <text key={zeile} x={x + 14} y={y + 96 + j * 20} fontSize={14} fill="#1b1b1b">{zeile}</text>
-            ))}
-          </g>
-        );
-      })}
-      <line x1={240} y1={115} x2={278} y2={115} stroke="#1e4d2b" strokeWidth={2.5} markerEnd="url(#pfeil)" />
-      <line x1={500} y1={115} x2={538} y2={115} stroke="#1e4d2b" strokeWidth={2.5} markerEnd="url(#pfeil)" />
-      <line x1={760} y1={115} x2={798} y2={115} stroke="#1e4d2b" strokeWidth={2.5} markerEnd="url(#pfeil)" />
-      <line x1={910} y1={190} x2={910} y2={228} stroke="#1e4d2b" strokeWidth={2.5} markerEnd="url(#pfeil)" />
-      <line x1={800} y1={305} x2={762} y2={305} stroke="#1e4d2b" strokeWidth={2.5} markerEnd="url(#pfeil)" />
-      <line x1={540} y1={305} x2={502} y2={305} stroke="#1e4d2b" strokeWidth={2.5} markerEnd="url(#pfeil)" />
-    </svg>
+    <div style={{ border: `2px ${gestrichelt ? 'dashed' : 'solid'} ${GRUEN}`, borderRadius: 12, padding: '12px 14px', background: gestrichelt ? '#fff' : '#f4f8f5', height: '100%' }}>
+      <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        {nr !== undefined && (
+          <span style={{ width: 28, height: 28, borderRadius: '50%', background: GRUEN, color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, flex: '0 0 auto' }}>{nr}</span>
+        )}
+        <strong>{titel}</strong>
+      </div>
+      <div style={{ marginTop: 8, display: 'grid', gap: 2, fontSize: '0.92rem' }}>
+        {zeilen.map((z) => <span key={z}>{z}</span>)}
+      </div>
+    </div>
   );
 }
 
@@ -119,7 +116,7 @@ export default async function AblaufSeite() {
   const { lang } = await aktuelleSprache();
   const t = ablaufTexte(lang);
   const k: Sprache = lang === 'tr' ? 'tr' : 'de';
-  const s = SCHEMA[k];
+  const x = TEXTE[k];
   const nutzer = await aktuellerNutzer();
   if (!nutzer) redirect(pfadFuer(lang, '/admin/login'));
   if (nutzer.rolle !== 'admin' && nutzer.rolle !== 'mitarbeiter') redirect(pfadFuer(lang, '/admin'));
@@ -139,32 +136,43 @@ export default async function AblaufSeite() {
         </p>
 
         <section className={styles.karte} aria-labelledby="schema-titel">
-          <h2 id="schema-titel">{s.titel}</h2>
-          <p className={styles.meta}>{s.einordnung}</p>
-          <div style={{ margin: '12px 0' }}>
-            <Flussbild bild={s.bild} titel={s.bildTitel} />
-          </div>
-          <ol style={{ listStyle: 'none', padding: 0, margin: '12px 0 0', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 10 }}>
-            {s.schritte.map((st, i) => (
-              <li key={st.name} style={{ border: '1px solid var(--line)', borderRadius: 10, padding: '10px 12px' }}>
-                <strong>{i + 1}. {st.name}</strong>
-                <div className={styles.meta} style={{ margin: '4px 0' }}>{s.rolle}: {st.rolle}</div>
-                <div style={{ fontSize: '0.9rem' }}><span className={styles.meta}>{s.geraet}:</span> <code>{st.geraet}</code></div>
-              </li>
+          <h2 id="schema-titel">{x.titel}</h2>
+          <p className={styles.meta}>{x.einordnung}</p>
+
+          <h3 style={{ marginTop: 16 }}>{x.schritteTitel}</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
+            {x.schritte.map((s, i) => (
+              <Kasten key={s.t} nr={i + 1} titel={s.t} zeilen={[`${x.rolle}: ${s.r}`, ...s.z]} />
             ))}
-          </ol>
-          <p className={styles.meta} style={{ marginTop: 10 }}>{s.abzweige}</p>
+          </div>
+
+          <h3 style={{ marginTop: 20 }}>{x.abzweigeTitel}</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
+            {x.abzweige.map((a) => (
+              <Kasten key={a.t} titel={a.t} zeilen={a.z} gestrichelt />
+            ))}
+          </div>
+
+          <h3 style={{ marginTop: 20 }}>{x.legendeTitel}</h3>
+          <ul style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 4, fontSize: '0.92rem' }}>
+            {x.legende.map((l) => <li key={l}>{l}</li>)}
+          </ul>
         </section>
 
         {ABLAUF_STAND_GRUPPEN.map((gruppe) => (
           <section key={gruppe.key} className={styles.karte}>
             <h2>{gruppe.titel[k]}</h2>
+            {gruppe.key !== 'umgesetzt' && <p className={styles.meta}>{x.offenTitel}</p>}
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 10 }}>
               {gruppe.punkte.map((p) => {
                 const text = p.text[k];
                 return (
                   <li key={text} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                    <input type="checkbox" checked={p.done} readOnly aria-label={text} style={{ marginTop: 4, width: 18, height: 18, flex: '0 0 auto' }} />
+                    {p.nr !== undefined ? (
+                      <span style={{ minWidth: 40, textAlign: 'center', fontWeight: 700, color: GRUEN, border: `1px solid ${GRUEN}`, borderRadius: 999, padding: '1px 6px', flex: '0 0 auto' }}>{p.nr}</span>
+                    ) : (
+                      <input type="checkbox" checked={p.done} readOnly aria-label={text} style={{ marginTop: 4, width: 18, height: 18, flex: '0 0 auto' }} />
+                    )}
                     <span>{text}</span>
                   </li>
                 );
