@@ -21,9 +21,21 @@ const SCHEMA: Record<Sprache, {
   titel: string; einordnung: string; abzweige: string;
   rolle: string; geraet: string;
   schritte: { name: string; rolle: string; geraet: string }[];
+  bild: { t: string; r: string; z: string[] }[];
+  bildTitel: string;
 }> = {
   de: {
     titel: 'So läuft ein Vorgang im Admin',
+    bild: [
+      { t: 'Eingang', r: 'Technik, Admin', z: ['Gerät erfasst'] },
+      { t: 'Zweite Kontrolle', r: 'Admin', z: ['Löschung oder Quarantäne'] },
+      { t: 'Annahme', r: 'Mitarbeiter, Admin', z: ['Protokoll mit Unterschrift'] },
+      { t: 'Löschung', r: 'Technik, Admin', z: ['Gerät gelöscht', 'Fehler: zweite Person'] },
+      { t: 'Technik', r: 'Technik, Admin', z: ['Prüfung: frei, Reparatur', 'oder Entsorgung'] },
+      { t: 'Übergabe', r: 'Mitarbeiter, Technik, Admin', z: ['Gerät übergeben'] },
+      { t: 'Abschluss', r: 'Admin', z: ['Vorgang abgeschlossen'] },
+    ],
+    bildTitel: 'Ablauf auf einen Blick',
     einordnung: 'Ein Vorgang kann mehrere Geräte haben. Jedes Gerät läuft einzeln durch die Geräte-Schritte. Der Vorgang wird abgeschlossen, wenn alle Geräte am Ende sind.',
     abzweige: 'Abzweige: Quarantäne (führt zu Löschung oder Rückgabe), Reparatur (zurück zur Technik-Prüfung). Endstatus: übergeben, Rückgabe, entsorgt.',
     rolle: 'Wer', geraet: 'Gerätestatus',
@@ -39,6 +51,16 @@ const SCHEMA: Record<Sprache, {
   },
   tr: {
     titel: 'Yönetim panelinde bir başvuru böyle ilerler',
+    bild: [
+      { t: 'Giriş', r: 'Teknik, Admin', z: ['Cihaz kaydedildi'] },
+      { t: 'İkinci kontrol', r: 'Admin', z: ['Silme veya karantina'] },
+      { t: 'Kabul', r: 'Çalışan, Admin', z: ['Protokol ve imza'] },
+      { t: 'Silme', r: 'Teknik, Admin', z: ['Cihaz silindi', 'Hata: ikinci kişi'] },
+      { t: 'Teknik', r: 'Teknik, Admin', z: ['Kontrol: serbest, onarım', 'veya imha'] },
+      { t: 'Teslim', r: 'Çalışan, Teknik, Admin', z: ['Cihaz teslim edildi'] },
+      { t: 'Kapanış', r: 'Admin', z: ['Başvuru kapatıldı'] },
+    ],
+    bildTitel: 'Akış bir bakışta',
     einordnung: 'Bir başvuruda birden çok cihaz olabilir. Her cihaz cihaz adımlarından ayrı ayrı geçer. Tüm cihazlar son durumda olduğunda başvuru kapanır.',
     abzweige: 'Dallanmalar: Karantina (silme veya iade’ye gider), Onarım (teknik kontrole geri döner). Son durumlar: teslim edildi, iade, imha.',
     rolle: 'Kim', geraet: 'Cihaz durumu',
@@ -53,6 +75,43 @@ const SCHEMA: Record<Sprache, {
     ],
   },
 };
+
+
+// Ablaufdiagramm: 7 Kästen in zwei Reihen (1-4 oben, 5-7 unten, rückwärts), mit Pfeilen.
+function Flussbild({ bild, titel }: { bild: { t: string; r: string; z: string[] }[]; titel: string }) {
+  const pos = [[20, 40], [280, 40], [540, 40], [800, 40], [800, 230], [540, 230], [280, 230]];
+  const B = 220, H = 150;
+  return (
+    <svg viewBox="0 0 1040 420" role="img" aria-label={titel} style={{ width: '100%', height: 'auto', maxWidth: 1040, display: 'block' }}>
+      <defs>
+        <marker id="pfeil" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#1e4d2b" />
+        </marker>
+      </defs>
+      {bild.map((b, i) => {
+        const [x, y] = pos[i];
+        return (
+          <g key={b.t}>
+            <rect x={x} y={y} width={B} height={H} rx={12} fill="#f4f8f5" stroke="#1e4d2b" strokeWidth={2} />
+            <circle cx={x + 26} cy={y + 26} r={16} fill="#1e4d2b" />
+            <text x={x + 26} y={y + 32} textAnchor="middle" fontSize={16} fontWeight={700} fill="#fff">{i + 1}</text>
+            <text x={x + 52} y={y + 32} fontSize={17} fontWeight={700} fill="#1b1b1b">{b.t}</text>
+            <text x={x + 14} y={y + 66} fontSize={13} fill="#555">{b.r}</text>
+            {b.z.map((zeile, j) => (
+              <text key={zeile} x={x + 14} y={y + 96 + j * 20} fontSize={14} fill="#1b1b1b">{zeile}</text>
+            ))}
+          </g>
+        );
+      })}
+      <line x1={240} y1={115} x2={278} y2={115} stroke="#1e4d2b" strokeWidth={2.5} markerEnd="url(#pfeil)" />
+      <line x1={500} y1={115} x2={538} y2={115} stroke="#1e4d2b" strokeWidth={2.5} markerEnd="url(#pfeil)" />
+      <line x1={760} y1={115} x2={798} y2={115} stroke="#1e4d2b" strokeWidth={2.5} markerEnd="url(#pfeil)" />
+      <line x1={910} y1={190} x2={910} y2={228} stroke="#1e4d2b" strokeWidth={2.5} markerEnd="url(#pfeil)" />
+      <line x1={800} y1={305} x2={762} y2={305} stroke="#1e4d2b" strokeWidth={2.5} markerEnd="url(#pfeil)" />
+      <line x1={540} y1={305} x2={502} y2={305} stroke="#1e4d2b" strokeWidth={2.5} markerEnd="url(#pfeil)" />
+    </svg>
+  );
+}
 
 export default async function AblaufSeite() {
   gatePage('admin');
@@ -82,6 +141,9 @@ export default async function AblaufSeite() {
         <section className={styles.karte} aria-labelledby="schema-titel">
           <h2 id="schema-titel">{s.titel}</h2>
           <p className={styles.meta}>{s.einordnung}</p>
+          <div style={{ margin: '12px 0' }}>
+            <Flussbild bild={s.bild} titel={s.bildTitel} />
+          </div>
           <ol style={{ listStyle: 'none', padding: 0, margin: '12px 0 0', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 10 }}>
             {s.schritte.map((st, i) => (
               <li key={st.name} style={{ border: '1px solid var(--line)', borderRadius: 10, padding: '10px 12px' }}>
