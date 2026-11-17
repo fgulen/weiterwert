@@ -28,6 +28,7 @@ import { pruefeZweiteKontrolle } from '../../ablauf/zweite-kontrolle/actions';
 import { speichereAnnahmeAktion } from './annahme-actions';
 import { speichereUebergabeAktion, speichereLoeschungAktion } from './nachweis-actions';
 import { setzeStatusAktion } from './status-actions';
+import { schliesseVorgangAktion } from './abschluss-actions';
 import { erfasseEingangAktion } from './eingang-actions';
 import { ladeGeraetStatusListe, ladeEreignisseVieler } from '@/lib/admin/geraet-verlauf';
 import { geraetNaechsteStatus, brauchtZweiAdmins, geraetFertig } from '@/lib/admin/geraet-ablauf';
@@ -462,6 +463,13 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
           <section className={styles.karte} role="status">
             <p><strong>{zkT.abschlussbereit}</strong></p>
           </section>
+        )}
+
+        {abschlussbereit && v.status !== 'abgeschlossen' && (
+          <form action={schliesseVorgangAktion} style={{ marginTop: 'var(--space-3, 12px)' }}>
+            <input type="hidden" name="vorgangsnummer" value={v.vorgangsnummer} />
+            <button type="submit" className="btn btn-primary">{zkT.vorgangSchliessen}</button>
+          </form>
         )}
 
         {zk && (
