@@ -429,3 +429,5 @@ Commit yerelde; push ve deploy yok. `tsconfig.json`, `.claude/`, `.next-local*` 
 - Mobiltest 320 px, iPhone 13, Pixel 7 für alle Schritte (Punkt 18).
 - Rollen technik/mitarbeiter in Supabase setzen (Punkt 19).
 - Vorgang abschließen im Live-Test prüfen (Testvorgang WW-2026-567623 steht auf "Übergeben").
+
+**Nachtrag (Review-Befunde):** Commit 4ae9c40 behebt die Review-Befunde: Übergabe prüft vorab, dass alle Geräte reserviert sind, und meldet Statusfehler. Vorgang abschließen prüft den Ablauf-Schalter und protokolliert Fehlschläge. Admin-Liste fällt ohne Ablauf-Migration nicht aus. Canlı: weiterwert-7ss6nycqq. Playwright blockiert durch Next.js-Warnung. Next 16.4.2 ist betroffen (npm audit: GHSA-mfr8-8qww-v76h, moderat, 16.3.0 bis 16.4.4). Fix: 16.4.6. Die App nutzt weder use cache noch unstable_cache. Upgrade noch nicht durchgeführt, wartet auf Freigabe.
