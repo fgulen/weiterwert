@@ -409,3 +409,23 @@ Commit yerelde; push ve deploy yok. `tsconfig.json`, `.claude/`, `.next-local*` 
 - Push und canlıya alma (Commits liegen lokal, ab 1177053).
 
 **Bilinen Grenzen:** Hilfe-Texte je Schritt und Prüflisten mit Häkchen fehlen noch. Ekran görüntüleri test ortamında alındı (admin hesabı).
+
+## 2026-11-17 (Nacht: Canlı-Test WW-2026-567623, Vorgang abschließen, Liste, Ablauf-Seite)
+
+**Yapılanlar:**
+- Canlı-Test Testvorgang WW-2026-567623 (Gerät HP EliteBook 840 G8): Eingang, Zweite Kontrolle (passt), Annahme, Löschung, Technik, Übergabe bis Status "Übergeben". Zwei Fehler gefunden und behoben: Löschung-Protokoll und Übergabe-Protokoll setzten den Gerätestatus nicht (Commit 3c1dc53, bd8a8b7).
+- "Vorgang abschließen" (Commit 33d9a91): ein Klick, nur Admin, nur wenn alle Geräte Endstatus haben (vorgangFertig), serverseitig geprüft, protokolliert, keine Zweitfreigabe. Alte Kette (geprüft, zugeordnet) nicht mehr von Hand nötig.
+- Admin-Liste (Commit 1245dbf): zeigt "Schritt n von 7 · Name" statt "Neu", sobald ein Gerät erfasst ist. "Neu" bleibt, solange kein Gerät erfasst ist. Gerätestatus in derselben Abfrage (keine N+1).
+- Ablauf-Seite /admin/ablauf (Commits 49094df, 02d154a, d387f44): Hauptweg 1–7 und Abzweige als Kästen, Begriffe-Legende, Umgesetzt-Liste auf Stand 17.11., 21 offene Punkte mit festen Nummern (1–12 Fatih, 14, 17–20 Technik, 21–24 Vorläufig).
+- Entscheidung Fatih: Vorgang abschließen manuell durch Admin (Punkt 16 erledigt).
+- Canlı: Deployments ne787tenz (Liste-Schritt, 1245dbf) und bhy1ewavs (Ablauf-Seite inkl. d387f44). Vorgang abschließen (33d9a91) ist mit ne787tenz live, aber nicht im Browser getestet.
+
+**Tests:** npm run test:static grün (20). platform: tsc ohne Fehler, vitest 221 grün. Playwright: Webserver startete nicht (Next.js meldet bekannte Sicherheitslücke, SecurityFatalError), nicht gelöst. Beim ersten Lauf: 1 Test rot (absenden: "test-env both dec ... required before sending"), Ursache noch offen.
+
+**Offen (Fatih):**
+- Next.js-Version: Sicherheitshinweis aus dem Build. Upgrade ja/nein (eigene Entscheidung, nicht ohne Freigabe).
+- Playwright-Fehler absenden.test-env-both-dec... untersuchen.
+- Punkte 1–24 mit Nummern bestätigen (21 offene), Dok. 07/18/20/28 Vollnamen für das Team.
+- Mobiltest 320 px, iPhone 13, Pixel 7 für alle Schritte (Punkt 18).
+- Rollen technik/mitarbeiter in Supabase setzen (Punkt 19).
+- Vorgang abschließen im Live-Test prüfen (Testvorgang WW-2026-567623 steht auf "Übergeben").
