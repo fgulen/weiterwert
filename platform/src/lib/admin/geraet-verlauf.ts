@@ -1,7 +1,7 @@
 import 'server-only';
 import { datenbankKonfiguriert, dbKopfzeilen } from './db';
 
-export type GeraetStatusZeile = { deviceId: string; status: string };
+export type GeraetStatusZeile = { deviceId: string; status: string; erfasst: boolean };
 export type GeraetEreignis = { von: string; nach: string; schritt: string; nutzer: string; zweiter_nutzer: string | null; zeit: string };
 
 /** Status jedes Geräts eines Vorgangs mit seiner ID. Ohne Datenbank: null. Ohne Eintrag: "eingegangen". */
@@ -19,6 +19,7 @@ export async function ladeGeraetStatusListe(nummer: string): Promise<GeraetStatu
   return (zeilen[0]?.donation_device ?? []).map((g) => ({
     deviceId: g.id,
     status: g.device_record?.[0]?.ablauf_status ?? 'eingegangen',
+    erfasst: (g.device_record?.length ?? 0) > 0,
   }));
 }
 

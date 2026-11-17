@@ -28,6 +28,7 @@ import { pruefeZweiteKontrolle } from '../../ablauf/zweite-kontrolle/actions';
 import { speichereAnnahmeAktion } from './annahme-actions';
 import { speichereUebergabeAktion, speichereLoeschungAktion } from './nachweis-actions';
 import { setzeStatusAktion } from './status-actions';
+import { erfasseEingangAktion } from './eingang-actions';
 import { ladeGeraetStatusListe, ladeEreignisseVieler } from '@/lib/admin/geraet-verlauf';
 import { geraetNaechsteStatus, brauchtZweiAdmins, geraetFertig } from '@/lib/admin/geraet-ablauf';
 import { schrittErlaubt, schrittFuerStatus, FORMULAR_ZIELE } from '@/lib/admin/rollen';
@@ -399,6 +400,18 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
                     <h3>{geraet ? `${geraet.position}. ${geraetTitel(geraet, lang)}` : z.deviceId}</h3>
                     <span className={styles.meta}>{zkT.statusAktuell}: <strong>{label(z.status)}</strong></span>
                     <span className={styles.meta}>· {zkT.aktuellerSchritt}: <strong>{zkT.schritte[geraetAktuellerSchritt(z.status)]}</strong></span>
+                    {!z.erfasst && (
+                      <div style={{ marginTop: 8, display: 'grid', gap: 6 }}>
+                        <p className={styles.meta} style={{ margin: 0 }}>{zkT.eingangNichtErfasst}</p>
+                        {aktiv === 'eingang' && schrittErlaubt(nutzer.rolle, 'eingang') && (
+                          <form action={erfasseEingangAktion}>
+                            <input type="hidden" name="vorgangsnummer" value={nr} />
+                            <input type="hidden" name="device_id" value={z.deviceId} />
+                            <button type="submit" className={styles.btnZweit}>{zkT.eingangErfassen}</button>
+                          </form>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 8 }}>
                     {aktiv === 'technik' && z.status === 'eingegangen' && (
@@ -631,7 +644,7 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
                 {ablaufSichtbar() && (
                   <li><a href={`/admin/vorgang/${v.vorgangsnummer}/nachweis-pdf?art=loeschung`} download>{zkT.dokLoeschung}</a></li>
                 )}
-                {verlauf && verlauf.map((z) => {
+                {verlauf && verlauf.filter((z) => z.ereignisse.length > 0).map((z) => {
                   const g = v.geraete.find((x) => x.id === z.deviceId);
                   return (
                     <li key={`dok-${z.deviceId}`}>

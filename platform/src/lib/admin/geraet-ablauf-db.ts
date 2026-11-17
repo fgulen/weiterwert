@@ -30,6 +30,19 @@ const BEKANNTE_FEHLER: GeraetWechselFehler[] = [
   'zwei_admin_fehlt',
 ];
 
+/** Schritt Eingang: legt den Gerätedatensatz an (Status "eingegangen"). Mehrfach aufrufbar. */
+export async function legeEingangAn(deviceId: string): Promise<{ ok: boolean }> {
+  const db = datenbankKonfiguriert();
+  if (!db) return { ok: false };
+  const res = await fetch(`${db.url}/rest/v1/device_record?on_conflict=device_id`, {
+    method: 'POST',
+    headers: dbKopfzeilen(db.key, { 'Content-Type': 'application/json', Prefer: 'resolution=ignore-duplicates,return=minimal' }),
+    body: JSON.stringify({ device_id: deviceId }),
+    cache: 'no-store',
+  });
+  return { ok: res.ok };
+}
+
 export async function setzeGeraetStatus(w: GeraetWechsel): Promise<{ ok: true } | { ok: false; fehler: GeraetWechselFehler }> {
   const db = datenbankKonfiguriert();
   if (!db) return { ok: false, fehler: 'datenbank_nicht_konfiguriert' };
