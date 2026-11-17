@@ -4,7 +4,23 @@ import { checkBasicAuth } from '@/lib/basic-auth';
 import { requiresAuth } from '@/lib/auth-required';
 import { trenneSprache } from '@/lib/i18n/sprache';
 
+/** Hauptdomain: hier liegt die Plattform neben der statischen Seite (ein Domain, kein Subdomain). */
+const HAUPT_HOSTS = ['weiterwert.de', 'www.weiterwert.de'];
+/** Nur diese Pfade gehören der statischen Seite. Alles andere auf der Hauptdomain geht an die Plattform. */
+const STATISCHE_PFADE = ['/', '/index.html', '/impressum.html', '/datenschutz.html', '/barrierefreiheit.html'];
+
 export function proxy(request: NextRequest) {
+  const host = (request.headers.get('host') ?? '').split(':')[0].toLowerCase();
+  if (HAUPT_HOSTS.includes(host)) {
+    const pfad = request.nextUrl.pathname;
+    if (STATISCHE_PFADE.includes(pfad) || pfad.startsWith('/assets/')) {
+      const url = request.nextUrl.clone();
+      url.pathname = pfad === '/' || pfad === '/index.html' ? '/_site/index.html' : `/_site${pfad}`;
+      return NextResponse.rewrite(url);
+    }
+    // sonst: weiter unten wie gewohnt die Plattform (Sprache, Schutz, Seiten)
+  }
+
   // /tr/... and /en/... are served by the German page paths; the language goes in a request header.
   const { lang, rest } = trenneSprache(request.nextUrl.pathname);
   const headers = new Headers(request.headers);

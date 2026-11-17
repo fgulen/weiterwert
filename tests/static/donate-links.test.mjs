@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const html = readFileSync(new URL('../../index.html', import.meta.url), 'utf8');
-const URL_SPENDEN = 'https://spenden.weiterwert.de/spenden';
+const URL_SPENDEN = 'https://weiterwert.de/spenden';
 
 test('every donate button opens the online donation page', () => {
   for (const key of ['navCta', 'heroCtaPrimary', 'path1Btn']) {

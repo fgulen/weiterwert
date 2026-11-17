@@ -25,6 +25,9 @@ import { vorgangFertig } from '@/lib/admin/geraet-ablauf';
 import { pruefeZweiteKontrolle } from '../../ablauf/zweite-kontrolle/actions';
 import { speichereAnnahmeAktion } from './annahme-actions';
 import { speichereUebergabeAktion, speichereLoeschungAktion } from './nachweis-actions';
+import { setzeStatusAktion } from './status-actions';
+import { ladeGeraetStatusListe, ladeGeraetEreignisse } from '@/lib/admin/geraet-verlauf';
+import { geraetNaechsteStatus, brauchtZweiAdmins } from '@/lib/admin/geraet-ablauf';
 import UnterschriftFeld from './UnterschriftFeld';
 import styles from '../../admin.module.css';
 
@@ -58,20 +61,24 @@ function geraetAntworten(g: GeraetDaten) {
 
 export const metadata: Metadata = { title: pageTitle('/admin'), robots: { index: false } };
 
-type Props = { params: Promise<{ nr: string }>; searchParams: Promise<{ zk?: string; test?: string; an?: string; na?: string; grund?: string }> };
+type Props = { params: Promise<{ nr: string }>; searchParams: Promise<{ zk?: string; test?: string; an?: string; na?: string; grund?: string; st?: string }> };
 
 const FRIST_MS = FOTO_LOESCHFRIST_TAGE * 24 * 60 * 60 * 1000;
 
 export default async function VorgangSeite({ params, searchParams }: Props) {
   gatePage('admin');
   const { nr } = await params;
-  const { zk, test, an, na, grund } = await searchParams;
+  const { zk, test, an, na, grund, st } = await searchParams;
   if (!VORGANGSNUMMER.test(nr)) notFound();
   const { lang } = await aktuelleSprache();
   const t = adminTexte(lang);
   const zkT = ablaufTexte(lang);
   const geraeteStatus = ablaufSichtbar() ? await ladeGeraeteStatus(nr) : null;
   const abschlussbereit = geraeteStatus !== null && vorgangFertig(geraeteStatus);
+  const statusListe = ablaufSichtbar() ? await ladeGeraetStatusListe(nr) : null;
+  const verlauf = statusListe
+    ? await Promise.all(statusListe.map(async (z) => ({ ...z, ereignisse: await ladeGeraetEreignisse(z.deviceId) })))
+    : null;
   const p = (rest: string) => pfadFuer(lang, rest);
   const nutzer = await aktuellerNutzer();
   if (!nutzer) redirect(p('/admin/login'));
@@ -311,6 +318,57 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
                 <a className={styles.btnZweit} href={`/admin/vorgang/${nr}/nachweis-pdf?art=loeschung`} download>{zkT.downloadLoeschung}</a>
               </div>
             </form>
+          </section>
+        )}
+
+        {verlauf && (
+          <section className={styles.karte} aria-labelledby="status-verlauf-titel">
+            <h2 id="status-verlauf-titel">{zkT.statusTitel}</h2>
+            {st === 'ok' && <p role="status"><strong>{zkT.statusOk}</strong></p>}
+            {st === 'fehler' && <p role="alert"><strong>{zkT.fehlerStatusSchritt}</strong></p>}
+            {st === 'pdf' && <p role="alert"><strong>{zkT.fehlerStatusPdf}</strong></p>}
+            {verlauf.map((z) => {
+              const geraet = v.geraete.find((g) => g.id === z.deviceId);
+              const label = (s: string) => zkT.statusLabels[s] ?? s;
+              const weiter = geraetNaechsteStatus(z.status).filter((n) => !brauchtZweiAdmins(n));
+              return (
+                <article key={z.deviceId} className={styles.geraet} style={{ marginTop: 14 }}>
+                  <div className={styles.geraetKopf}>
+                    <h3>{geraet ? `${geraet.position}. ${geraeteName(geraet, lang)}` : z.deviceId}</h3>
+                    <span className={styles.meta}>{zkT.statusAktuell}: <strong>{label(z.status)}</strong></span>
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 8 }}>
+                    {weiter.length === 0 && <span className={styles.meta}>{zkT.statusKeinerWeiter}</span>}
+                    {weiter.map((n) => (
+                      <form key={n} action={setzeStatusAktion}>
+                        <input type="hidden" name="vorgangsnummer" value={nr} />
+                        <input type="hidden" name="device_id" value={z.deviceId} />
+                        <input type="hidden" name="nach" value={n} />
+                        <button type="submit" className={styles.btnZweit}>
+                          {zkT.statusButtonVorlage.replace('{ziel}', label(n))}
+                        </button>
+                      </form>
+                    ))}
+                  </div>
+                  <p style={{ marginTop: 10 }}>
+                    <a className={styles.btnZweit} href={`/admin/vorgang/${nr}/schritt-pdf?device=${z.deviceId}`} download>{zkT.schrittPdf}</a>
+                  </p>
+                  <p className={styles.meta} style={{ marginTop: 10, marginBottom: 4 }}>{zkT.statusVerlauf}</p>
+                  {z.ereignisse.length === 0 ? (
+                    <p className={styles.meta}>{zkT.statusKeinVerlauf}</p>
+                  ) : (
+                    <ol style={{ paddingLeft: 18, margin: 0, display: 'grid', gap: 4 }}>
+                      {z.ereignisse.map((e, i) => (
+                        <li key={`${z.deviceId}-${i}`} className={styles.meta}>
+                          {datumZeitDe(e.zeit)}: {label(e.von)} → {label(e.nach)} · {e.nutzer}
+                          {e.zweiter_nutzer ? ` · ${e.zweiter_nutzer}` : ''}
+                        </li>
+                      ))}
+                    </ol>
+                  )}
+                </article>
+              );
+            })}
           </section>
         )}
 

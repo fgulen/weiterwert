@@ -8,3 +8,6 @@
 !/impressum.html
 !/datenschutz.html
 !/barrierefreiheit.html
+
+# Root Directory ist "platform": diesen Ordner mit hochladen.
+!/platform

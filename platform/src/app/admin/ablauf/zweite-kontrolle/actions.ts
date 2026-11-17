@@ -6,6 +6,8 @@ import { aktuellerNutzer } from '@/lib/admin/session';
 import { zweiteKontrolleErgebnis, type GeraetMerkmale } from '@/lib/admin/geraet-ablauf';
 import { setzeGeraetStatus } from '@/lib/admin/geraet-ablauf-db';
 import { datenbankKonfiguriert } from '@/lib/admin/db';
+import { baueSchrittPdf } from '@/lib/admin/schritt-pdf';
+import { speichereSchrittPdf } from '@/lib/admin/schritt-speicher';
 import { ladeVorgang } from '@/lib/admin/vorgang';
 import { getAppEnv } from '@/lib/env';
 import { aktuelleSprache } from '@/lib/i18n/server';
@@ -64,6 +66,15 @@ export async function pruefeZweiteKontrolle(form: FormData): Promise<void> {
     schritt: ergebnis === 'passt' ? 'zweite_kontrolle_passt' : 'zweite_kontrolle_abweichung',
   });
   if (!schritt2.ok) redirect(zurueck(`?zk=${schritt2.fehler}`));
+
+  // Schrittprotokoll für die Zweite Kontrolle (Gesamtschritt eingegangen → Ergebnis)
+  const pdf = await baueSchrittPdf({
+    v: vorgang!, geraet: geraet!, von: 'eingegangen',
+    nach: ergebnis === 'passt' ? 'loeschung_offen' : 'quarantaene',
+    nutzer: nutzer!.email, zeit: new Date(), zweiter: null,
+  });
+  const gespeichert = await speichereSchrittPdf(nummer!, deviceId!, pdf, nutzer!.email);
+  if (!gespeichert.ok) redirect(zurueck('?zk=pdf'));
 
   redirect(zurueck(`?zk=${ergebnis}`));
 }
