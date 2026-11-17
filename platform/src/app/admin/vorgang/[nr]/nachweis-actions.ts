@@ -88,6 +88,7 @@ export async function speichereLoeschungAktion(form: FormData): Promise<void> {
     if ('grund' in bestaetigung) redirect(zurueck(`?na=fehler&grund=zweiter_${bestaetigung.grund}`));
     const regel = zweiteFreigabeOk(nutzer.email, bestaetigung.email, bestaetigung.rolle);
     if (!regel.ok) redirect(zurueck(`?na=fehler&grund=zweiter_${regel.grund}`));
+    if (!schrittErlaubt(bestaetigung.rolle, 'loeschung')) redirect(zurueck('?na=fehler&grund=zweiter_keine_berechtigung'));
     daten.zweiter = bestaetigung.email;
   }
 

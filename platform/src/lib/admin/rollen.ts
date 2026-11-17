@@ -6,10 +6,13 @@ export function istAdminRolle(wert: unknown): wert is Rolle {
   return typeof wert === 'string' && (ROLLEN as readonly string[]).includes(wert);
 }
 
+/** Zielstatus, die ein eigenes Formular haben. Sie dürfen nicht über die Status-Buttons gesetzt werden. */
+export const FORMULAR_ZIELE: readonly string[] = ['zweite_kontrolle', 'quarantaene', 'loeschung_offen', 'geloescht', 'uebergeben'];
+
 /** Schritte eines Geräts (Schrittleiste plus Freigabe, Rückgabe). */
 export type Schritt =
   | 'eingang' | 'zweite' | 'annahme' | 'loeschung' | 'technik'
-  | 'freigabe' | 'uebergabe' | 'rueckgabe' | 'abschluss';
+  | 'freigabe' | 'uebergabe' | 'rueckgabe' | 'abschluss' | 'unbekannt';
 
 /**
  * Wer darf welchen Schritt ausführen. Entspricht der Spalte "wer" in geraet-prozess.ts (Gesamtprozess).
@@ -43,7 +46,11 @@ export function schrittFuerStatus(nach: string): Schritt {
       return 'uebergabe';
     case 'rueckgabe':
       return 'rueckgabe';
-    default: // reparatur, technische_pruefung, entsorgt
+    case 'reparatur':
+    case 'technische_pruefung':
+    case 'entsorgt':
       return 'technik';
+    default: // unbekannter Status: nur admin (fail-closed)
+      return 'unbekannt';
   }
 }

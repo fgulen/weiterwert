@@ -388,3 +388,24 @@ Commit yerelde; push ve deploy yok. `tsconfig.json`, `.claude/`, `.next-local*` 
 - Gerçek veritabanı testi, mobil 320 px, Playwright e2e (Build hängt an Next.js-Sicherheitshinweis).
 - Saklama: Dok. 13/18/28 nennen 10 Jahre, Punkt 6 bitte bestätigen.
 - Hukuki prüfung elektronische Unterschrift.
+
+## 2026-11-17 (Abend: Ablauf-Schritte, Rollen, Canlıya alma)
+
+**Yapılanlar:**
+- Vorgang-Seite: Schrittleiste (7 Schritte), nur aktiver Schritt sichtbar, Sprunganker nach Speichern, Fortschritt "Geräte fertig X von Y".
+- Status und Schrittprotokoll-PDF in einer Transaktion (Migration 20261123). Kein Statuswechsel ohne PDF.
+- Rollen: admin (alles), technik (Eingang, Löschung, technische Prüfung, Übergabe), mitarbeiter (Annahme, Übergabe). Freigabe und Rückgabe nur admin. Serverseitig je Aktion geprüft, Test hält Tabelle fest.
+- Gerätedaten je Gerät eingeklappt, im Schritt Zweite Kontrolle offen.
+- Alte Fallvorgang-Karte "Durum" nur noch im Abschluss.
+- Einheitlicher Gerätetitel (Art, Marke, Modell).
+- Canlı: Tek domain weiterwert.de (statik ana yol, platform diğer yollar), Root Directory = platform (Vercel-Panel, Fatih ile).
+- test:static deploy-scope Test auf neues Upload-Modell angepasst (!/platform).
+
+**Offen (Fatih):**
+- Migration 20261123_status_mit_pdf.sql im Supabase-SQL-Editor ausführen (vor Nutzung der Buttons).
+- Rollen in Supabase setzen: app_metadata.role = "technik" bzw. "mitarbeiter" je Person.
+- Mitarbeiter-Rolle: Annahme/Übergabe ist Annahme (Dok. 18/28 nennen Technik/Admin) — bestätigen.
+- Ignored Build Step in Vercel prüfen; spenden.weiterwert.de Domain entscheiden.
+- Push und canlıya alma (Commits liegen lokal, ab 1177053).
+
+**Bilinen Grenzen:** Hilfe-Texte je Schritt und Prüflisten mit Häkchen fehlen noch. Ekran görüntüleri test ortamında alındı (admin hesabı).

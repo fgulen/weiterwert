@@ -15,6 +15,8 @@ import { aktuelleSprache } from '@/lib/i18n/server';
 import { pfadFuer } from '@/lib/i18n/sprache';
 import { schrittAnhang, schrittAnker } from '@/lib/admin/schritt-parameter';
 
+const VORGANGSNUMMER_PRUEFUNG = /^WW-\d{4}-\d{6}$/;
+
 function text(form: FormData, feld: string): string | null {
   const wert = String(form.get(feld) ?? '').trim();
   return wert === '' ? null : wert;
@@ -36,7 +38,7 @@ export async function pruefeZweiteKontrolle(form: FormData): Promise<void> {
   if (!schrittErlaubt(nutzer.rolle, 'zweite')) redirect(zurueck('?zk=berechtigung'));
 
   const deviceId = text(form, 'device_id');
-  if (!nummer || !deviceId) redirect(zurueck('?zk=eingabe'));
+  if (!nummer || !VORGANGSNUMMER_PRUEFUNG.test(nummer) || !deviceId) redirect(zurueck('?zk=eingabe'));
 
   const vorgang = await ladeVorgang(nummer!);
   const geraet = vorgang?.geraete.find((g) => g.id === deviceId);

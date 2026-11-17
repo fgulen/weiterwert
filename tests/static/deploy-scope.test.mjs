@@ -8,13 +8,13 @@ test('.vercelignore exists', () => {
   assert.ok(existsSync(path), '.vercelignore missing');
 });
 
-test('live deploy allows only static site files', () => {
+test('live deploy allows only the platform folder and static site files', () => {
   const lines = readFileSync(path, 'utf8').split(/\r?\n/).map(l => l.trim()).filter(l => l && !l.startsWith('#'));
-  for (const l of ['/*', '!/index.html', '!/assets']) {
+  for (const l of ['/*', '!/platform']) {
     assert.ok(lines.includes(l), `missing pattern ${l}`);
   }
   const allowed = lines.filter(l => l.startsWith('!'));
-  for (const bad of ['docs', 'platform', 'tests', 'package.json', '.superpowers']) {
+  for (const bad of ['docs', 'tests', 'package.json', '.superpowers']) {
     assert.ok(!allowed.some(l => l.includes(bad)), `must not re-include ${bad}`);
   }
 });

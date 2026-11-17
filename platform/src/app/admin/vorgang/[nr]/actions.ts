@@ -27,6 +27,7 @@ export async function statusAendern(nummer: string, nach: string): Promise<Statu
   if (!VORGANGSNUMMER.test(nummer)) return { fehler: t.ungueltigeNr };
   const nutzer = await aktuellerNutzer();
   if (!nutzer) return { fehler: t.erneutAnmelden };
+  if (nutzer.rolle !== 'admin') return { fehler: t.erneutAnmelden };
 
   const v = await ladeVorgang(nummer);
   if (!v) return { fehler: t.detail.vorgangNichtGefunden };

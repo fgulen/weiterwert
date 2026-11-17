@@ -28,7 +28,7 @@ import { speichereUebergabeAktion, speichereLoeschungAktion } from './nachweis-a
 import { setzeStatusAktion } from './status-actions';
 import { ladeGeraetStatusListe, ladeGeraetEreignisse } from '@/lib/admin/geraet-verlauf';
 import { geraetNaechsteStatus, brauchtZweiAdmins, geraetFertig } from '@/lib/admin/geraet-ablauf';
-import { schrittErlaubt, schrittFuerStatus } from '@/lib/admin/rollen';
+import { schrittErlaubt, schrittFuerStatus, FORMULAR_ZIELE } from '@/lib/admin/rollen';
 import UnterschriftFeld from './UnterschriftFeld';
 import styles from '../../admin.module.css';
 
@@ -365,13 +365,13 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
             {st === 'ok' && dev && (
               <p role="status">
                 <strong>{zkT.schrittBereit}</strong>{' '}
-                <a className={styles.btnZweit} href={`/admin/vorgang/${nr}/schritt-pdf?device=${dev}`} download>{zkT.dokSchritt} (PDF)</a>
+                <a className={styles.btnZweit} href={`/admin/vorgang/${nr}/schritt-pdf?device=${encodeURIComponent(dev ?? '')}`} download>{zkT.dokSchritt} (PDF)</a>
               </p>
             )}
             {verlauf.map((z) => {
               const geraet = v.geraete.find((g) => g.id === z.deviceId);
               const label = (s: string) => zkT.statusLabels[s] ?? s;
-              const weiter = geraetNaechsteStatus(z.status).filter((n) => !brauchtZweiAdmins(n) && schrittErlaubt(nutzer.rolle, schrittFuerStatus(n)));
+              const weiter = geraetNaechsteStatus(z.status).filter((n) => !brauchtZweiAdmins(n) && !FORMULAR_ZIELE.includes(n) && schrittErlaubt(nutzer.rolle, schrittFuerStatus(n)));
               return (
                 <article key={z.deviceId} className={styles.geraet} style={{ marginTop: 14 }}>
                   <div className={styles.geraetKopf}>
@@ -588,7 +588,7 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
             </details>
           </section>
 
-          {nutzer.rolle === 'admin' && (
+          {(
             <>
             <section className={styles.karte} aria-labelledby="dokumente-titel" style={{ margin: 0 }}>
               <h2 id="dokumente-titel">{zkT.dokumenteTitel}</h2>
@@ -607,7 +607,7 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
                   const g = v.geraete.find((x) => x.id === z.deviceId);
                   return (
                     <li key={`dok-${z.deviceId}`}>
-                      <a href={`/admin/vorgang/${v.vorgangsnummer}/schritt-pdf?device=${z.deviceId}`} download>
+                      <a href={`/admin/vorgang/${v.vorgangsnummer}/schritt-pdf?device=${encodeURIComponent(z.deviceId)}`} download>
                         {zkT.dokSchritt}: {g ? `${g.position}. ${geraetTitel(g, lang)}` : z.deviceId}
                       </a>
                     </li>
