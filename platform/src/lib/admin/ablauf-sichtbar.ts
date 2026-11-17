@@ -1,9 +1,8 @@
-import { getAppEnv } from '@/lib/env';
-
 /**
- * Der Geräte-Ablauf ist nur in Test- und Entwicklungsumgebung sichtbar.
- * In der Live-Umgebung (APP_ENV production) bleibt er verborgen, bis das Team ihn freigibt.
+ * Geräte-Ablauf und die digitalen Nachweise sind für alle Umgebungen sichtbar.
+ * Entscheidung Fatih 2026-11-17: alles, was lokal entwickelt wurde, geht live.
+ * Der Zugang bleibt durch die Admin-Anmeldung geschützt (Rolle admin oder mitarbeiter).
  */
 export function ablaufSichtbar(): boolean {
-  return getAppEnv() === 'test' || process.env.NODE_ENV === 'development';
+  return true;
 }
