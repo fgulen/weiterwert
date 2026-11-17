@@ -83,9 +83,9 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
   const geraeteStatus = ablaufSichtbar() ? await ladeGeraeteStatus(nr) : null;
   const abschlussbereit = geraeteStatus !== null && vorgangFertig(geraeteStatus);
   // Unabhängige Abfragen laufen parallel; die Geräte-Ereignisse in einer Abfrage.
-  const [statusListe, annahmeVorhanden] = ablaufSichtbar()
-    ? await Promise.all([ladeGeraetStatusListe(nr), hatProtokoll(nr, 'annahme-digital')])
-    : [null, false];
+  const [statusListe, annahmeVorhanden, uebergabeVorhanden, loeschungVorhanden] = ablaufSichtbar()
+    ? await Promise.all([ladeGeraetStatusListe(nr), hatProtokoll(nr, 'annahme-digital'), hatProtokoll(nr, 'uebergabe-digital'), hatProtokoll(nr, 'loeschung-digital')])
+    : [null, false, false, false];
   const fertigeGeraete = statusListe ? statusListe.filter((z) => geraetFertig(z.status)).length : null;
   const fortschritt = statusListe ? vorgangFortschritt(statusListe.map((z) => z.status), annahmeVorhanden) : null;
   const ereignisNachGeraet = statusListe ? await ladeEreignisseVieler(statusListe.map((z) => z.deviceId)) : {};
@@ -189,6 +189,9 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
           <section className={styles.karte} aria-labelledby="annahme-titel">
             <h2 id="annahme-titel">{zkT.annahmeTitel}</h2>
             <p className={styles.meta}>{zkT.annahmeText}</p>
+            {annahmeVorhanden && (
+              <p><a className={styles.btnZweit} href={`/admin/vorgang/${nr}/annahme`} download>{zkT.protokollAnsehen}</a></p>
+            )}
             {an === 'ok' && <p role="status"><strong>{zkT.annahmeOk}</strong></p>}
             {an === 'test' && <p role="status"><strong>{zkT.annahmeTest}</strong></p>}
             {an === 'fehler' && (
@@ -268,6 +271,9 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
           <section className={styles.karte} aria-labelledby="uebergabe-titel">
             <h2 id="uebergabe-titel">{zkT.uebergabeTitel}</h2>
             <p className={styles.meta}>{zkT.uebergabeText}</p>
+            {uebergabeVorhanden && (
+              <p><a className={styles.btnZweit} href={`/admin/vorgang/${nr}/nachweis-pdf?art=uebergabe`} download>{zkT.protokollAnsehen}</a></p>
+            )}
             {na === 'ok' && <p role="status"><strong>{zkT.naOk}</strong></p>}
             {na === 'test' && <p role="status"><strong>{zkT.naTest}</strong></p>}
             {na === 'fehler' && <p role="alert"><strong>{grund === 'kette' ? zkT.fehlerKette : grund?.startsWith('zweiter') ? zkT.fehlerZweiter : zkT.fehlerNachweis}</strong></p>}
@@ -305,6 +311,9 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
           <section className={styles.karte} aria-labelledby="loeschung-titel">
             <h2 id="loeschung-titel">{zkT.loeschungTitel}</h2>
             <p className={styles.meta}>{zkT.loeschungText}</p>
+            {loeschungVorhanden && (
+              <p><a className={styles.btnZweit} href={`/admin/vorgang/${nr}/nachweis-pdf?art=loeschung`} download>{zkT.protokollAnsehen}</a></p>
+            )}
             {na === 'ok' && <p role="status"><strong>{zkT.naOk}</strong></p>}
             {na === 'test' && <p role="status"><strong>{zkT.naTest}</strong></p>}
             {na === 'fehler' && <p role="alert"><strong>{grund === 'kette' ? zkT.fehlerKette : grund?.startsWith('zweiter') ? zkT.fehlerZweiter : zkT.fehlerNachweis}</strong></p>}
