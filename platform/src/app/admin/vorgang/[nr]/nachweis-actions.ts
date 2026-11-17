@@ -6,6 +6,7 @@ import { istAdminRolle, schrittErlaubt } from '@/lib/admin/rollen';
 import { ladeVorgang, VORGANGSNUMMER } from '@/lib/admin/vorgang';
 import { ablaufSichtbar } from '@/lib/admin/ablauf-sichtbar';
 import { speichereNachweis } from '@/lib/admin/nachweis-speicher';
+import { setzeGeraetStatus } from '@/lib/admin/geraet-ablauf-db';
 import { baueUebergabeDigital, baueLoeschungDigital } from '@/lib/admin/nachweis-pdf';
 import {
   pruefeUebergabe, pruefeLoeschung, UEBERGABE_PUNKTE,
@@ -104,5 +105,13 @@ export async function speichereLoeschungAktion(form: FormData): Promise<void> {
     baue: (hash, zeit) => baueLoeschungDigital(vorgang, daten, zeit, hash),
   });
   if (!ergebnis.ok) redirect(zurueck(`?na=fehler&grund=${ergebnis.fehler}`));
+  // Erfolgreich gelöscht und verifiziert: Gerät geht auf "geloescht" (Schritt Löschung abgeschlossen).
+  // Fehlschlag oder Ausnahme bleibt im Status "loeschung_offen" (zweite Person, Dok. 07).
+  for (const g of daten.geraete) {
+    if (g.ergebnis !== 'erfolgreich' || g.verifiziert !== true) continue;
+    const geraetId = vorgang.geraete.find((x) => x.position === g.position)?.id;
+    if (!geraetId) continue;
+    await setzeGeraetStatus({ deviceId: geraetId, von: 'loeschung_offen', nach: 'geloescht', schritt: 'loeschung', nutzer: nutzer.email, zweiter: null });
+  }
   redirect(zurueck(ergebnis.gespeichert ? '?na=ok' : '?na=test'));
 }
