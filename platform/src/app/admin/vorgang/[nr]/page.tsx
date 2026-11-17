@@ -21,14 +21,14 @@ import { fotoLoeschen } from './actions';
 import { ablaufSichtbar } from '@/lib/admin/ablauf-sichtbar';
 import { ablaufMit, ablaufTexte } from '@/lib/i18n/ablauf';
 import { vorgangFortschritt, geraetAktuellerSchritt, type SchrittId } from '@/lib/admin/ablauf-fortschritt';
-import { holeLetzteVersion } from '@/lib/admin/protokoll-pdf';
+import { hatProtokoll } from '@/lib/admin/protokoll-pdf';
 import { ladeGeraeteStatus } from '@/lib/admin/geraete-status';
 import { vorgangFertig } from '@/lib/admin/geraet-ablauf';
 import { pruefeZweiteKontrolle } from '../../ablauf/zweite-kontrolle/actions';
 import { speichereAnnahmeAktion } from './annahme-actions';
 import { speichereUebergabeAktion, speichereLoeschungAktion } from './nachweis-actions';
 import { setzeStatusAktion } from './status-actions';
-import { ladeGeraetStatusListe, ladeGeraetEreignisse } from '@/lib/admin/geraet-verlauf';
+import { ladeGeraetStatusListe, ladeEreignisseVieler } from '@/lib/admin/geraet-verlauf';
 import { geraetNaechsteStatus, brauchtZweiAdmins, geraetFertig } from '@/lib/admin/geraet-ablauf';
 import { schrittErlaubt, schrittFuerStatus, FORMULAR_ZIELE } from '@/lib/admin/rollen';
 import UnterschriftFeld from './UnterschriftFeld';
@@ -82,12 +82,15 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
   const zkT = ablaufTexte(lang);
   const geraeteStatus = ablaufSichtbar() ? await ladeGeraeteStatus(nr) : null;
   const abschlussbereit = geraeteStatus !== null && vorgangFertig(geraeteStatus);
-  const statusListe = ablaufSichtbar() ? await ladeGeraetStatusListe(nr) : null;
+  // Unabhängige Abfragen laufen parallel; die Geräte-Ereignisse in einer Abfrage.
+  const [statusListe, annahmeVorhanden] = ablaufSichtbar()
+    ? await Promise.all([ladeGeraetStatusListe(nr), hatProtokoll(nr, 'annahme-digital')])
+    : [null, false];
   const fertigeGeraete = statusListe ? statusListe.filter((z) => geraetFertig(z.status)).length : null;
-  const annahmeVorhanden = ablaufSichtbar() ? (await holeLetzteVersion(nr, 'annahme-digital')) !== null : false;
   const fortschritt = statusListe ? vorgangFortschritt(statusListe.map((z) => z.status), annahmeVorhanden) : null;
+  const ereignisNachGeraet = statusListe ? await ladeEreignisseVieler(statusListe.map((z) => z.deviceId)) : {};
   const verlauf = statusListe
-    ? await Promise.all(statusListe.map(async (z) => ({ ...z, ereignisse: await ladeGeraetEreignisse(z.deviceId) })))
+    ? statusListe.map((z) => ({ ...z, ereignisse: ereignisNachGeraet[z.deviceId] ?? [] }))
     : null;
   const p = (rest: string) => pfadFuer(lang, rest);
   const nutzer = await aktuellerNutzer();
@@ -164,8 +167,10 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
                     aria-current={s === aktiv ? 'step' : undefined}
                     style={{
                       display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 44, padding: '8px 12px', borderRadius: 999,
-                      border: '1px solid var(--line)', textDecoration: 'none', color: 'inherit', whiteSpace: 'nowrap',
-                      fontWeight: s === aktiv ? 700 : 400, background: s === aktiv ? 'var(--surface-alt)' : 'transparent',
+                      border: '1px solid var(--line)', textDecoration: 'none', color: 'var(--ink, inherit)', whiteSpace: 'nowrap',
+                      fontWeight: s === aktiv ? 700 : 400,
+                      background: fortschritt?.[s as SchrittId] === 'erledigt' ? '#e8f5ee' : fortschritt?.[s as SchrittId] === 'aktiv' ? '#dbeaf2' : s === aktiv ? 'var(--surface-alt)' : 'transparent',
+                      borderColor: fortschritt?.[s as SchrittId] === 'erledigt' ? '#1e7b4b' : fortschritt?.[s as SchrittId] === 'aktiv' ? '#0b4f6c' : 'var(--line)',
                     }}
                   >
                     <span aria-hidden="true">{i + 1}.</span> {zkT.schritte[s]}

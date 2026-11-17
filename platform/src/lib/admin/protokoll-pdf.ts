@@ -30,3 +30,15 @@ export async function holeOderErzeuge(
 ): Promise<{ ok: true; bytes: Uint8Array } | { ok: false }> {
   return { ok: true, bytes: await baue() };
 }
+
+/** Nur prüfen, ob ein Protokoll dieser Art existiert (ohne den Inhalt zu laden). */
+export async function hatProtokoll(nummer: string, art: PdfArt): Promise<boolean> {
+  const db = datenbankKonfiguriert();
+  if (!db) return false;
+  const res = await fetch(
+    `${db.url}/rest/v1/protokoll?nummer=eq.${encodeURIComponent(nummer)}&art=eq.${art}&select=id&limit=1`,
+    { headers: dbKopfzeilen(db.key), cache: 'no-store' },
+  );
+  if (!res.ok) return false;
+  return ((await res.json()) as unknown[]).length > 0;
+}
