@@ -55,3 +55,35 @@ export async function setzeGeraetStatus(w: GeraetWechsel): Promise<{ ok: true } 
   const treffer = BEKANNTE_FEHLER.find((code) => text.includes(code));
   return { ok: false, fehler: treffer ?? 'unbekannt' };
 }
+
+/**
+ * Statuswechsel und Schrittprotokoll-PDF in einer Transaktion (Migration 20261123).
+ * Schlägt das Speichern fehl, bleibt der Status unverändert. Ein Statuswechsel ohne PDF ist nicht möglich.
+ */
+export async function setzeGeraetStatusMitPdf(
+  w: GeraetWechsel & { vorgangsnummer: string; pdf: Uint8Array },
+): Promise<{ ok: true } | { ok: false; fehler: GeraetWechselFehler }> {
+  const db = datenbankKonfiguriert();
+  if (!db) return { ok: false, fehler: 'datenbank_nicht_konfiguriert' };
+  const { bytesZuBytea, sha256Hex } = await import('./protokoll-pdf-kodierung');
+  const res = await fetch(`${db.url}/rest/v1/rpc/setze_geraet_status_mit_pdf`, {
+    method: 'POST',
+    headers: dbKopfzeilen(db.key, { 'Content-Type': 'application/json' }),
+    body: JSON.stringify({
+      p_device: w.deviceId,
+      p_von: w.von,
+      p_nach: w.nach,
+      p_schritt: w.schritt,
+      p_nutzer: w.nutzer,
+      p_zweiter: w.zweiter,
+      p_vorgang: w.vorgangsnummer,
+      p_sha256: sha256Hex(w.pdf),
+      p_inhalt: bytesZuBytea(w.pdf),
+    }),
+    cache: 'no-store',
+  });
+  if (res.ok) return { ok: true };
+  const text = await res.text();
+  const treffer = BEKANNTE_FEHLER.find((code) => text.includes(code));
+  return { ok: false, fehler: treffer ?? 'unbekannt' };
+}

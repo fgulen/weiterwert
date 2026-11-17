@@ -19,7 +19,7 @@ import KontaktKarte from './KontaktKarte';
 import LoeschenBereich from './LoeschenBereich';
 import { fotoLoeschen } from './actions';
 import { ablaufSichtbar } from '@/lib/admin/ablauf-sichtbar';
-import { ablaufTexte } from '@/lib/i18n/ablauf';
+import { ablaufMit, ablaufTexte } from '@/lib/i18n/ablauf';
 import { ladeGeraeteStatus } from '@/lib/admin/geraete-status';
 import { vorgangFertig } from '@/lib/admin/geraet-ablauf';
 import { pruefeZweiteKontrolle } from '../../ablauf/zweite-kontrolle/actions';
@@ -27,7 +27,7 @@ import { speichereAnnahmeAktion } from './annahme-actions';
 import { speichereUebergabeAktion, speichereLoeschungAktion } from './nachweis-actions';
 import { setzeStatusAktion } from './status-actions';
 import { ladeGeraetStatusListe, ladeGeraetEreignisse } from '@/lib/admin/geraet-verlauf';
-import { geraetNaechsteStatus, brauchtZweiAdmins } from '@/lib/admin/geraet-ablauf';
+import { geraetNaechsteStatus, brauchtZweiAdmins, geraetFertig } from '@/lib/admin/geraet-ablauf';
 import UnterschriftFeld from './UnterschriftFeld';
 import styles from '../../admin.module.css';
 
@@ -61,7 +61,7 @@ function geraetAntworten(g: GeraetDaten) {
 
 export const metadata: Metadata = { title: pageTitle('/admin'), robots: { index: false } };
 
-type Props = { params: Promise<{ nr: string }>; searchParams: Promise<{ zk?: string; test?: string; an?: string; na?: string; grund?: string; st?: string; schritt?: string }> };
+type Props = { params: Promise<{ nr: string }>; searchParams: Promise<{ zk?: string; test?: string; an?: string; na?: string; grund?: string; st?: string; schritt?: string; dev?: string }> };
 
 /** Ablaufschritte in Reihenfolge. Die Schlüssel sind die Werte des Parameters "schritt". */
 const SCHRITTE = ['eingang', 'zweite', 'annahme', 'loeschung', 'technik', 'uebergabe', 'abschluss'] as const;
@@ -71,7 +71,7 @@ const FRIST_MS = FOTO_LOESCHFRIST_TAGE * 24 * 60 * 60 * 1000;
 export default async function VorgangSeite({ params, searchParams }: Props) {
   gatePage('admin');
   const { nr } = await params;
-  const { zk, test, an, na, grund, st, schritt: schrittParam } = await searchParams;
+  const { zk, test, an, na, grund, st, dev, schritt: schrittParam } = await searchParams;
   const aktiv = (SCHRITTE as readonly string[]).includes(schrittParam ?? '') ? (schrittParam as (typeof SCHRITTE)[number]) : 'eingang';
   if (!VORGANGSNUMMER.test(nr)) notFound();
   const { lang } = await aktuelleSprache();
@@ -80,6 +80,7 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
   const geraeteStatus = ablaufSichtbar() ? await ladeGeraeteStatus(nr) : null;
   const abschlussbereit = geraeteStatus !== null && vorgangFertig(geraeteStatus);
   const statusListe = ablaufSichtbar() ? await ladeGeraetStatusListe(nr) : null;
+  const fertigeGeraete = statusListe ? statusListe.filter((z) => geraetFertig(z.status)).length : null;
   const verlauf = statusListe
     ? await Promise.all(statusListe.map(async (z) => ({ ...z, ereignisse: await ladeGeraetEreignisse(z.deviceId) })))
     : null;
@@ -133,7 +134,6 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
           </div>
           <div className={styles.aktionen}>
             <a className={styles.btnZweit} href={`/admin/vorgang/${v.vorgangsnummer}/pdf`} download>{t.detail.pdf}</a>
-            {ablaufSichtbar() && <a className={styles.btnZweit} href={`/admin/vorgang/${v.vorgangsnummer}/annahme`} download>{zkT.annahmeTitel}</a>}
             <a className={styles.btnZweit} href={`/admin/vorgang/${v.vorgangsnummer}/uebergabe`} download>{t.detail.uebergabePdf}</a>
             <a className={styles.btnZweit} href={`/admin/vorgang/${v.vorgangsnummer}/loeschprotokoll`} download>{t.akte.belegLoeschprotokoll}</a>
             <a className={styles.btnZweit} href={`/admin/vorgang/${v.vorgangsnummer}/entsorgung`} download>{t.akte.belegEntsorgung}</a>
@@ -147,6 +147,9 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
           <nav aria-label={zkT.schrittNav} style={{ margin: '0 0 16px' }}>
             <p className={styles.meta} style={{ margin: '0 0 6px' }}>
               {zkT.schrittVon.replace('{n}', String(SCHRITTE.indexOf(aktiv) + 1)).replace('{m}', String(SCHRITTE.length))}: <strong>{zkT.schritte[aktiv]}</strong>
+              {fertigeGeraete !== null && statusListe && (
+                <> · {ablaufMit(zkT.geraeteFertig, { n: fertigeGeraete, m: statusListe.length })}</>
+              )}
             </p>
             <ol style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 6 }}>
               {SCHRITTE.map((s, i) => (
@@ -280,7 +283,6 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
               <UnterschriftFeld label={zkT.unterschriftLabel} leer={zkT.unterschriftLeer} loeschen={zkT.loeschenLabel} />
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                 <button type="submit" className={styles.btnZweit}>{zkT.uebergabeSpeichern}</button>
-                <a className={styles.btnZweit} href={`/admin/vorgang/${nr}/nachweis-pdf?art=uebergabe`} download>{zkT.downloadUebergabe}</a>
               </div>
             </form>
           </section>
@@ -348,7 +350,6 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
               </fieldset>
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                 <button type="submit" className={styles.btnZweit}>{zkT.loeschungSpeichern}</button>
-                <a className={styles.btnZweit} href={`/admin/vorgang/${nr}/nachweis-pdf?art=loeschung`} download>{zkT.downloadLoeschung}</a>
               </div>
             </form>
           </section>
@@ -360,6 +361,12 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
             {st === 'ok' && <p role="status"><strong>{zkT.statusOk}</strong></p>}
             {st === 'fehler' && <p role="alert"><strong>{zkT.fehlerStatusSchritt}</strong></p>}
             {st === 'pdf' && <p role="alert"><strong>{zkT.fehlerStatusPdf}</strong></p>}
+            {st === 'ok' && dev && (
+              <p role="status">
+                <strong>{zkT.schrittBereit}</strong>{' '}
+                <a className={styles.btnZweit} href={`/admin/vorgang/${nr}/schritt-pdf?device=${dev}`} download>{zkT.dokSchritt} (PDF)</a>
+              </p>
+            )}
             {verlauf.map((z) => {
               const geraet = v.geraete.find((g) => g.id === z.deviceId);
               const label = (s: string) => zkT.statusLabels[s] ?? s;
@@ -573,10 +580,38 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
           </section>
 
           {nutzer.rolle === 'admin' && (
+            <>
+            <section className={styles.karte} aria-labelledby="dokumente-titel" style={{ margin: 0 }}>
+              <h2 id="dokumente-titel">{zkT.dokumenteTitel}</h2>
+              <p className={styles.meta}>{zkT.dokumenteText}</p>
+              <ul style={{ paddingLeft: 18, display: 'grid', gap: 8, margin: '10px 0 0' }}>
+                {ablaufSichtbar() && (
+                  <li><a href={`/admin/vorgang/${v.vorgangsnummer}/annahme`} download>{zkT.dokAnnahme}</a></li>
+                )}
+                {ablaufSichtbar() && (
+                  <li><a href={`/admin/vorgang/${v.vorgangsnummer}/nachweis-pdf?art=uebergabe`} download>{zkT.dokUebergabe}</a></li>
+                )}
+                {ablaufSichtbar() && (
+                  <li><a href={`/admin/vorgang/${v.vorgangsnummer}/nachweis-pdf?art=loeschung`} download>{zkT.dokLoeschung}</a></li>
+                )}
+                {verlauf && verlauf.map((z) => {
+                  const g = v.geraete.find((x) => x.id === z.deviceId);
+                  return (
+                    <li key={`dok-${z.deviceId}`}>
+                      <a href={`/admin/vorgang/${v.vorgangsnummer}/schritt-pdf?device=${z.deviceId}`} download>
+                        {zkT.dokSchritt}: {g ? `${g.position}. ${geraeteName(g, lang)}` : z.deviceId}
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+
             <section id="loeschen" className={styles.ordLoeschen} aria-labelledby="loeschen-hinweis" style={{ scrollMarginTop: 24 }}>
               <h2 id="loeschen-hinweis" className={styles.nurLesen}>{t.detail.loeschenAufrufen}</h2>
               <LoeschenBereich nummer={v.vorgangsnummer} fotos={fotoAnzahl} t={t} />
             </section>
+            </>
           )}
         </div>
       </div>

@@ -12,7 +12,7 @@ import { ladeVorgang } from '@/lib/admin/vorgang';
 import { getAppEnv } from '@/lib/env';
 import { aktuelleSprache } from '@/lib/i18n/server';
 import { pfadFuer } from '@/lib/i18n/sprache';
-import { schrittAnhang } from '@/lib/admin/schritt-parameter';
+import { schrittAnhang, schrittAnker } from '@/lib/admin/schritt-parameter';
 
 function text(form: FormData, feld: string): string | null {
   const wert = String(form.get(feld) ?? '').trim();
@@ -27,7 +27,7 @@ function text(form: FormData, feld: string): string | null {
 export async function pruefeZweiteKontrolle(form: FormData): Promise<void> {
   const { lang } = await aktuelleSprache();
   const nummer = text(form, 'vorgangsnummer');
-  const zurueck = (zusatz: string) => pfadFuer(lang, `/admin/vorgang/${nummer ?? ''}${zusatz}${schrittAnhang(form)}`);
+  const zurueck = (zusatz: string) => pfadFuer(lang, `/admin/vorgang/${nummer ?? ''}${zusatz}${schrittAnhang(form)}${schrittAnker(form)}`);
 
   if (!ablaufSichtbar()) redirect(pfadFuer(lang, '/admin'));
   const nutzer = await aktuellerNutzer();
