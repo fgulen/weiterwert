@@ -1,5 +1,6 @@
 import 'server-only';
 import { datenbankKonfiguriert, dbKopfzeilen } from './db';
+import { ersterDatensatz } from './embed';
 
 export type GeraetStatusZeile = { deviceId: string; status: string; erfasst: boolean };
 export type GeraetEreignis = { von: string; nach: string; schritt: string; nutzer: string; zweiter_nutzer: string | null; zeit: string };
@@ -14,12 +15,12 @@ export async function ladeGeraetStatusListe(nummer: string): Promise<GeraetStatu
   );
   if (!res.ok) return null;
   const zeilen = (await res.json()) as Array<{
-    donation_device: Array<{ id: string; device_record: Array<{ ablauf_status: string }> | null }> | null;
+    donation_device: Array<{ id: string; device_record: Array<{ ablauf_status: string }> | { ablauf_status: string } | null }> | null;
   }>;
   return (zeilen[0]?.donation_device ?? []).map((g) => ({
     deviceId: g.id,
-    status: g.device_record?.[0]?.ablauf_status ?? 'eingegangen',
-    erfasst: (g.device_record?.length ?? 0) > 0,
+    status: ersterDatensatz(g.device_record)?.ablauf_status ?? 'eingegangen',
+    erfasst: ersterDatensatz(g.device_record) !== null,
   }));
 }
 

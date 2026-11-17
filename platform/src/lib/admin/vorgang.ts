@@ -9,6 +9,7 @@ export const VORGANGSNUMMER = /^WW-\d{4}-\d{6}$/;
 export type KontaktDaten = { name: string; email: string; plz: string; telefon: string | null; organisation: string | null };
 
 import { LEER_AKTE, type GeraetAkte } from './akte';
+import { ersterDatensatz } from './embed';
 
 export type GeraetDaten = {
   id: string;
@@ -104,7 +105,7 @@ export async function ladeVorgang(nummer: string): Promise<VorgangDaten | null> 
     erklaerung_version: string;
     erklaerung_hash: string;
     contact: KontaktDaten & { id: string };
-    donation_device: Array<Omit<GeraetDaten, 'akte'> & { device_record: Array<Partial<GeraetAkte>> | null }>;
+    donation_device: Array<Omit<GeraetDaten, 'akte'> & { device_record: Array<Partial<GeraetAkte>> | Partial<GeraetAkte> | null }>;
   }>;
   const z = zeilen[0];
   if (!z) return null;
@@ -120,7 +121,7 @@ export async function ladeVorgang(nummer: string): Promise<VorgangDaten | null> 
     kontakt: { name: z.contact.name, email: z.contact.email, plz: z.contact.plz, telefon: z.contact.telefon, organisation: z.contact.organisation },
     geraete: [...z.donation_device]
       .sort((a, b) => a.position - b.position)
-      .map(({ device_record, ...d }) => ({ ...d, akte: { ...LEER_AKTE, ...(device_record?.[0] ?? {}) } })),
+      .map(({ device_record, ...d }) => ({ ...d, akte: { ...LEER_AKTE, ...(ersterDatensatz(device_record) ?? {}) } })),
   };
 }
 

@@ -1,5 +1,6 @@
 import 'server-only';
 import { datenbankKonfiguriert, dbKopfzeilen } from './db';
+import { ersterDatensatz } from './embed';
 
 /**
  * Lädt den Ablaufstatus jedes Geräts eines Vorgangs (Migration 20261117).
@@ -17,5 +18,5 @@ export async function ladeGeraeteStatus(vorgangsnummer: string): Promise<string[
     donation_device: Array<{ device_record: Array<{ ablauf_status: string }> | null }> | null;
   }>;
   const geraete = zeilen[0]?.donation_device ?? [];
-  return geraete.map((g) => g.device_record?.[0]?.ablauf_status ?? 'eingegangen');
+  return geraete.map((g) => ersterDatensatz(g.device_record)?.ablauf_status ?? 'eingegangen');
 }
