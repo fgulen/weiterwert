@@ -1,3 +1,4 @@
+import { ersterDatensatz } from './embed';
 import { getAppEnv } from '@/lib/env';
 import type { VorgangDaten } from './vorgang';
 import { devEintraege } from '@/lib/dev/vorschau';
@@ -10,6 +11,8 @@ export type AnfrageZeile = {
   angelegt: string;
   fotos: number;
   geraete: ListenGeraet[];
+  /** Je Gerät der Ablaufstatus, null wenn noch kein Gerätedatensatz. */
+  geraeteStatus: (string | null)[];
 };
 
 /** Read-only list of incoming donations for the admin list. Only fields needed for matching; no names, e-mails or addresses. */
@@ -26,6 +29,7 @@ export async function ladeSpendenListe(): Promise<AnfrageZeile[]> {
         marke: (g.marke as string | null) ?? null,
         modell: (g.modell as string | null) ?? null,
       })),
+      geraeteStatus: [],
     }));
   }
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -36,11 +40,11 @@ export async function ladeSpendenListe(): Promise<AnfrageZeile[]> {
   const abfrage = (select: string) =>
     fetch(`${url}/rest/v1/donation_request?select=${select}&order=created_at.desc&limit=200`, { headers: kopf, cache: 'no-store' });
   // Until the donation_photo migration has run, the photo join fails: then the list still loads, without photo counts.
-  let res = await abfrage('vorgangsnummer,status,created_at,donation_device(typ,marke,modell),donation_photo(id)');
+  let res = await abfrage('vorgangsnummer,status,created_at,donation_device(typ,marke,modell,device_record(ablauf_status)),donation_photo(id)');
   let mitFotos = true;
   if (res.status === 400) {
     // Only a bad request (missing photo table) falls back; other errors must not show 0 photos silently.
-    res = await abfrage('vorgangsnummer,status,created_at,donation_device(typ,marke,modell)');
+    res = await abfrage('vorgangsnummer,status,created_at,donation_device(typ,marke,modell,device_record(ablauf_status))');
     mitFotos = false;
   }
   if (!res.ok) throw new Error(`Supabase Liste: ${res.status}`);
@@ -48,7 +52,7 @@ export async function ladeSpendenListe(): Promise<AnfrageZeile[]> {
     vorgangsnummer: string;
     status: string;
     created_at: string;
-    donation_device: ListenGeraet[];
+    donation_device: Array<ListenGeraet & { device_record: Array<{ ablauf_status: string }> | { ablauf_status: string } | null }>;
     donation_photo?: Array<{ id: string }>;
   }>;
   return zeilen.map((z) => ({
@@ -56,7 +60,8 @@ export async function ladeSpendenListe(): Promise<AnfrageZeile[]> {
     status: z.status,
     angelegt: z.created_at,
     fotos: mitFotos ? (z.donation_photo?.length ?? 0) : 0,
-    geraete: z.donation_device,
+    geraete: z.donation_device.map(({ typ, marke, modell }) => ({ typ, marke, modell })),
+    geraeteStatus: z.donation_device.map((g) => ersterDatensatz(g.device_record)?.ablauf_status ?? null),
   }));
 }
 

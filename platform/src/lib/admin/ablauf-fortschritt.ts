@@ -56,3 +56,17 @@ export function vorgangFortschritt(geraeteStatus: string[], annahmeVorhanden: bo
   }
   return ergebnis;
 }
+
+/**
+ * Was die Liste je Vorgang zeigt. "neu": noch kein Gerät erfasst (Eingang nicht gespeichert)
+ * oder kein Gerät vorhanden. Sonst der aktuelle Schritt (erster nicht erledigter).
+ * geraeteStatus: je Gerät der Ablaufstatus, null = noch kein Gerätedatensatz.
+ */
+export function listenSchritt(vorgangsStatus: string, geraeteStatus: (string | null)[]): SchrittId | 'neu' {
+  if (vorgangsStatus === 'abgeschlossen') return 'abschluss';
+  if (geraeteStatus.length === 0 || geraeteStatus.every((g) => g === null)) return 'neu';
+  const statuse = geraeteStatus.map((g) => g ?? 'eingegangen');
+  // Annahme ist ein Vorgangs-Schritt, kein Gerätestand: in der Liste gilt er als erledigt.
+  const fortschritt = vorgangFortschritt(statuse, true);
+  return SCHRITT_IDS.find((s) => fortschritt[s] !== 'erledigt') ?? 'abschluss';
+}

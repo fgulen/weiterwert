@@ -6,16 +6,27 @@ import { aktuellerNutzer } from '@/lib/admin/session';
 import { ladeSpendenListe } from '@/lib/admin/daten';
 import { ablaufSichtbar } from '@/lib/admin/ablauf-sichtbar';
 import { datumZeitDe, geraeteName, statusKlasse, statusText } from '@/lib/admin/anzeige';
+import { listenSchritt, SCHRITT_IDS } from '@/lib/admin/ablauf-fortschritt';
+import { ablaufMit, ablaufTexte } from '@/lib/i18n/ablauf';
 import { gatePage } from '@/lib/page-gate';
 import { pageTitle } from '@/lib/sitemap';
 import { aktuelleSprache } from '@/lib/i18n/server';
 import { adminTexte, mit } from '@/lib/i18n/admin';
-import { pfadFuer } from '@/lib/i18n/sprache';
+import { pfadFuer, type Lang } from '@/lib/i18n/sprache';
 import { abmelden } from './actions';
 import styles from './admin.module.css';
 
 const TITLE = pageTitle('/admin');
 export const metadata: Metadata = { title: TITLE, robots: { index: false } };
+
+/** Listenanzeige: "Neu" solange kein Gerät erfasst ist, sonst "Schritt n von 7 · Name" (Gerätestand). */
+function listenLabel(status: string, geraeteStatus: (string | null)[], lang: Lang): string {
+  const schritt = listenSchritt(status, geraeteStatus);
+  if (schritt === 'neu') return statusText(status, lang);
+  const t = ablaufTexte(lang);
+  const n = SCHRITT_IDS.indexOf(schritt) + 1;
+  return `${ablaufMit(t.schrittVon, { n, m: SCHRITT_IDS.length })} · ${t.schritte[schritt]}`;
+}
 
 export default async function AdminPage() {
   gatePage('admin');
@@ -69,7 +80,7 @@ export default async function AdminPage() {
                       </Link>
                     </td>
                     <td>
-                      <span className={`${styles.pill} ${styles[`pill-${statusKlasse(z.status)}`]}`}>{statusText(z.status, lang)}</span>
+                      <span className={`${styles.pill} ${styles[`pill-${statusKlasse(z.status)}`]}`}>{listenLabel(z.status, z.geraeteStatus, lang)}</span>
                     </td>
                     <td>{datumZeitDe(z.angelegt)}</td>
                     <td className={styles.geraeteText}>

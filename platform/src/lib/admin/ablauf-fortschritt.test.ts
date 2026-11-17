@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { geraetAktuellerSchritt, vorgangFortschritt } from './ablauf-fortschritt';
+import { geraetAktuellerSchritt, listenSchritt, vorgangFortschritt } from './ablauf-fortschritt';
 
 describe('Fortschritt je Gerät', () => {
   it('neues Gerät steht bei der Zweiten Kontrolle', () => {
@@ -42,5 +42,24 @@ describe('Fortschritt des Vorgangs', () => {
     expect(f.eingang).toBe('aktiv');
     expect(f.zweite).toBe('offen');
     expect(f.abschluss).toBe('offen');
+  });
+});
+
+describe('Listenanzeige je Vorgang', () => {
+  it('ohne Gerätedatensatz bleibt es "neu"', () => {
+    expect(listenSchritt('neu', [null])).toBe('neu');
+    expect(listenSchritt('neu', [])).toBe('neu');
+  });
+  it('erfasstes, noch nicht bearbeitetes Gerät steht bei der Zweiten Kontrolle', () => {
+    expect(listenSchritt('neu', ['eingegangen'])).toBe('zweite');
+  });
+  it('Gerät in der Technik zeigt Technik', () => {
+    expect(listenSchritt('neu', ['geloescht'])).toBe('technik');
+  });
+  it('alle Geräte übergeben: Abschluss', () => {
+    expect(listenSchritt('neu', ['uebergeben'])).toBe('abschluss');
+  });
+  it('abgeschlossener Vorgang: Abschluss', () => {
+    expect(listenSchritt('abgeschlossen', ['uebergeben'])).toBe('abschluss');
   });
 });
