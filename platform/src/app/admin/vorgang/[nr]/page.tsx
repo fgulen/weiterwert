@@ -450,6 +450,8 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
                       <h3>{g.position}. {geraetTitel(g, lang)}</h3>
                       <span className={styles.meta}>{ergebnisKurz(g.ergebnis, lang)}</span>
                     </div>
+                    <details open={aktiv === 'zweite'} style={{ marginTop: 8 }}>
+                      <summary>{zkT.geraetDaten}</summary>
                     {beantwortet.length > 0 ? (
                       <dl className={styles.angaben}>
                         {beantwortet.map((feld) => (
@@ -470,6 +472,7 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
                         ))}
                       </ul>
                     )}
+                    </details>
                     {ablaufSichtbar() && aktiv === 'zweite' && schrittErlaubt(nutzer.rolle, 'zweite') && (
                       <form action={pruefeZweiteKontrolle} style={{ display: 'grid', gap: 12, marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--line)' }}>
                         <h4 style={{ margin: 0 }}>{zkT.zweiteKontrolleTitel}</h4>
