@@ -20,6 +20,8 @@ import LoeschenBereich from './LoeschenBereich';
 import { fotoLoeschen } from './actions';
 import { ablaufSichtbar } from '@/lib/admin/ablauf-sichtbar';
 import { ablaufMit, ablaufTexte } from '@/lib/i18n/ablauf';
+import { vorgangFortschritt, geraetAktuellerSchritt, type SchrittId } from '@/lib/admin/ablauf-fortschritt';
+import { holeLetzteVersion } from '@/lib/admin/protokoll-pdf';
 import { ladeGeraeteStatus } from '@/lib/admin/geraete-status';
 import { vorgangFertig } from '@/lib/admin/geraet-ablauf';
 import { pruefeZweiteKontrolle } from '../../ablauf/zweite-kontrolle/actions';
@@ -82,6 +84,8 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
   const abschlussbereit = geraeteStatus !== null && vorgangFertig(geraeteStatus);
   const statusListe = ablaufSichtbar() ? await ladeGeraetStatusListe(nr) : null;
   const fertigeGeraete = statusListe ? statusListe.filter((z) => geraetFertig(z.status)).length : null;
+  const annahmeVorhanden = ablaufSichtbar() ? (await holeLetzteVersion(nr, 'annahme-digital')) !== null : false;
+  const fortschritt = statusListe ? vorgangFortschritt(statusListe.map((z) => z.status), annahmeVorhanden) : null;
   const verlauf = statusListe
     ? await Promise.all(statusListe.map(async (z) => ({ ...z, ereignisse: await ladeGeraetEreignisse(z.deviceId) })))
     : null;
@@ -165,6 +169,11 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
                     }}
                   >
                     <span aria-hidden="true">{i + 1}.</span> {zkT.schritte[s]}
+                    {fortschritt && (
+                      <span className={styles.meta} style={{ marginLeft: 4 }}>
+                        {fortschritt[s as SchrittId] === 'erledigt' ? `✓ ${zkT.fortschrittErledigt}` : fortschritt[s as SchrittId] === 'aktiv' ? `● ${zkT.fortschrittAktiv}` : `○ ${zkT.fortschrittOffen}`}
+                      </span>
+                    )}
                   </a>
                 </li>
               ))}
@@ -377,6 +386,7 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
                   <div className={styles.geraetKopf}>
                     <h3>{geraet ? `${geraet.position}. ${geraetTitel(geraet, lang)}` : z.deviceId}</h3>
                     <span className={styles.meta}>{zkT.statusAktuell}: <strong>{label(z.status)}</strong></span>
+                    <span className={styles.meta}>· {zkT.aktuellerSchritt}: <strong>{zkT.schritte[geraetAktuellerSchritt(z.status)]}</strong></span>
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 8 }}>
                     {aktiv === 'technik' && z.status === 'eingegangen' && (
