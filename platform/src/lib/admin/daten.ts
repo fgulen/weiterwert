@@ -42,17 +42,20 @@ export async function ladeSpendenListe(): Promise<AnfrageZeile[]> {
   // Until the donation_photo migration has run, the photo join fails: then the list still loads, without photo counts.
   let res = await abfrage('vorgangsnummer,status,created_at,donation_device(typ,marke,modell,device_record(ablauf_status)),donation_photo(id)');
   let mitFotos = true;
+  let mitGeraeteStand = true;
   if (res.status === 400) {
     // Only a bad request (missing photo table) falls back; other errors must not show 0 photos silently.
-    res = await abfrage('vorgangsnummer,status,created_at,donation_device(typ,marke,modell,device_record(ablauf_status))');
+    // Ohne device_record: Liste lädt auch vor der Ablauf-Migration (Gerätestand dann nicht verfügbar).
+    res = await abfrage('vorgangsnummer,status,created_at,donation_device(typ,marke,modell)');
     mitFotos = false;
+    mitGeraeteStand = false;
   }
   if (!res.ok) throw new Error(`Supabase Liste: ${res.status}`);
   const zeilen = (await res.json()) as Array<{
     vorgangsnummer: string;
     status: string;
     created_at: string;
-    donation_device: Array<ListenGeraet & { device_record: Array<{ ablauf_status: string }> | { ablauf_status: string } | null }>;
+    donation_device: Array<ListenGeraet & { device_record?: Array<{ ablauf_status: string }> | { ablauf_status: string } | null }>;
     donation_photo?: Array<{ id: string }>;
   }>;
   return zeilen.map((z) => ({
@@ -61,7 +64,7 @@ export async function ladeSpendenListe(): Promise<AnfrageZeile[]> {
     angelegt: z.created_at,
     fotos: mitFotos ? (z.donation_photo?.length ?? 0) : 0,
     geraete: z.donation_device.map(({ typ, marke, modell }) => ({ typ, marke, modell })),
-    geraeteStatus: z.donation_device.map((g) => ersterDatensatz(g.device_record)?.ablauf_status ?? null),
+    geraeteStatus: z.donation_device.map((g) => (mitGeraeteStand ? ersterDatensatz(g.device_record)?.ablauf_status ?? null : null)),
   }));
 }
 

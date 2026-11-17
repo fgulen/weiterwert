@@ -14,7 +14,7 @@ export const ABLAUF_STAND_GRUPPEN: StandGruppe[] = [
       { done: true, text: { de: 'Alle sieben Schritte eines Vorgangs im Admin, mit Schrittleiste und Fortschritt', tr: 'Bir başvurunun yedi adımı yönetim panelinde, adım çubuğu ve ilerlemeyle' } },
       { done: true, text: { de: 'Gerätestatus: nur erlaubte Übergänge, in der Datenbank geprüft', tr: 'Cihaz durumu: yalnızca izinli geçişler, veritabanında kontrol edilir' } },
       { done: true, text: { de: 'Protokolle als PDF je Schritt, unveränderlich; Korrektur als neue Version', tr: 'Her adım için PDF protokol, değiştirilemez; düzeltme yeni sürüm olarak' } },
-      { done: true, text: { de: 'Löschung und Übergabe setzen den Gerätestatus automatisch (am 17.11. live getestet)', tr: 'Silme ve teslim, cihaz durumunu otomatik değiştirir (17.11. canlıda test edildi)' } },
+      { done: true, text: { de: 'Löschung und Übergabe setzen den Gerätestatus automatisch (Löschung am 17.11. live getestet; Übergabe nach Fehlerbehebung, Test nach Deploy)', tr: 'Silme ve teslim, cihaz durumunu otomatik değiştirir (silme 17.11. canlıda test edildi; teslim hata düzeltmesinden sonra, deploy sonrası test)' } },
       { done: true, text: { de: 'Vorgang abschließen: ein Klick, nur wenn alle Geräte am Ende sind; wird protokolliert', tr: 'Başvuruyu kapat: tek tıkla, yalnızca tüm cihazlar son durumdayken; kayda geçer' } },
       { done: true, text: { de: 'Rollen je Schritt: Admin, Technik, Mitarbeiter', tr: 'Her adımda roller: Admin, Teknik, Çalışan' } },
       { done: true, text: { de: 'Zweite Person bei Ausnahmen: Anmeldung ohne die Sitzung des ersten Admins zu ändern', tr: 'İstisnalarda ikinci kişi: ilk adminin oturumunu değiştirmeden giriş' } },

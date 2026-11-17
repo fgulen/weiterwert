@@ -7,6 +7,7 @@ import { ladeVorgang, VORGANGSNUMMER } from '@/lib/admin/vorgang';
 import { ablaufSichtbar } from '@/lib/admin/ablauf-sichtbar';
 import { speichereNachweis } from '@/lib/admin/nachweis-speicher';
 import { setzeGeraetStatus } from '@/lib/admin/geraet-ablauf-db';
+import { ladeGeraetStatusListe } from '@/lib/admin/geraet-verlauf';
 import { baueUebergabeDigital, baueLoeschungDigital } from '@/lib/admin/nachweis-pdf';
 import {
   pruefeUebergabe, pruefeLoeschung, UEBERGABE_PUNKTE,
@@ -35,7 +36,7 @@ async function kopf(form: FormData) {
 
 /** Übergabe nach Dok. 28. */
 export async function speichereUebergabeAktion(form: FormData): Promise<void> {
-  const { zurueck, nutzer, vorgang } = await kopf(form);
+  const { nummer, zurueck, nutzer, vorgang } = await kopf(form);
   if (!schrittErlaubt(nutzer.rolle, 'uebergabe')) redirect(zurueck('?na=fehler&grund=berechtigung'));
   const daten: UebergabeDaten = {
     kontrolle: Array.from({ length: UEBERGABE_PUNKTE }, (_, i) => {
@@ -49,6 +50,12 @@ export async function speichereUebergabeAktion(form: FormData): Promise<void> {
   const fehler = pruefeUebergabe(daten);
   if (fehler.length > 0) redirect(zurueck(`?na=fehler&grund=${encodeURIComponent(fehler[0])}`));
 
+  // Vorab prüfen: jedes Gerät muss "reserviert" sein, sonst wird nichts gespeichert.
+  const stand = await ladeGeraetStatusListe(nummer);
+  if (!stand || stand.length === 0 || stand.some((g) => g.status !== 'reserviert')) {
+    redirect(zurueck('?na=fehler&grund=uebergabe_status'));
+  }
+
   const ergebnis = await speichereNachweis({
     art: 'uebergabe',
     pdfArt: 'uebergabe-digital',
@@ -59,9 +66,13 @@ export async function speichereUebergabeAktion(form: FormData): Promise<void> {
   });
   if (!ergebnis.ok) redirect(zurueck(`?na=fehler&grund=${ergebnis.fehler}`));
   // Übergabe protokolliert: reservierte Geräte gehen auf "uebergeben" (Dok. 28).
+  // Fehler werden nicht verschluckt: das Protokoll ist dann gespeichert, der Status nicht.
+  let statusFehler = false;
   for (const g of vorgang.geraete) {
-    await setzeGeraetStatus({ deviceId: g.id, von: 'reserviert', nach: 'uebergeben', schritt: 'uebergabe', nutzer: nutzer.email, zweiter: null });
+    const r = await setzeGeraetStatus({ deviceId: g.id, von: 'reserviert', nach: 'uebergeben', schritt: 'uebergabe', nutzer: nutzer.email, zweiter: null });
+    if (!r.ok) statusFehler = true;
   }
+  if (statusFehler) redirect(zurueck('?na=fehler&grund=uebergabe_status_fehlt'));
   redirect(zurueck(ergebnis.gespeichert ? '?na=ok' : '?na=test'));
 }
 

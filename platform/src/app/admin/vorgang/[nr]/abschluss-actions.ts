@@ -10,6 +10,7 @@ import { ladeGeraeteStatus } from '@/lib/admin/geraete-status';
 import { vorgangFertig } from '@/lib/admin/geraet-ablauf';
 import { aktuelleSprache } from '@/lib/i18n/server';
 import { pfadFuer } from '@/lib/i18n/sprache';
+import { ablaufSichtbar } from '@/lib/admin/ablauf-sichtbar';
 
 /**
  * Vorgang abschließen. Nur Admin, nur wenn jedes Gerät in einem Endstatus ist
@@ -21,7 +22,7 @@ export async function schliesseVorgangAktion(form: FormData): Promise<void> {
   const nummer = String(form.get('vorgangsnummer') ?? '');
   const zurueck = (zusatz: string) => pfadFuer(lang, `/admin/vorgang/${nummer}${zusatz}#status-titel`);
 
-  if (!VORGANGSNUMMER.test(nummer)) redirect(pfadFuer(lang, '/admin'));
+  if (!ablaufSichtbar() || !VORGANGSNUMMER.test(nummer)) redirect(pfadFuer(lang, '/admin'));
   const nutzer = await aktuellerNutzer();
   if (!nutzer || nutzer.rolle !== 'admin') redirect(zurueck('?ab=fehler&grund=berechtigung'));
 
@@ -48,7 +49,11 @@ export async function schliesseVorgangAktion(form: FormData): Promise<void> {
     cache: 'no-store',
   });
   const geaendert = res.ok ? ((await res.json()) as unknown[]) : [];
-  if (!res.ok || geaendert.length === 0) redirect(zurueck('?ab=fehler&grund=status'));
+  if (!res.ok || geaendert.length === 0) {
+    // Das Protokoll sagt "abgeschlossen" schon: festhalten, dass es nicht geklappt hat.
+    await schreibeProtokoll({ nutzer: nutzer.email, aktion: 'vorgang-abschluss-fehlgeschlagen', vorgang: nummer, details: { von: v.status, nach: 'abgeschlossen' } }).catch(() => undefined);
+    redirect(zurueck('?ab=fehler&grund=status'));
+  }
 
   revalidatePath(`/admin/vorgang/${nummer}`);
   revalidatePath('/admin');

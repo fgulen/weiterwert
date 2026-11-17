@@ -278,7 +278,7 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
             )}
             {na === 'ok' && <p role="status"><strong>{zkT.naOk}</strong></p>}
             {na === 'test' && <p role="status"><strong>{zkT.naTest}</strong></p>}
-            {na === 'fehler' && <p role="alert"><strong>{grund === 'kette' ? zkT.fehlerKette : grund?.startsWith('zweiter') ? zkT.fehlerZweiter : zkT.fehlerNachweis}</strong></p>}
+            {na === 'fehler' && <p role="alert"><strong>{grund === 'kette' ? zkT.fehlerKette : grund === 'uebergabe_status_fehlt' ? zkT.fehlerUebergabeStatus : grund === 'uebergabe_status' ? zkT.fehlerUebergabeVorab : grund?.startsWith('zweiter') ? zkT.fehlerZweiter : zkT.fehlerNachweis}</strong></p>}
             <form action={speichereUebergabeAktion} style={{ display: 'grid', gap: 14 }}>
               <input type="hidden" name="vorgangsnummer" value={nr} />
               <input type="hidden" name="schritt" value={aktiv} />
@@ -318,7 +318,7 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
             )}
             {na === 'ok' && <p role="status"><strong>{zkT.naOk}</strong></p>}
             {na === 'test' && <p role="status"><strong>{zkT.naTest}</strong></p>}
-            {na === 'fehler' && <p role="alert"><strong>{grund === 'kette' ? zkT.fehlerKette : grund?.startsWith('zweiter') ? zkT.fehlerZweiter : zkT.fehlerNachweis}</strong></p>}
+            {na === 'fehler' && <p role="alert"><strong>{grund === 'kette' ? zkT.fehlerKette : grund === 'uebergabe_status_fehlt' ? zkT.fehlerUebergabeStatus : grund === 'uebergabe_status' ? zkT.fehlerUebergabeVorab : grund?.startsWith('zweiter') ? zkT.fehlerZweiter : zkT.fehlerNachweis}</strong></p>}
             <form action={speichereLoeschungAktion} style={{ display: 'grid', gap: 18 }}>
               <input type="hidden" name="vorgangsnummer" value={nr} />
               <input type="hidden" name="schritt" value={aktiv} />
