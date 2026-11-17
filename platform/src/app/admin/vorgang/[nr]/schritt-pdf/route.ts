@@ -22,6 +22,14 @@ export async function GET(req: Request, { params }: Kontext) {
 
   const bytes = await holeLetztesSchrittPdf(nr, device);
   if (!bytes) notFound();
+  // Kein gültiges PDF (beschädigter Eintrag): keine Datei ausliefern, sondern eine klare Meldung.
+  const istPdf = bytes.length > 4 && Buffer.from(bytes.slice(0, 4)).toString('ascii') === '%PDF';
+  if (!istPdf) {
+    return new Response('Das gespeicherte Protokoll ist beschädigt. Bitte Technik informieren.', {
+      status: 500,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' },
+    });
+  }
   return new Response(Buffer.from(bytes), {
     status: 200,
     headers: {
