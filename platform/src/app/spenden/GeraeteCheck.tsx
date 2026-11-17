@@ -495,7 +495,7 @@ export function GeraeteCheck({ abschluss, absenden = false, lang = 'de', fotos =
           )}
           {schritt === KONTAKT && <button type="submit" className="btn">{t.weiter}</button>}
           {schritt === ABSENDEN && (
-            <button type="submit" className="btn" disabled={sendet || liste.length === 0 || (fotos && fotoDateien.length === 0)}>{sendet ? t.wirdGesendet : t.senden}</button>
+            <button type="submit" className="btn" disabled={sendet || liste.length === 0 || (fotos && fotoDateien.length === 0) || !erkl.eigentum || !erkl.daten}>{sendet ? t.wirdGesendet : t.senden}</button>
           )}
         </div>
 

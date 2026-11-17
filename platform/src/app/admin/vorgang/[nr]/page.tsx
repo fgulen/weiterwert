@@ -397,7 +397,11 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
                     {aktiv === 'technik' && z.status === 'eingegangen' && (
                       <span className={styles.meta}>{zkT.hinweisZweiteZuerst}</span>
                     )}
-                    {weiter.length === 0 && <span className={styles.meta}>{zkT.statusKeinerWeiter}</span>}
+                    {weiter.length === 0 && (
+                      <span className={styles.meta}>
+                        {geraetNaechsteStatus(z.status).length > 0 ? zkT.statusImFormular : zkT.statusKeinerWeiter}
+                      </span>
+                    )}
                     {weiter.map((n) => (
                       <form key={n} action={setzeStatusAktion}>
                         <input type="hidden" name="vorgangsnummer" value={nr} />
@@ -410,9 +414,11 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
                       </form>
                     ))}
                   </div>
-                  <p style={{ marginTop: 10 }}>
-                    <a className={styles.btnZweit} href={`/admin/vorgang/${nr}/schritt-pdf?device=${z.deviceId}`} download>{zkT.schrittPdf}</a>
-                  </p>
+                  {z.ereignisse.length > 0 && (
+                    <p style={{ marginTop: 10 }}>
+                      <a className={styles.btnZweit} href={`/admin/vorgang/${nr}/schritt-pdf?device=${encodeURIComponent(z.deviceId)}`} download>{zkT.schrittPdf}</a>
+                    </p>
+                  )}
                   <p className={styles.meta} style={{ marginTop: 10, marginBottom: 4 }}>{zkT.statusVerlauf}</p>
                   {z.ereignisse.length === 0 ? (
                     <p className={styles.meta}>{zkT.statusKeinVerlauf}</p>
