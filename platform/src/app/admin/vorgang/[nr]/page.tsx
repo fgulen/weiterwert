@@ -4,7 +4,7 @@ import { notFound, redirect } from 'next/navigation';
 import { FeatureGate } from '@/components/FeatureGate';
 import { aktuellerNutzer } from '@/lib/admin/session';
 import { angabeLabel, angabeText, ANGABE_REIHENFOLGE, ergebnisKurz, type GeraetDaten, ladeVorgang, VORGANGSNUMMER } from '@/lib/admin/vorgang';
-import { datumDe, datumZeitDe, geraeteName, grundText, statusKlasse, statusText } from '@/lib/admin/anzeige';
+import { datumDe, datumZeitDe, geraetTitel, grundText, statusKlasse, statusText } from '@/lib/admin/anzeige';
 import { gatePage } from '@/lib/page-gate';
 import { pageTitle } from '@/lib/sitemap';
 import { ladeProtokoll, schreibeProtokoll, type ProtokollEintrag } from '@/lib/admin/protokoll';
@@ -194,7 +194,7 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
 
               {v.geraete.map((g) => (
                 <fieldset key={`geraet-${g.position}`} style={{ border: '1px solid var(--line)', borderRadius: 10, padding: 12, display: 'grid', gap: 10 }}>
-                  <legend>{g.position}. {geraeteName(g, lang)}</legend>
+                  <legend>{g.position}. {geraetTitel(g, lang)}</legend>
                   <div role="radiogroup" aria-label={`${zkT.zustandLabel} ${g.position}`} style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
                     <span className={styles.meta}>{zkT.zustandLabel}:</span>
                     {['gut', 'spuren', 'defekt'].map((z, i) => (
@@ -300,7 +300,7 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
               <input type="hidden" name="schritt" value={aktiv} />
               {v.geraete.map((g) => (
                 <fieldset key={`loeschung-${g.position}`} style={{ border: '1px solid var(--line)', borderRadius: 10, padding: 12, display: 'grid', gap: 10 }}>
-                  <legend>{g.position}. {geraeteName(g, lang)}</legend>
+                  <legend>{g.position}. {geraetTitel(g, lang)}</legend>
                   <div role="radiogroup" aria-label={`${zkT.verfahrenLabel} ${g.position}`} style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
                     <span className={styles.meta}>{zkT.verfahrenLabel}:</span>
                     {['hdd', 'ssd', 'nvme', 'emmc', 'smartphone', 'usb', 'keines'].map((val, i) => (
@@ -374,7 +374,7 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
               return (
                 <article key={z.deviceId} className={styles.geraet} style={{ marginTop: 14 }}>
                   <div className={styles.geraetKopf}>
-                    <h3>{geraet ? `${geraet.position}. ${geraeteName(geraet, lang)}` : z.deviceId}</h3>
+                    <h3>{geraet ? `${geraet.position}. ${geraetTitel(geraet, lang)}` : z.deviceId}</h3>
                     <span className={styles.meta}>{zkT.statusAktuell}: <strong>{label(z.status)}</strong></span>
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 8 }}>
@@ -446,7 +446,7 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
                 return (
                   <article key={g.position} className={styles.geraet} aria-label={mit(t.detail.geraetAria, { n: g.position })}>
                     <div className={styles.geraetKopf}>
-                      <h3>{g.position}. {geraeteName(g, lang)}</h3>
+                      <h3>{g.position}. {geraetTitel(g, lang)}</h3>
                       <span className={styles.meta}>{ergebnisKurz(g.ergebnis, lang)}</span>
                     </div>
                     {beantwortet.length > 0 ? (
@@ -599,7 +599,7 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
                   return (
                     <li key={`dok-${z.deviceId}`}>
                       <a href={`/admin/vorgang/${v.vorgangsnummer}/schritt-pdf?device=${z.deviceId}`} download>
-                        {zkT.dokSchritt}: {g ? `${g.position}. ${geraeteName(g, lang)}` : z.deviceId}
+                        {zkT.dokSchritt}: {g ? `${g.position}. ${geraetTitel(g, lang)}` : z.deviceId}
                       </a>
                     </li>
                   );

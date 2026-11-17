@@ -60,3 +60,8 @@ export function grundText(text: string, lang: Lang): string {
   if (!code) return text;
   return (CHECK[lang].gruende as Record<string, string>)[code] ?? text;
 }
+
+/** Einheitlicher Gerätetitel überall im Vorgang: Art, dann Marke und Modell (z. B. "Laptop Lenovo T14"). */
+export function geraetTitel(g: { typ: string; marke?: string | null; modell?: string | null }, lang: Lang = 'de'): string {
+  return [geraeteText(g.typ, lang), g.marke, g.modell].filter(Boolean).join(' ');
+}
