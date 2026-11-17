@@ -104,3 +104,12 @@ describe('Korrektur von PDF-Protokollen', () => {
     expect(neu).toEqual({ nummer: 'WW-PRO-2026-000012', version: 2, bezug: 'WW-PRO-2026-000012-v1' });
   });
 });
+
+describe('Zweite Kontrolle: unbekannte Antragsangaben', () => {
+  it('unbekannter Antragstyp widerspricht nicht', () => {
+    expect(zweiteKontrolleErgebnis({ typ: 'unbekannt', marke: 'HP', modell: 'EliteBook 840 G8' }, { typ: 'Laptop', marke: 'HP', modell: 'EliteBook 840 G8' })).toBe('passt');
+  });
+  it('bekannte Angaben müssen übereinstimmen', () => {
+    expect(zweiteKontrolleErgebnis({ typ: 'Laptop', marke: 'HP', modell: 'X' }, { typ: 'Laptop', marke: 'Lenovo', modell: 'X' })).toBe('abweichung');
+  });
+});

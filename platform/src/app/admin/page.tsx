@@ -5,7 +5,7 @@ import { FeatureGate } from '@/components/FeatureGate';
 import { aktuellerNutzer } from '@/lib/admin/session';
 import { ladeSpendenListe } from '@/lib/admin/daten';
 import { ablaufSichtbar } from '@/lib/admin/ablauf-sichtbar';
-import { datumDe, geraeteName, statusKlasse, statusText } from '@/lib/admin/anzeige';
+import { datumZeitDe, geraeteName, statusKlasse, statusText } from '@/lib/admin/anzeige';
 import { gatePage } from '@/lib/page-gate';
 import { pageTitle } from '@/lib/sitemap';
 import { aktuelleSprache } from '@/lib/i18n/server';
@@ -71,7 +71,7 @@ export default async function AdminPage() {
                     <td>
                       <span className={`${styles.pill} ${styles[`pill-${statusKlasse(z.status)}`]}`}>{statusText(z.status, lang)}</span>
                     </td>
-                    <td>{datumDe(z.angelegt)}</td>
+                    <td>{datumZeitDe(z.angelegt)}</td>
                     <td className={styles.geraeteText}>
                       {z.geraete.length === 0 ? '–' : z.geraete.map((g) => geraeteName(g, lang)).join(', ')}
                     </td>

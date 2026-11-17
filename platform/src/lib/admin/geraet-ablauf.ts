@@ -64,13 +64,13 @@ export function zweiAdminFreigabeOk(schritt: string, erster: string | null, zwei
 /** Zweite Kontrolle: Fotoergebnis und gelieferter Gerätetyp, Marke und Modell müssen übereinstimmen. */
 export type GeraetMerkmale = { typ: string; marke: string | null; modell: string | null };
 
+// Unbekannte Antragsangaben ("unbekannt", leer) werden nicht verglichen: sie sind kein Widerspruch (Entscheidung: Unbeantwortete Fragen blockieren nie).
 export function zweiteKontrolleErgebnis(foto: GeraetMerkmale, geliefert: GeraetMerkmale): 'passt' | 'abweichung' {
   const norm = (s: string | null) => (s ?? '').trim().toLowerCase();
-  const gleich =
-    norm(foto.typ) === norm(geliefert.typ) &&
-    norm(foto.marke) === norm(geliefert.marke) &&
-    norm(foto.modell) === norm(geliefert.modell);
-  return gleich ? 'passt' : 'abweichung';
+  const bekannt = (s: string | null) => norm(s) !== '' && norm(s) !== 'unbekannt';
+  const feldPasst = (a: string | null, b: string | null) => !bekannt(a) || norm(a) === norm(b);
+  const passt = feldPasst(foto.typ, geliefert.typ) && feldPasst(foto.marke, geliefert.marke) && feldPasst(foto.modell, geliefert.modell);
+  return passt ? 'passt' : 'abweichung';
 }
 
 /**
