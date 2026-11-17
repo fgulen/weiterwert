@@ -140,7 +140,7 @@ export const GERAET_PROZESS: ProzessSchritt[] = [
       de: 'Sind alle Geräte in einem Endstatus (übergeben, zurückgegeben, entsorgt), zeigt das System „abschlussbereit“. Der Admin schließt den Vorgang manuell. Das wird protokolliert.',
       tr: 'Tüm cihazlar son durumdaysa (teslim edildi, iade edildi, imha edildi) sistem "kapanışa hazır" gösterir. Admin başvuruyu elle kapatır. Bu kaydedilir.',
     },
-    offen: [16, 7],
+    offen: [7],
   },
   {
     nr: 12,

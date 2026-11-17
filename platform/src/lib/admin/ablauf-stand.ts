@@ -1,4 +1,4 @@
-// Stand des Geräte-Ablaufs für das Team. Jeder Text in Deutsch und Türkisch.
+// Stand des Geräte-Ablaufs für das Team (Stand 2026-11-17). Jeder Text in Deutsch und Türkisch.
 // Quelle: docs/geraete-ablauf-ozet.md. Bei Änderungen beide Dateien gemeinsam aktualisieren.
 
 export type Zweisprachig = { de: string; tr: string };
@@ -10,35 +10,36 @@ export const ABLAUF_STAND_GRUPPEN: StandGruppe[] = [
     key: 'umgesetzt',
     titel: { de: 'Umgesetzt', tr: 'Uygulandı' },
     punkte: [
-      { done: true, text: { de: 'Geräte-Regeln: erlaubte Schritte, zweite Kontrolle, Quarantäne, Vorgang-Abschluss', tr: 'Cihaz kuralları: izinli adımlar, ikinci kontrol, karantina, başvurunun kapanması' } },
-      { done: true, text: { de: 'Zwei-Admin-Regel nach Dok. 07: nur bei fehlgeschlagener Löschung, Ausnahme oder Vernichtung', tr: 'İki admin kuralı, Dok. 07 uyarınca: yalnızca silme başarısız, istisna veya imha olduğunda' } },
-      { done: true, text: { de: 'Protokoll-PDFs nach Vorlage 28 (Übergabe) und gespeichert, unveränderlich', tr: 'Dok. 28 şablonuna göre Teslim PDF\'i, kaydedilmiş ve değiştirilemez' } },
-      { done: true, text: { de: 'Korrektur von Protokollen als neue Version mit Verweis', tr: 'Protokol düzeltmesi: bağlantılı yeni sürüm olarak' } },
-      { done: true, text: { de: 'Automatische Tests für die Regeln (17 Tests)', tr: 'Kurallar için otomatik testler (17 test)' } },
-      { done: true, text: { de: 'Datenbank: Statusfeld, Ereignisprotokoll (nur anhängen), Statusfunktion (geschrieben, nicht angewendet)', tr: 'Veritabanı: durum alanı, olay kaydı (yalnızca ekleme), durum fonksiyonu (yazıldı, henüz uygulanmadı)' } },
-      { done: true, text: { de: 'Team-Dokument mit Ablauf und offenen Punkten', tr: 'Ekip için süreç ve açık noktalar belgesi' } },
+      { done: true, text: { de: 'Alle sieben Schritte eines Vorgangs im Admin, mit Schrittleiste und Fortschritt', tr: 'Bir başvurunun yedi adımı yönetim panelinde, adım çubuğu ve ilerlemeyle' } },
+      { done: true, text: { de: 'Gerätestatus: nur erlaubte Übergänge, in der Datenbank geprüft', tr: 'Cihaz durumu: yalnızca izinli geçişler, veritabanında kontrol edilir' } },
+      { done: true, text: { de: 'Protokolle als PDF je Schritt, unveränderlich; Korrektur als neue Version', tr: 'Her adım için PDF protokol, değiştirilemez; düzeltme yeni sürüm olarak' } },
+      { done: true, text: { de: 'Löschung und Übergabe setzen den Gerätestatus automatisch (am 17.11. live getestet)', tr: 'Silme ve teslim, cihaz durumunu otomatik değiştirir (17.11. canlıda test edildi)' } },
+      { done: true, text: { de: 'Vorgang abschließen: ein Klick, nur wenn alle Geräte am Ende sind; wird protokolliert', tr: 'Başvuruyu kapat: tek tıkla, yalnızca tüm cihazlar son durumdayken; kayda geçer' } },
+      { done: true, text: { de: 'Rollen je Schritt: Admin, Technik, Mitarbeiter', tr: 'Her adımda roller: Admin, Teknik, Çalışan' } },
+      { done: true, text: { de: 'Zweite Person bei Ausnahmen: Anmeldung ohne die Sitzung des ersten Admins zu ändern', tr: 'İstisnalarda ikinci kişi: ilk adminin oturumunu değiştirmeden giriş' } },
+      { done: true, text: { de: 'Eingangsliste zeigt den aktuellen Schritt statt nur "Neu"', tr: 'Giriş listesi yalnızca "Neu" yerine mevcut adımı gösterir' } },
+      { done: true, text: { de: 'Datenbank-Migrationen 20261117 bis 20261123 eingespielt; 221 automatische Tests grün', tr: 'Veritabanı migrasyonları 20261117–20261123 uygulandı; 221 otomatik test geçti' } },
     ],
   },
   {
     key: 'noch',
-    titel: { de: 'Noch nicht umgesetzt', tr: 'Henüz uygulanmadı' },
+    titel: { de: 'Noch offen (Technik)', tr: 'Hâlâ açık (Teknik)' },
     punkte: [
-      { done: false, text: { de: 'Migration in einer Testdatenbank prüfen (Punkt 15)', tr: 'Migrasyonu test veritabanında doğrulamak (madde 15)' } },
-      { done: false, text: { de: 'Protokoll-Tabelle und PDF-Erzeugung', tr: 'Protokol tablosu ve PDF üretimi' } },
-      { done: false, text: { de: 'Oberfläche: Cihaz-Status und Schaltflächen je Gerät', tr: 'Arayüz: her cihaz için durum ve düğmeler' } },
-      { done: false, text: { de: 'Zweite Admin-Prüfung über eigene Sitzung (Punkt 13)', tr: 'İkinci admin onayı kendi oturumu üzerinden (madde 13)' } },
-      { done: false, text: { de: 'Löschkonflikt entscheiden (Punkt 14)', tr: 'Silme çakışmasına karar vermek (madde 14)' } },
-      { done: false, text: { de: 'Anbindung an den Vorgang (abschlussbereit-Hinweis)', tr: 'Başvuruya bağlantı (kapanışa hazır uyarısı)' } },
+      { done: false, text: { de: 'Ablauf bei fehlgeschlagener Löschung klären (Punkt 14)', tr: 'Silme başarısız olduğunda akışı netleştirmek (madde 14)' } },
+      { done: false, text: { de: 'Fehlende Vorlagen: Löschprotokoll (Vorlage 20), Layout Entsorgungsnachweis (Dok. 20)', tr: 'Eksik şablonlar: Silme protokolü (şablon 20), Entsorgung belgesi düzeni (Dok. 20)' } },
+      { done: false, text: { de: 'Handy-Prüfung aller Schritte bei 320 px, iPhone 13 und Pixel 7', tr: 'Tüm adımların 320 px, iPhone 13 ve Pixel 7 üzerinde mobil kontrolü' } },
+      { done: false, text: { de: 'Rollen Technik und Mitarbeiter für die Benutzer im System setzen', tr: 'Teknik ve Çalışan rollerini kullanıcılara sistemde atamak' } },
+      { done: false, text: { de: 'Hilfetexte und Prüflisten mit Häkchen je Schritt', tr: 'Her adım için yardım metinleri ve onay kutulu kontrol listeleri' } },
     ],
   },
   {
     key: 'vorlaeufig',
     titel: { de: 'Vorläufig entschieden (Team bestätigt oder ändert)', tr: 'Geçici karar verildi (ekip onaylar veya değiştirir)' },
     punkte: [
-      { done: false, text: { de: 'Annahme unterschreibt: die angemeldete Person, die das Gerät annimmt', tr: 'Annahmeyi imzalayan: cihazı teslim alan oturum sahibi kişi' } },
+      { done: false, text: { de: 'Annahme-Unterschrift: die angemeldete Person, die das Gerät annimmt', tr: 'Kabul imzası: cihazı teslim alan oturum sahibi kişi' } },
       { done: false, text: { de: 'Spender-Unterschrift: zunächst auf Papier, eingescannt hochgeladen', tr: 'Bağışçı imzası: önce kâğıtla, taranıp yüklenir' } },
-      { done: false, text: { de: 'Reihenfolge: zuerst Annahme (Dok. 18), dann Übergabe (Dok. 28), dann Löschung (Dok. 07)', tr: 'Sıra: önce Annahme (Dok. 18), sonra Übergabe (Dok. 28), sonra silme (Dok. 07)' } },
-      { done: false, text: { de: 'Rechtliche Prüfung: elektronische Unterschrift vor Livegang durch einen Berater klären', tr: 'Hukuki kontrol: canlıya almadan önce elektronik imzayı bir danışman netleştirir' } },
+      { done: false, text: { de: 'Mitarbeiter-Zuordnung bei Annahme und Übergabe: noch nicht bestätigt', tr: 'Kabul ve teslimde çalışan atamaları: henüz onaylanmadı' } },
+      { done: false, text: { de: 'Elektronische Unterschrift: rechtliche Prüfung durch einen Berater vor Livegang', tr: 'Elektronik imza: canlıya almadan önce bir danışmanla hukuki kontrol' } },
     ],
   },
   {
@@ -57,7 +58,6 @@ export const ABLAUF_STAND_GRUPPEN: StandGruppe[] = [
       { done: false, text: { de: 'Sichtbarkeit des Spendernamens für Technik (Punkt 10)', tr: 'Bağışçı adının teknik ekip tarafından görülmesi (madde 10)' } },
       { done: false, text: { de: 'Stack, QR-Etiketten, Zubehör (Punkt 11)', tr: 'Teknoloji yığını, QR etiketler, aksesuarlar (madde 11)' } },
       { done: false, text: { de: 'Fehlende Vorlagen beschaffen (Punkt 12)', tr: 'Eksik şablonları temin etmek (madde 12)' } },
-      { done: false, text: { de: 'Vorgang abschließen: manuell oder automatisch (Punkt 16)', tr: 'Başvuruyu kapatma: elle mi, otomatik mi (madde 16)' } },
     ],
   },
 ];
