@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { aktuellerNutzer } from '@/lib/admin/session';
+import { istAdminRolle, schrittErlaubt } from '@/lib/admin/rollen';
 import { ladeVorgang, VORGANGSNUMMER } from '@/lib/admin/vorgang';
 import { ablaufSichtbar } from '@/lib/admin/ablauf-sichtbar';
 import { speichereNachweis } from '@/lib/admin/nachweis-speicher';
@@ -25,7 +26,7 @@ async function kopf(form: FormData) {
   const zurueck = (zusatz: string) => pfadFuer(lang, `/admin/vorgang/${nummer}${zusatz}${schrittAnhang(form)}${schrittAnker(form)}`);
   if (!ablaufSichtbar() || !VORGANGSNUMMER.test(nummer)) redirect(pfadFuer(lang, '/admin'));
   const nutzer = await aktuellerNutzer();
-  if (!nutzer || (nutzer.rolle !== 'admin' && nutzer.rolle !== 'mitarbeiter')) redirect(pfadFuer(lang, '/admin/login'));
+  if (!nutzer || !istAdminRolle(nutzer.rolle)) redirect(pfadFuer(lang, '/admin/login'));
   const vorgang = await ladeVorgang(nummer);
   if (!vorgang) redirect(zurueck('?na=fehler&grund=vorgang'));
   return { nummer, zurueck, nutzer: nutzer!, vorgang: vorgang! };
@@ -34,6 +35,7 @@ async function kopf(form: FormData) {
 /** Übergabe nach Dok. 28. */
 export async function speichereUebergabeAktion(form: FormData): Promise<void> {
   const { zurueck, nutzer, vorgang } = await kopf(form);
+  if (!schrittErlaubt(nutzer.rolle, 'uebergabe')) redirect(zurueck('?na=fehler&grund=berechtigung'));
   const daten: UebergabeDaten = {
     kontrolle: Array.from({ length: UEBERGABE_PUNKTE }, (_, i) => {
       const w = text(form, `kontrolle_${i}`);
@@ -64,6 +66,7 @@ export async function speichereUebergabeAktion(form: FormData): Promise<void> {
  */
 export async function speichereLoeschungAktion(form: FormData): Promise<void> {
   const { zurueck, nutzer, vorgang } = await kopf(form);
+  if (!schrittErlaubt(nutzer.rolle, 'loeschung')) redirect(zurueck('?na=fehler&grund=berechtigung'));
 
   const geraete: LoeschungGeraet[] = vorgang.geraete.map((g) => {
     const p = g.position;

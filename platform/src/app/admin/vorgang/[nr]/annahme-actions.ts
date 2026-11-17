@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { aktuellerNutzer } from '@/lib/admin/session';
+import { istAdminRolle, schrittErlaubt } from '@/lib/admin/rollen';
 import { ladeVorgang, VORGANGSNUMMER } from '@/lib/admin/vorgang';
 import { ablaufSichtbar } from '@/lib/admin/ablauf-sichtbar';
 import { pruefeAnnahme, SICHERHEITS_PUNKTE, type AnnahmeDaten, type Datentraeger, type Entscheidung, type Zustand } from '@/lib/admin/annahme-nachweis';
@@ -40,7 +41,8 @@ export async function speichereAnnahmeAktion(form: FormData): Promise<void> {
 
   if (!ablaufSichtbar() || !VORGANGSNUMMER.test(nummer)) redirect(pfadFuer(lang, '/admin'));
   const nutzer = await aktuellerNutzer();
-  if (!nutzer || (nutzer.rolle !== 'admin' && nutzer.rolle !== 'mitarbeiter')) redirect(pfadFuer(lang, '/admin/login'));
+  if (!nutzer || !istAdminRolle(nutzer.rolle)) redirect(pfadFuer(lang, '/admin/login'));
+  if (!schrittErlaubt(nutzer.rolle, 'annahme')) redirect(zurueck('?an=fehler&grund=berechtigung'));
 
   const vorgang = await ladeVorgang(nummer);
   if (!vorgang) redirect(zurueck('?an=fehler&grund=vorgang'));

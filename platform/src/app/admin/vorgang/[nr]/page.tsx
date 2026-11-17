@@ -28,6 +28,7 @@ import { speichereUebergabeAktion, speichereLoeschungAktion } from './nachweis-a
 import { setzeStatusAktion } from './status-actions';
 import { ladeGeraetStatusListe, ladeGeraetEreignisse } from '@/lib/admin/geraet-verlauf';
 import { geraetNaechsteStatus, brauchtZweiAdmins, geraetFertig } from '@/lib/admin/geraet-ablauf';
+import { schrittErlaubt, schrittFuerStatus } from '@/lib/admin/rollen';
 import UnterschriftFeld from './UnterschriftFeld';
 import styles from '../../admin.module.css';
 
@@ -172,7 +173,7 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
           </nav>
         )}
 
-        {ablaufSichtbar() && aktiv === 'annahme' && (
+        {ablaufSichtbar() && aktiv === 'annahme' && schrittErlaubt(nutzer.rolle, 'annahme') && (
           <section className={styles.karte} aria-labelledby="annahme-titel">
             <h2 id="annahme-titel">{zkT.annahmeTitel}</h2>
             <p className={styles.meta}>{zkT.annahmeText}</p>
@@ -251,7 +252,7 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
           </section>
         )}
 
-        {ablaufSichtbar() && aktiv === 'uebergabe' && (
+        {ablaufSichtbar() && aktiv === 'uebergabe' && schrittErlaubt(nutzer.rolle, 'uebergabe') && (
           <section className={styles.karte} aria-labelledby="uebergabe-titel">
             <h2 id="uebergabe-titel">{zkT.uebergabeTitel}</h2>
             <p className={styles.meta}>{zkT.uebergabeText}</p>
@@ -288,7 +289,7 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
           </section>
         )}
 
-        {ablaufSichtbar() && aktiv === 'loeschung' && (
+        {ablaufSichtbar() && aktiv === 'loeschung' && schrittErlaubt(nutzer.rolle, 'loeschung') && (
           <section className={styles.karte} aria-labelledby="loeschung-titel">
             <h2 id="loeschung-titel">{zkT.loeschungTitel}</h2>
             <p className={styles.meta}>{zkT.loeschungText}</p>
@@ -370,7 +371,7 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
             {verlauf.map((z) => {
               const geraet = v.geraete.find((g) => g.id === z.deviceId);
               const label = (s: string) => zkT.statusLabels[s] ?? s;
-              const weiter = geraetNaechsteStatus(z.status).filter((n) => !brauchtZweiAdmins(n));
+              const weiter = geraetNaechsteStatus(z.status).filter((n) => !brauchtZweiAdmins(n) && schrittErlaubt(nutzer.rolle, schrittFuerStatus(n)));
               return (
                 <article key={z.deviceId} className={styles.geraet} style={{ marginTop: 14 }}>
                   <div className={styles.geraetKopf}>
@@ -469,7 +470,7 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
                         ))}
                       </ul>
                     )}
-                    {ablaufSichtbar() && aktiv === 'zweite' && (
+                    {ablaufSichtbar() && aktiv === 'zweite' && schrittErlaubt(nutzer.rolle, 'zweite') && (
                       <form action={pruefeZweiteKontrolle} style={{ display: 'grid', gap: 12, marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--line)' }}>
                         <h4 style={{ margin: 0 }}>{zkT.zweiteKontrolleTitel}</h4>
                         <p className={styles.meta} style={{ margin: 0 }}>{zkT.zweiteKontrolleText}</p>

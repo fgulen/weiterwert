@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation';
 import { ablaufSichtbar } from '@/lib/admin/ablauf-sichtbar';
 import { aktuellerNutzer } from '@/lib/admin/session';
+import { istAdminRolle, schrittErlaubt } from '@/lib/admin/rollen';
 import { zweiteKontrolleErgebnis, type GeraetMerkmale } from '@/lib/admin/geraet-ablauf';
 import { setzeGeraetStatus } from '@/lib/admin/geraet-ablauf-db';
 import { datenbankKonfiguriert } from '@/lib/admin/db';
@@ -31,7 +32,8 @@ export async function pruefeZweiteKontrolle(form: FormData): Promise<void> {
 
   if (!ablaufSichtbar()) redirect(pfadFuer(lang, '/admin'));
   const nutzer = await aktuellerNutzer();
-  if (!nutzer || (nutzer.rolle !== 'admin' && nutzer.rolle !== 'mitarbeiter')) redirect(pfadFuer(lang, '/admin/login'));
+  if (!nutzer || !istAdminRolle(nutzer.rolle)) redirect(pfadFuer(lang, '/admin/login'));
+  if (!schrittErlaubt(nutzer.rolle, 'zweite')) redirect(zurueck('?zk=berechtigung'));
 
   const deviceId = text(form, 'device_id');
   if (!nummer || !deviceId) redirect(zurueck('?zk=eingabe'));

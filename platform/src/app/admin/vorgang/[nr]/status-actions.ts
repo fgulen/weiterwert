@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { aktuellerNutzer } from '@/lib/admin/session';
+import { istAdminRolle, schrittErlaubt, schrittFuerStatus } from '@/lib/admin/rollen';
 import { ladeVorgang, VORGANGSNUMMER } from '@/lib/admin/vorgang';
 import { ablaufSichtbar } from '@/lib/admin/ablauf-sichtbar';
 import { geraetNaechsteStatus, brauchtZweiAdmins } from '@/lib/admin/geraet-ablauf';
@@ -25,7 +26,7 @@ export async function setzeStatusAktion(form: FormData): Promise<void> {
 
   if (!ablaufSichtbar() || !VORGANGSNUMMER.test(nummer)) redirect(pfadFuer(lang, '/admin'));
   const nutzer = await aktuellerNutzer();
-  if (!nutzer || (nutzer.rolle !== 'admin' && nutzer.rolle !== 'mitarbeiter')) redirect(pfadFuer(lang, '/admin/login'));
+  if (!nutzer || !istAdminRolle(nutzer.rolle)) redirect(pfadFuer(lang, '/admin/login'));
 
   const vorgang = await ladeVorgang(nummer);
   if (!vorgang || !vorgang.geraete.some((g) => g.id === deviceId)) redirect(zurueck('?st=fehler&grund=geraet'));
@@ -35,6 +36,7 @@ export async function setzeStatusAktion(form: FormData): Promise<void> {
   const aktuell = liste!.find((z) => z.deviceId === deviceId)?.status ?? 'eingegangen';
 
   if (!geraetNaechsteStatus(aktuell).includes(nach)) redirect(zurueck('?st=fehler&grund=wechsel'));
+  if (!schrittErlaubt(nutzer!.rolle, schrittFuerStatus(nach))) redirect(zurueck('?st=fehler&grund=berechtigung'));
 
   // Schritt-Name: aus dem Ziel abgeleitet, damit das Protokoll lesbar bleibt.
   const schritt = nach;
