@@ -379,6 +379,9 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
                     <span className={styles.meta}>{zkT.statusAktuell}: <strong>{label(z.status)}</strong></span>
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 8 }}>
+                    {aktiv === 'technik' && z.status === 'eingegangen' && (
+                      <span className={styles.meta}>{zkT.hinweisZweiteZuerst}</span>
+                    )}
                     {weiter.length === 0 && <span className={styles.meta}>{zkT.statusKeinerWeiter}</span>}
                     {weiter.map((n) => (
                       <form key={n} action={setzeStatusAktion}>
@@ -533,10 +536,12 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
           </div>
 
           <div className={styles.spalte}>
+            {(!ablaufSichtbar() || aktiv === 'abschluss') && (
             <section className={`${styles.karte} ${styles.ordStatus}`} aria-labelledby="status-titel" style={{ margin: 0 }}>
               <h2 id="status-titel">{t.detail.statusTitel}</h2>
               <StatusFormular nummer={v.vorgangsnummer} naechste={naechsteStatus(v.status)} t={t} lang={lang} />
             </section>
+            )}
 
             <section id="kontakt" className={`${styles.karte} ${styles.ordKontakt}`} aria-labelledby="kontakt-titel" style={{ margin: 0 }}>
               <h2 id="kontakt-titel">{t.detail.kontaktTitel}</h2>
