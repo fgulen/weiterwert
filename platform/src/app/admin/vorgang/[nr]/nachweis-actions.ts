@@ -58,6 +58,10 @@ export async function speichereUebergabeAktion(form: FormData): Promise<void> {
     baue: (hash, zeit) => baueUebergabeDigital(vorgang, daten, zeit, hash),
   });
   if (!ergebnis.ok) redirect(zurueck(`?na=fehler&grund=${ergebnis.fehler}`));
+  // Übergabe protokolliert: reservierte Geräte gehen auf "uebergeben" (Dok. 28).
+  for (const g of vorgang.geraete) {
+    await setzeGeraetStatus({ deviceId: g.id, von: 'reserviert', nach: 'uebergeben', schritt: 'uebergabe', nutzer: nutzer.email, zweiter: null });
+  }
   redirect(zurueck(ergebnis.gespeichert ? '?na=ok' : '?na=test'));
 }
 
