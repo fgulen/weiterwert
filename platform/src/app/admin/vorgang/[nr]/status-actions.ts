@@ -11,6 +11,7 @@ import { baueSchrittPdf } from '@/lib/admin/schritt-pdf';
 import { speichereSchrittPdf } from '@/lib/admin/schritt-speicher';
 import { aktuelleSprache } from '@/lib/i18n/server';
 import { pfadFuer } from '@/lib/i18n/sprache';
+import { schrittAnhang } from '@/lib/admin/schritt-parameter';
 
 /**
  * Ein Schritt per Button. Nur erlaubte Nachfolger, nur mit aktuellem Stand (kein stilles Überschreiben).
@@ -21,7 +22,7 @@ export async function setzeStatusAktion(form: FormData): Promise<void> {
   const nummer = String(form.get('vorgangsnummer') ?? '');
   const deviceId = String(form.get('device_id') ?? '');
   const nach = String(form.get('nach') ?? '');
-  const zurueck = (zusatz: string) => pfadFuer(lang, `/admin/vorgang/${nummer}${zusatz}`);
+  const zurueck = (zusatz: string) => pfadFuer(lang, `/admin/vorgang/${nummer}${zusatz}${schrittAnhang(form)}`);
 
   if (!ablaufSichtbar() || !VORGANGSNUMMER.test(nummer)) redirect(pfadFuer(lang, '/admin'));
   const nutzer = await aktuellerNutzer();

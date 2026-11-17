@@ -8,6 +8,7 @@ import { pruefeAnnahme, SICHERHEITS_PUNKTE, type AnnahmeDaten, type Datentraeger
 import { speichereAnnahme } from '@/lib/admin/annahme-speicher';
 import { aktuelleSprache } from '@/lib/i18n/server';
 import { pfadFuer } from '@/lib/i18n/sprache';
+import { schrittAnhang } from '@/lib/admin/schritt-parameter';
 
 /** Liest die Formularfelder in die Annahme-Daten. Fehlende Antworten bleiben null. */
 function lesen(form: FormData, geraetePositionen: number[]): AnnahmeDaten {
@@ -35,7 +36,7 @@ function lesen(form: FormData, geraetePositionen: number[]): AnnahmeDaten {
 export async function speichereAnnahmeAktion(form: FormData): Promise<void> {
   const { lang } = await aktuelleSprache();
   const nummer = String(form.get('vorgangsnummer') ?? '');
-  const zurueck = (zusatz: string) => pfadFuer(lang, `/admin/vorgang/${nummer}${zusatz}`);
+  const zurueck = (zusatz: string) => pfadFuer(lang, `/admin/vorgang/${nummer}${zusatz}${schrittAnhang(form)}`);
 
   if (!ablaufSichtbar() || !VORGANGSNUMMER.test(nummer)) redirect(pfadFuer(lang, '/admin'));
   const nutzer = await aktuellerNutzer();

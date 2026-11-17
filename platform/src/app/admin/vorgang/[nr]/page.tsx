@@ -61,14 +61,18 @@ function geraetAntworten(g: GeraetDaten) {
 
 export const metadata: Metadata = { title: pageTitle('/admin'), robots: { index: false } };
 
-type Props = { params: Promise<{ nr: string }>; searchParams: Promise<{ zk?: string; test?: string; an?: string; na?: string; grund?: string; st?: string }> };
+type Props = { params: Promise<{ nr: string }>; searchParams: Promise<{ zk?: string; test?: string; an?: string; na?: string; grund?: string; st?: string; schritt?: string }> };
+
+/** Ablaufschritte in Reihenfolge. Die Schlüssel sind die Werte des Parameters "schritt". */
+const SCHRITTE = ['eingang', 'zweite', 'annahme', 'loeschung', 'technik', 'uebergabe', 'abschluss'] as const;
 
 const FRIST_MS = FOTO_LOESCHFRIST_TAGE * 24 * 60 * 60 * 1000;
 
 export default async function VorgangSeite({ params, searchParams }: Props) {
   gatePage('admin');
   const { nr } = await params;
-  const { zk, test, an, na, grund, st } = await searchParams;
+  const { zk, test, an, na, grund, st, schritt: schrittParam } = await searchParams;
+  const aktiv = (SCHRITTE as readonly string[]).includes(schrittParam ?? '') ? (schrittParam as (typeof SCHRITTE)[number]) : 'eingang';
   if (!VORGANGSNUMMER.test(nr)) notFound();
   const { lang } = await aktuelleSprache();
   const t = adminTexte(lang);
@@ -140,6 +144,32 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
         </header>
 
         {ablaufSichtbar() && (
+          <nav aria-label={zkT.schrittNav} style={{ margin: '0 0 16px' }}>
+            <p className={styles.meta} style={{ margin: '0 0 6px' }}>
+              {zkT.schrittVon.replace('{n}', String(SCHRITTE.indexOf(aktiv) + 1)).replace('{m}', String(SCHRITTE.length))}: <strong>{zkT.schritte[aktiv]}</strong>
+            </p>
+            <ol style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 6 }}>
+              {SCHRITTE.map((s, i) => (
+                <li key={s} style={{ flex: '0 0 auto' }}>
+                  <a
+                    href={`?schritt=${s}`}
+                    aria-current={s === aktiv ? 'step' : undefined}
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 44, padding: '8px 12px', borderRadius: 999,
+                      border: '1px solid var(--line)', textDecoration: 'none', color: 'inherit', whiteSpace: 'nowrap',
+                      fontWeight: s === aktiv ? 700 : 400, background: s === aktiv ? 'var(--surface-alt)' : 'transparent',
+                    }}
+                  >
+                    <span aria-hidden="true">{i + 1}.</span> {zkT.schritte[s]}
+                  </a>
+                </li>
+              ))}
+            </ol>
+            <p className={styles.meta} style={{ margin: '6px 0 0' }}>{zkT.schrittAbzweig}</p>
+          </nav>
+        )}
+
+        {ablaufSichtbar() && aktiv === 'annahme' && (
           <section className={styles.karte} aria-labelledby="annahme-titel">
             <h2 id="annahme-titel">{zkT.annahmeTitel}</h2>
             <p className={styles.meta}>{zkT.annahmeText}</p>
@@ -157,6 +187,7 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
             )}
             <form action={speichereAnnahmeAktion} style={{ display: 'grid', gap: 18 }}>
               <input type="hidden" name="vorgangsnummer" value={nr} />
+              <input type="hidden" name="schritt" value={aktiv} />
 
               {v.geraete.map((g) => (
                 <fieldset key={`geraet-${g.position}`} style={{ border: '1px solid var(--line)', borderRadius: 10, padding: 12, display: 'grid', gap: 10 }}>
@@ -217,7 +248,7 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
           </section>
         )}
 
-        {ablaufSichtbar() && (
+        {ablaufSichtbar() && aktiv === 'uebergabe' && (
           <section className={styles.karte} aria-labelledby="uebergabe-titel">
             <h2 id="uebergabe-titel">{zkT.uebergabeTitel}</h2>
             <p className={styles.meta}>{zkT.uebergabeText}</p>
@@ -226,6 +257,7 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
             {na === 'fehler' && <p role="alert"><strong>{grund === 'kette' ? zkT.fehlerKette : grund?.startsWith('zweiter') ? zkT.fehlerZweiter : zkT.fehlerNachweis}</strong></p>}
             <form action={speichereUebergabeAktion} style={{ display: 'grid', gap: 14 }}>
               <input type="hidden" name="vorgangsnummer" value={nr} />
+              <input type="hidden" name="schritt" value={aktiv} />
               <fieldset style={{ border: '1px solid var(--line)', borderRadius: 10, padding: 12, display: 'grid', gap: 10 }}>
                 {zkT.uebergabePunkte.map((punkt, i) => (
                   <div key={`uebergabe-${i}`} role="radiogroup" aria-label={punkt} style={{ display: 'grid', gap: 4 }}>
@@ -254,7 +286,7 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
           </section>
         )}
 
-        {ablaufSichtbar() && (
+        {ablaufSichtbar() && aktiv === 'loeschung' && (
           <section className={styles.karte} aria-labelledby="loeschung-titel">
             <h2 id="loeschung-titel">{zkT.loeschungTitel}</h2>
             <p className={styles.meta}>{zkT.loeschungText}</p>
@@ -263,6 +295,7 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
             {na === 'fehler' && <p role="alert"><strong>{grund === 'kette' ? zkT.fehlerKette : grund?.startsWith('zweiter') ? zkT.fehlerZweiter : zkT.fehlerNachweis}</strong></p>}
             <form action={speichereLoeschungAktion} style={{ display: 'grid', gap: 18 }}>
               <input type="hidden" name="vorgangsnummer" value={nr} />
+              <input type="hidden" name="schritt" value={aktiv} />
               {v.geraete.map((g) => (
                 <fieldset key={`loeschung-${g.position}`} style={{ border: '1px solid var(--line)', borderRadius: 10, padding: 12, display: 'grid', gap: 10 }}>
                   <legend>{g.position}. {geraeteName(g, lang)}</legend>
@@ -344,6 +377,7 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
                         <input type="hidden" name="vorgangsnummer" value={nr} />
                         <input type="hidden" name="device_id" value={z.deviceId} />
                         <input type="hidden" name="nach" value={n} />
+                        <input type="hidden" name="schritt" value={aktiv} />
                         <button type="submit" className={styles.btnZweit}>
                           {zkT.statusButtonVorlage.replace('{ziel}', label(n))}
                         </button>
@@ -428,11 +462,12 @@ export default async function VorgangSeite({ params, searchParams }: Props) {
                         ))}
                       </ul>
                     )}
-                    {ablaufSichtbar() && (
+                    {ablaufSichtbar() && aktiv === 'zweite' && (
                       <form action={pruefeZweiteKontrolle} style={{ display: 'grid', gap: 12, marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--line)' }}>
                         <h4 style={{ margin: 0 }}>{zkT.zweiteKontrolleTitel}</h4>
                         <p className={styles.meta} style={{ margin: 0 }}>{zkT.zweiteKontrolleText}</p>
                         <input type="hidden" name="vorgangsnummer" value={v.vorgangsnummer} />
+                        <input type="hidden" name="schritt" value={aktiv} />
                         <input type="hidden" name="device_id" value={g.id} />
                         <p className={styles.meta} style={{ margin: 0 }}>
                           {zkT.antrag}: {g.typ}{g.marke ? `, ${g.marke}` : ''}{g.modell ? `, ${g.modell}` : ''}

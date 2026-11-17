@@ -13,6 +13,7 @@ import {
 import { bestaetigeZweiteAnmeldung, zweiteFreigabeOk } from '@/lib/admin/zweite-freigabe';
 import { aktuelleSprache } from '@/lib/i18n/server';
 import { pfadFuer } from '@/lib/i18n/sprache';
+import { schrittAnhang } from '@/lib/admin/schritt-parameter';
 
 function text(form: FormData, feld: string): string {
   return String(form.get(feld) ?? '');
@@ -21,7 +22,7 @@ function text(form: FormData, feld: string): string {
 async function kopf(form: FormData) {
   const { lang } = await aktuelleSprache();
   const nummer = text(form, 'vorgangsnummer');
-  const zurueck = (zusatz: string) => pfadFuer(lang, `/admin/vorgang/${nummer}${zusatz}`);
+  const zurueck = (zusatz: string) => pfadFuer(lang, `/admin/vorgang/${nummer}${zusatz}${schrittAnhang(form)}`);
   if (!ablaufSichtbar() || !VORGANGSNUMMER.test(nummer)) redirect(pfadFuer(lang, '/admin'));
   const nutzer = await aktuellerNutzer();
   if (!nutzer || (nutzer.rolle !== 'admin' && nutzer.rolle !== 'mitarbeiter')) redirect(pfadFuer(lang, '/admin/login'));
