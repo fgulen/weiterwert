@@ -3,6 +3,7 @@ import { aktuellerNutzer } from '@/lib/admin/session';
 import { ladeVorgang, VORGANGSNUMMER } from '@/lib/admin/vorgang';
 import { baueEntsorgungsnachweis } from '@/lib/admin/belege';
 import { schreibeProtokoll } from '@/lib/admin/protokoll';
+import { holeOderErzeuge } from '@/lib/admin/protokoll-pdf';
 import { devVorschauAktiv } from '@/lib/dev/vorschau';
 import { gatePage } from '@/lib/page-gate';
 
@@ -22,7 +23,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ nr: str
       return new Response('Der Download konnte nicht protokolliert werden.', { status: 503, headers: { 'Cache-Control': 'no-store' } });
     }
   }
-  const pdf = await baueEntsorgungsnachweis(vorgang, new Date());
+  const ergebnis = await holeOderErzeuge(nr, 'entsorgung', nutzer.email, () => baueEntsorgungsnachweis(vorgang, new Date()));
+  if (!ergebnis.ok) return new Response('Das Protokoll konnte nicht gespeichert werden.', { status: 503, headers: { 'Cache-Control': 'no-store' } });
+  const pdf = ergebnis.bytes;
   return new Response(Buffer.from(pdf), {
     headers: {
       'Content-Type': 'application/pdf',

@@ -3,6 +3,7 @@ import { aktuellerNutzer } from '@/lib/admin/session';
 import { ladeVorgang, VORGANGSNUMMER } from '@/lib/admin/vorgang';
 import { baueVorgangsblatt } from '@/lib/admin/vorgangsblatt';
 import { schreibeProtokoll } from '@/lib/admin/protokoll';
+import { holeOderErzeuge } from '@/lib/admin/protokoll-pdf';
 import { gatePage } from '@/lib/page-gate';
 import { devVorschauAktiv } from '@/lib/dev/vorschau';
 
@@ -30,7 +31,9 @@ export async function GET(_req: Request, { params }: Kontext) {
     }
   }
 
-  const pdf = await baueVorgangsblatt(vorgang, new Date());
+  const ergebnis = await holeOderErzeuge(nr, 'vorgangsblatt', nutzer.email, () => baueVorgangsblatt(vorgang, new Date()));
+  if (!ergebnis.ok) return new Response('Das Protokoll konnte nicht gespeichert werden.', { status: 503, headers: { 'Cache-Control': 'no-store' } });
+  const pdf = ergebnis.bytes;
   return new Response(Buffer.from(pdf), {
     status: 200,
     headers: {

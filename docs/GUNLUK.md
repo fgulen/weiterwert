@@ -364,3 +364,27 @@ Commit yerelde; push ve deploy yok. `tsconfig.json`, `.claude/`, `.next-local*` 
 - Sammellöschung: Ausnahmen werden als Teilerfolg gemeldet.
 
 **Bekannte Grenzen (nicht behoben):** Vorgangsliste und Envanter sind auf 200 Vorgänge begrenzt; Envanter lädt je Vorgang eine Abfrage. Cron: Protokollfehler nach dem Löschen wird als fehlgeschlagen gezählt.
+
+## 2026-11-17 (Geräte-Ablauf, Admin, Nachweise)
+
+**Ne değişti:**
+- Geräte-Ablauf: Regeln (`platform/src/lib/admin/geraet-ablauf.ts`), Gesamtprozess als Daten (`geraet-prozess.ts`), Durumsanzeige je Schritt. Admin-Seite `/admin/ablauf` (nur Test/Entwicklung, `ablauf-sichtbar.ts`).
+- Vorgang-Seite: Zweite Kontrolle je Gerät, Annahme (Dok. 18), Übergabe (Dok. 28), Löschung (Dok. 07). Jeweils dijital mit Häkchen, Unterschrift (Zeichnung), Kettenprüfsumme und gespeichertem PDF.
+- Zweite Person (Punkt 13): eigene Anmeldung, Passwort nur geprüft, nicht gespeichert (`zweite-freigabe.ts`).
+- Zwei-Admin-Regel jetzt nach Dok. 07: nur bei fehlgeschlagener Löschung, Ausnahme oder Vernichtung.
+- PDFs: `protokoll`-Tabelle, unveränderlich, eine Version je Vorgang und Art. Übergabe und Löschprotokoll werden beim ersten Download gespeichert.
+- Texte DE + TR (`src/lib/i18n/ablauf.ts`).
+
+**Migrationen (Supabase, test projesi):** 20261117, 20261118, 20261119, 20261120, 20261121 ausgeführt. 20261122 ausstehend.
+
+**Entscheidungen (Berater, vorläufig, Team bestätigt):** Annahme unterschreibt angemeldete Person; Spender-Unterschrift zunächst Papier; Reihenfolge Annahme, Übergabe, Löschung. Rechtliche Prüfung der elektronischen Unterschrift vor Livegang offen.
+
+**Dok. 07, 18, 28 aus Drive gelesen** (Repo-Kopie fehlt). Löschprotokoll Dok. 20 fehlt in Drive.
+
+**Offen:**
+- Migration 20261122 in Testdatenbank ausführen.
+- Übergabe/Löschung Status an Gerät koppeln (uebergeben, geloescht).
+- Entsorgung digital; Dok. 28 "Inventar vergeben" intern.
+- Gerçek veritabanı testi, mobil 320 px, Playwright e2e (Build hängt an Next.js-Sicherheitshinweis).
+- Saklama: Dok. 13/18/28 nennen 10 Jahre, Punkt 6 bitte bestätigen.
+- Hukuki prüfung elektronische Unterschrift.

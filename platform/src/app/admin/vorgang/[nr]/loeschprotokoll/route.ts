@@ -5,6 +5,7 @@ import { baueLoeschprotokoll } from '@/lib/admin/belege';
 import { schreibeProtokoll } from '@/lib/admin/protokoll';
 import { devVorschauAktiv } from '@/lib/dev/vorschau';
 import { gatePage } from '@/lib/page-gate';
+import { holeOderErzeuge } from '@/lib/admin/protokoll-pdf';
 
 /** Deletion log as a PDF download. Administrators and staff; each download is recorded. */
 export async function GET(_req: Request, { params }: { params: Promise<{ nr: string }> }) {
@@ -22,7 +23,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ nr: str
       return new Response('Der Download konnte nicht protokolliert werden.', { status: 503, headers: { 'Cache-Control': 'no-store' } });
     }
   }
-  const pdf = await baueLoeschprotokoll(vorgang, new Date());
+  const ergebnis = await holeOderErzeuge(nr, 'loeschprotokoll', nutzer.email, () => baueLoeschprotokoll(vorgang, new Date()));
+  if (!ergebnis.ok) return new Response('Das Protokoll konnte nicht gespeichert werden.', { status: 503, headers: { 'Cache-Control': 'no-store' } });
+  const pdf = ergebnis.bytes;
   return new Response(Buffer.from(pdf), {
     headers: {
       'Content-Type': 'application/pdf',

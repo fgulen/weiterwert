@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { FeatureGate } from '@/components/FeatureGate';
 import { aktuellerNutzer } from '@/lib/admin/session';
 import { ladeSpendenListe } from '@/lib/admin/daten';
+import { ablaufSichtbar } from '@/lib/admin/ablauf-sichtbar';
 import { datumDe, geraeteName, statusKlasse, statusText } from '@/lib/admin/anzeige';
 import { gatePage } from '@/lib/page-gate';
 import { pageTitle } from '@/lib/sitemap';
@@ -35,6 +36,7 @@ export default async function AdminPage() {
             <span>{mit(t.nutzerZeile, { email: nutzer.email, rolle })}</span>
             {nutzer.rolle === 'admin' && <Link href={p('/admin/betroffene')}>{t.betroffene.titel}</Link>}
             <Link href={p('/admin/envanter')}>{t.akte.envanter}</Link>
+            {ablaufSichtbar() && <Link href={p('/admin/ablauf')}>Geräte-Ablauf</Link>}
             <Link href={p('/admin/profil')}>{t.profil}</Link>
             <form action={abmelden}>
               <button type="submit" className={styles.btnZweit}>{t.abmelden}</button>

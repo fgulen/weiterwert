@@ -1,9 +1,10 @@
 import { notFound } from 'next/navigation';
 import { aktuellerNutzer } from '@/lib/admin/session';
 import { ladeVorgang, VORGANGSNUMMER } from '@/lib/admin/vorgang';
-import { baueUebergabeprotokoll } from '@/lib/admin/vorgangsblatt';
+import { baueUebergabeFormular } from '@/lib/admin/uebergabe-formular';
 import { schreibeProtokoll } from '@/lib/admin/protokoll';
 import { gatePage } from '@/lib/page-gate';
+import { holeOderErzeuge } from '@/lib/admin/protokoll-pdf';
 import { devVorschauAktiv } from '@/lib/dev/vorschau';
 
 type Kontext = { params: Promise<{ nr: string }> };
@@ -28,7 +29,9 @@ export async function GET(_req: Request, { params }: Kontext) {
     }
   }
 
-  const pdf = await baueUebergabeprotokoll(vorgang, new Date());
+  const ergebnis = await holeOderErzeuge(nr, 'uebergabe-formular', nutzer.email, () => baueUebergabeFormular(vorgang, new Date()));
+  if (!ergebnis.ok) return new Response('Das Protokoll konnte nicht gespeichert werden.', { status: 503, headers: { 'Cache-Control': 'no-store' } });
+  const pdf = ergebnis.bytes;
   return new Response(Buffer.from(pdf), {
     status: 200,
     headers: {

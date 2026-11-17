@@ -18,6 +18,14 @@ import StatusFormular from './StatusFormular';
 import KontaktKarte from './KontaktKarte';
 import LoeschenBereich from './LoeschenBereich';
 import { fotoLoeschen } from './actions';
+import { ablaufSichtbar } from '@/lib/admin/ablauf-sichtbar';
+import { ablaufTexte } from '@/lib/i18n/ablauf';
+import { ladeGeraeteStatus } from '@/lib/admin/geraete-status';
+import { vorgangFertig } from '@/lib/admin/geraet-ablauf';
+import { pruefeZweiteKontrolle } from '../../ablauf/zweite-kontrolle/actions';
+import { speichereAnnahmeAktion } from './annahme-actions';
+import { speichereUebergabeAktion, speichereLoeschungAktion } from './nachweis-actions';
+import UnterschriftFeld from './UnterschriftFeld';
 import styles from '../../admin.module.css';
 
 function protokollText(p: ProtokollEintrag, t: AdminTexte, lang: Lang): string {
@@ -50,16 +58,20 @@ function geraetAntworten(g: GeraetDaten) {
 
 export const metadata: Metadata = { title: pageTitle('/admin'), robots: { index: false } };
 
-type Props = { params: Promise<{ nr: string }> };
+type Props = { params: Promise<{ nr: string }>; searchParams: Promise<{ zk?: string; test?: string; an?: string; na?: string; grund?: string }> };
 
 const FRIST_MS = FOTO_LOESCHFRIST_TAGE * 24 * 60 * 60 * 1000;
 
-export default async function VorgangSeite({ params }: Props) {
+export default async function VorgangSeite({ params, searchParams }: Props) {
   gatePage('admin');
   const { nr } = await params;
+  const { zk, test, an, na, grund } = await searchParams;
   if (!VORGANGSNUMMER.test(nr)) notFound();
   const { lang } = await aktuelleSprache();
   const t = adminTexte(lang);
+  const zkT = ablaufTexte(lang);
+  const geraeteStatus = ablaufSichtbar() ? await ladeGeraeteStatus(nr) : null;
+  const abschlussbereit = geraeteStatus !== null && vorgangFertig(geraeteStatus);
   const p = (rest: string) => pfadFuer(lang, rest);
   const nutzer = await aktuellerNutzer();
   if (!nutzer) redirect(p('/admin/login'));
@@ -110,6 +122,7 @@ export default async function VorgangSeite({ params }: Props) {
           </div>
           <div className={styles.aktionen}>
             <a className={styles.btnZweit} href={`/admin/vorgang/${v.vorgangsnummer}/pdf`} download>{t.detail.pdf}</a>
+            {ablaufSichtbar() && <a className={styles.btnZweit} href={`/admin/vorgang/${v.vorgangsnummer}/annahme`} download>{zkT.annahmeTitel}</a>}
             <a className={styles.btnZweit} href={`/admin/vorgang/${v.vorgangsnummer}/uebergabe`} download>{t.detail.uebergabePdf}</a>
             <a className={styles.btnZweit} href={`/admin/vorgang/${v.vorgangsnummer}/loeschprotokoll`} download>{t.akte.belegLoeschprotokoll}</a>
             <a className={styles.btnZweit} href={`/admin/vorgang/${v.vorgangsnummer}/entsorgung`} download>{t.akte.belegEntsorgung}</a>
@@ -118,6 +131,212 @@ export default async function VorgangSeite({ params }: Props) {
             {nutzer.rolle === 'admin' && <a className={styles.btnGefahr} href="#loeschen">{t.detail.loeschenKopf}</a>}
           </div>
         </header>
+
+        {ablaufSichtbar() && (
+          <section className={styles.karte} aria-labelledby="annahme-titel">
+            <h2 id="annahme-titel">{zkT.annahmeTitel}</h2>
+            <p className={styles.meta}>{zkT.annahmeText}</p>
+            {an === 'ok' && <p role="status"><strong>{zkT.annahmeOk}</strong></p>}
+            {an === 'test' && <p role="status"><strong>{zkT.annahmeTest}</strong></p>}
+            {an === 'fehler' && (
+              <p role="alert"><strong>{({
+                eingabe: zkT.fehlerAnnahme,
+                nachweis: zkT.fehlerAnnahmeNachweis,
+                pdf: zkT.fehlerAnnahmePdf,
+                lesen: zkT.fehlerAnnahmeSpeichern,
+                kette: zkT.fehlerAnnahmeSpeichern,
+                vorgang: zkT.fehlerAnnahmeSpeichern,
+              } as Record<string, string>)[grund ?? ''] ?? zkT.fehlerAnnahme}</strong></p>
+            )}
+            <form action={speichereAnnahmeAktion} style={{ display: 'grid', gap: 18 }}>
+              <input type="hidden" name="vorgangsnummer" value={nr} />
+
+              {v.geraete.map((g) => (
+                <fieldset key={`geraet-${g.position}`} style={{ border: '1px solid var(--line)', borderRadius: 10, padding: 12, display: 'grid', gap: 10 }}>
+                  <legend>{g.position}. {geraeteName(g, lang)}</legend>
+                  <div role="radiogroup" aria-label={`${zkT.zustandLabel} ${g.position}`} style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                    <span className={styles.meta}>{zkT.zustandLabel}:</span>
+                    {['gut', 'spuren', 'defekt'].map((z, i) => (
+                      <label key={z} style={{ minHeight: 44, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                        <input type="radio" name={`zustand_${g.position}`} value={z} /> {zkT.zustandOpt[i]}
+                      </label>
+                    ))}
+                  </div>
+                  <div role="radiogroup" aria-label={`${zkT.datentraegerLabel} ${g.position}`} style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                    <span className={styles.meta}>{zkT.datentraegerLabel}:</span>
+                    {['ja', 'nein', 'unklar'].map((d, i) => (
+                      <label key={d} style={{ minHeight: 44, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                        <input type="radio" name={`datentraeger_${g.position}`} value={d} /> {zkT.datentraegerOpt[i]}
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+              ))}
+
+              <fieldset style={{ border: '1px solid var(--line)', borderRadius: 10, padding: 12, display: 'grid', gap: 10 }}>
+                <legend>{zkT.sicherheitTitel}</legend>
+                {zkT.sicherheitPunkte.map((punkt, i) => (
+                  <div key={`sicherheit-${i}`} role="radiogroup" aria-label={punkt} style={{ display: 'grid', gap: 4 }}>
+                    <span>{i + 1}. {punkt}</span>
+                    <span style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+                      <label style={{ minHeight: 44, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                        <input type="radio" name={`sicherheit_${i}`} value="ja" /> {zkT.sicherheitOpt[0]}
+                      </label>
+                      <label style={{ minHeight: 44, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                        <input type="radio" name={`sicherheit_${i}`} value="nein" /> {zkT.sicherheitOpt[1]}
+                      </label>
+                    </span>
+                  </div>
+                ))}
+              </fieldset>
+
+              <fieldset style={{ border: '1px solid var(--line)', borderRadius: 10, padding: 12, display: 'grid', gap: 10 }}>
+                <legend>{zkT.entscheidungTitel}</legend>
+                {['vollstaendig', 'teilweise', 'ablehnung'].map((e, i) => (
+                  <label key={e} style={{ minHeight: 44, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    <input type="radio" name="entscheidung" value={e} /> {zkT.entscheidungOpt[i]}
+                  </label>
+                ))}
+                <label style={{ display: 'grid', gap: 4 }}>
+                  {zkT.grundLabel}
+                  <input name="grund" style={{ width: '100%', minHeight: 44, padding: 8 }} />
+                </label>
+              </fieldset>
+
+              <UnterschriftFeld label={zkT.unterschriftLabel} leer={zkT.unterschriftLeer} loeschen={zkT.loeschenLabel} />
+
+              <button type="submit" className={styles.btnZweit}>{zkT.speichernAnnahme}</button>
+            </form>
+          </section>
+        )}
+
+        {ablaufSichtbar() && (
+          <section className={styles.karte} aria-labelledby="uebergabe-titel">
+            <h2 id="uebergabe-titel">{zkT.uebergabeTitel}</h2>
+            <p className={styles.meta}>{zkT.uebergabeText}</p>
+            {na === 'ok' && <p role="status"><strong>{zkT.naOk}</strong></p>}
+            {na === 'test' && <p role="status"><strong>{zkT.naTest}</strong></p>}
+            {na === 'fehler' && <p role="alert"><strong>{grund === 'kette' ? zkT.fehlerKette : grund?.startsWith('zweiter') ? zkT.fehlerZweiter : zkT.fehlerNachweis}</strong></p>}
+            <form action={speichereUebergabeAktion} style={{ display: 'grid', gap: 14 }}>
+              <input type="hidden" name="vorgangsnummer" value={nr} />
+              <fieldset style={{ border: '1px solid var(--line)', borderRadius: 10, padding: 12, display: 'grid', gap: 10 }}>
+                {zkT.uebergabePunkte.map((punkt, i) => (
+                  <div key={`uebergabe-${i}`} role="radiogroup" aria-label={punkt} style={{ display: 'grid', gap: 4 }}>
+                    <span>{i + 1}. {punkt}</span>
+                    <span style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+                      <label style={{ minHeight: 44, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                        <input type="radio" name={`kontrolle_${i}`} value="ja" /> {zkT.sicherheitOpt[0]}
+                      </label>
+                      <label style={{ minHeight: 44, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                        <input type="radio" name={`kontrolle_${i}`} value="nein" /> {zkT.sicherheitOpt[1]}
+                      </label>
+                    </span>
+                  </div>
+                ))}
+              </fieldset>
+              <label style={{ display: 'grid', gap: 4 }}>
+                {zkT.empfaengerLabel}
+                <input name="empfaenger" required style={{ width: '100%', minHeight: 44, padding: 8 }} />
+              </label>
+              <UnterschriftFeld label={zkT.unterschriftLabel} leer={zkT.unterschriftLeer} loeschen={zkT.loeschenLabel} />
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <button type="submit" className={styles.btnZweit}>{zkT.uebergabeSpeichern}</button>
+                <a className={styles.btnZweit} href={`/admin/vorgang/${nr}/nachweis-pdf?art=uebergabe`} download>{zkT.downloadUebergabe}</a>
+              </div>
+            </form>
+          </section>
+        )}
+
+        {ablaufSichtbar() && (
+          <section className={styles.karte} aria-labelledby="loeschung-titel">
+            <h2 id="loeschung-titel">{zkT.loeschungTitel}</h2>
+            <p className={styles.meta}>{zkT.loeschungText}</p>
+            {na === 'ok' && <p role="status"><strong>{zkT.naOk}</strong></p>}
+            {na === 'test' && <p role="status"><strong>{zkT.naTest}</strong></p>}
+            {na === 'fehler' && <p role="alert"><strong>{grund === 'kette' ? zkT.fehlerKette : grund?.startsWith('zweiter') ? zkT.fehlerZweiter : zkT.fehlerNachweis}</strong></p>}
+            <form action={speichereLoeschungAktion} style={{ display: 'grid', gap: 18 }}>
+              <input type="hidden" name="vorgangsnummer" value={nr} />
+              {v.geraete.map((g) => (
+                <fieldset key={`loeschung-${g.position}`} style={{ border: '1px solid var(--line)', borderRadius: 10, padding: 12, display: 'grid', gap: 10 }}>
+                  <legend>{g.position}. {geraeteName(g, lang)}</legend>
+                  <div role="radiogroup" aria-label={`${zkT.verfahrenLabel} ${g.position}`} style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                    <span className={styles.meta}>{zkT.verfahrenLabel}:</span>
+                    {['hdd', 'ssd', 'nvme', 'emmc', 'smartphone', 'usb', 'keines'].map((val, i) => (
+                      <label key={val} style={{ minHeight: 44, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                        <input type="radio" name={`verfahren_${g.position}`} value={val} /> {zkT.verfahrenOpt[i]}
+                      </label>
+                    ))}
+                  </div>
+                  <div role="radiogroup" aria-label={`${zkT.verifiziertLabel} ${g.position}`} style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                    <span className={styles.meta}>{zkT.verifiziertLabel}:</span>
+                    <label style={{ minHeight: 44, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                      <input type="radio" name={`verifiziert_${g.position}`} value="ja" /> {zkT.sicherheitOpt[0]}
+                    </label>
+                    <label style={{ minHeight: 44, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                      <input type="radio" name={`verifiziert_${g.position}`} value="nein" /> {zkT.sicherheitOpt[1]}
+                    </label>
+                  </div>
+                  <label style={{ display: 'grid', gap: 4 }}>
+                    {zkT.werkzeugLabel}
+                    <input name={`werkzeug_${g.position}`} style={{ width: '100%', minHeight: 44, padding: 8 }} />
+                  </label>
+                  <div role="radiogroup" aria-label={`${zkT.ergebnisLabel} ${g.position}`} style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                    <span className={styles.meta}>{zkT.ergebnisLabel}:</span>
+                    {['erfolgreich', 'fehlgeschlagen', 'ausnahme'].map((val, i) => (
+                      <label key={val} style={{ minHeight: 44, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                        <input type="radio" name={`ergebnis_${g.position}`} value={val} /> {zkT.ergebnisOpt[i]}
+                      </label>
+                    ))}
+                  </div>
+                  <label style={{ display: 'grid', gap: 4 }}>
+                    {zkT.bemerkungLabel}
+                    <input name={`bemerkung_${g.position}`} style={{ width: '100%', minHeight: 44, padding: 8 }} />
+                  </label>
+                </fieldset>
+              ))}
+              <fieldset style={{ border: '1px solid var(--line)', borderRadius: 10, padding: 12, display: 'grid', gap: 10 }}>
+                <legend>{zkT.zweiterTitel}</legend>
+                <span className={styles.meta}>{zkT.zweiterText}</span>
+                <label style={{ display: 'grid', gap: 4 }}>
+                  {zkT.zweiterEmail}
+                  <input name="zweiter_email" type="email" autoComplete="off" style={{ width: '100%', minHeight: 44, padding: 8 }} />
+                </label>
+                <label style={{ display: 'grid', gap: 4 }}>
+                  {zkT.zweiterPasswort}
+                  <input name="zweiter_passwort" type="password" autoComplete="off" style={{ width: '100%', minHeight: 44, padding: 8 }} />
+                </label>
+              </fieldset>
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <button type="submit" className={styles.btnZweit}>{zkT.loeschungSpeichern}</button>
+                <a className={styles.btnZweit} href={`/admin/vorgang/${nr}/nachweis-pdf?art=loeschung`} download>{zkT.downloadLoeschung}</a>
+              </div>
+            </form>
+          </section>
+        )}
+
+        {abschlussbereit && (
+          <section className={styles.karte} role="status">
+            <p><strong>{zkT.abschlussbereit}</strong></p>
+          </section>
+        )}
+
+        {zk && (
+          <section className={styles.karte} role={zk === 'passt' || zk === 'abweichung' ? 'status' : 'alert'}>
+            {zk === 'passt' && <p><strong>{zkT.ergebnisPasst}</strong></p>}
+            {zk === 'abweichung' && <p><strong>{zkT.ergebnisAbweichung}</strong></p>}
+            {zk !== 'passt' && zk !== 'abweichung' && (
+              <p><strong>{({
+                eingabe: zkT.fehlerEingabe,
+                geraet: zkT.fehlerGeraet,
+                geraet_unbekannt: zkT.fehlerGeraetUnbekannt,
+                status_veraltet: zkT.fehlerStatusVeraltet,
+                wechsel_nicht_erlaubt: zkT.fehlerWechsel,
+                datenbank_nicht_konfiguriert: zkT.fehlerKeineDb,
+              } as Record<string, string>)[zk] ?? zkT.fehlerUnbekannt}</strong></p>
+            )}
+            {test === '1' && <p className={styles.meta}>{zkT.testHinweis}</p>}
+          </section>
+        )}
 
         <div className={styles.detailGrid}>
           <div className={styles.spalte}>
@@ -150,6 +369,30 @@ export default async function VorgangSeite({ params }: Props) {
                           <li key={tx}>{grundText(tx, lang)}</li>
                         ))}
                       </ul>
+                    )}
+                    {ablaufSichtbar() && (
+                      <form action={pruefeZweiteKontrolle} style={{ display: 'grid', gap: 12, marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--line)' }}>
+                        <h4 style={{ margin: 0 }}>{zkT.zweiteKontrolleTitel}</h4>
+                        <p className={styles.meta} style={{ margin: 0 }}>{zkT.zweiteKontrolleText}</p>
+                        <input type="hidden" name="vorgangsnummer" value={v.vorgangsnummer} />
+                        <input type="hidden" name="device_id" value={g.id} />
+                        <p className={styles.meta} style={{ margin: 0 }}>
+                          {zkT.antrag}: {g.typ}{g.marke ? `, ${g.marke}` : ''}{g.modell ? `, ${g.modell}` : ''}
+                        </p>
+                        <label style={{ display: 'grid', gap: 4 }}>
+                          {zkT.geliefertTyp}
+                          <input name="typ" required style={{ width: '100%', minHeight: 44, padding: 8 }} />
+                        </label>
+                        <label style={{ display: 'grid', gap: 4 }}>
+                          {zkT.geliefertMarke}
+                          <input name="marke" style={{ width: '100%', minHeight: 44, padding: 8 }} />
+                        </label>
+                        <label style={{ display: 'grid', gap: 4 }}>
+                          {zkT.geliefertModell}
+                          <input name="modell" style={{ width: '100%', minHeight: 44, padding: 8 }} />
+                        </label>
+                        <button type="submit" className={styles.btnZweit}>{zkT.pruefen}</button>
+                      </form>
                     )}
                   </article>
                 );
